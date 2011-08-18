@@ -1,0 +1,7 @@
+#!/bin/bash
+#Now, autoclean removes all stored archives in your cache for packages that are no longer in the repositories or that have a newer version in the repositories.
+
+autocleanapt()
+       {
+       apt-get -y autoclean
+       }

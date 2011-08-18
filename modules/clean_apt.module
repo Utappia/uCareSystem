@@ -1,0 +1,7 @@
+#!/bin/bash
+#Deleting from cache the downloaded packages to free up some space
+
+cleanapt()
+       {
+        apt-get -y clean
+       }

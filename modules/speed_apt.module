@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#Enabled untrusted and no-prompt package installations
+UntrustedUPEnabled='upgrade'
+
+#Beginig the axeleration of package downloads
+if echo "$@" | grep -q "$UntrustedUPEnabled"; then
+	cd /var/cache/apt/archives/
+	gksudo 'apt-get -qq --print-uris -y --force-yes --allow-unauthenticated' $@ | while read line ; do
+		Url="$(echo $line | awk '{print $1}' | tr -d \')"
+		axel -a -n 10l "$Url"
+		Hash="$(echo $line | sed "s/.* .*:\(.*\)/\1/g")"
+		HashType="$(echo $line | sed "s/.* \(.*\):.*/\1/g")"
+		HashCalc="$(echo ${HashType,,}sum)"
+		File="$(basename $Url)"
+		FileHash="$($HashCalc $File | awk '{print $1}')"
+		if [[ "$FileHash" = "$Hash" ]]; then
+			echo -e "\E[32m33[1m$File successfully verified.33[0m"
+		else
+			echo -e "\E[31m\33[1m$File failed verification, retrying...33[0m"
+			rm "$File"
+			axel -a -n 10l "$Url"
+			FileSum="$($HashCalc $File | awk '{print $1}')"
+			if [[ "$FileHash" = "$Hash" ]]; then
+				echo -e "\E[32m33[1m$File successfully verified.33[0m"
+			else
+				echo -e "\E[31m33[1m$File failed verification, quiting.33[0m"
+				rm "$File"
+				exit 1
+			fi
+		fi
+	done
+	gksudo 'apt-get -y --force-yes --allow-unauthenticated' $@
+fi
