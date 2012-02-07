@@ -16,7 +16,7 @@
 
 TEXTDOMAIN="uCareSystem"
 TEXTDOMAINDIR="/usr/local/share/locale/"
-Icon="$PWD/2clickupdate_icon_128x128.png"
+Icon="/modules/2clickupdate_icon_128x128.png"
 
 #Below are the messages that are used in 2clickUpdate
 MessageIntro=$"System components will be updated"
@@ -100,7 +100,7 @@ $NotifySystem "$MessageRamCleaned"  && \
 ramcleanapt && \
 echo "99%" && \
 # Module loaded for synchronizing data on disk with memory and then free pagecache, dentries and inodes from RAM
-sleep 2
+sleep 1
 set +x
 #<----- Kernel Ends
 ) | $(zenity --width 300 \
@@ -115,4 +115,4 @@ set +x
 #Display a cool notification baloon
 $NotifySystem "$NotifyMessageB"
 
-zenity --width 300 --info --window-icon=2clickupdate_icon_128x128.png --title "$WindowTitle" --text="$MessageComplete"
+zenity --width 300 --info --window-icon= "/modules/2clickupdate_icon_128x128.png" --title "$WindowTitle" --text="$MessageComplete"
