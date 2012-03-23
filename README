@@ -1,5 +1,15 @@
-uCareSystem, version alpha 1
----------------------------------
+  					                                 uCareSystem
+
+Name   : uCareSystem
+License: GPL2 (http://www.gnu.org/licenses/gpl.html)
+Author : Salih Emin
+Email  : salihemin (at) about.me 
+Date   : 14-8-2011
+Version: 0.9
+System : Ubuntu or Debian derivatives (Not tested every flavor)
+WebSite: http://ucaresystem.blogspot.com
+
+						Description:
 This is the succsesor of 2ClickUpdate, that I've created 2 years ago https://launchpad.net/2clickupdate
 Now its time to push new features that require re-writing most of the code of 2ClickUpdate....
 
