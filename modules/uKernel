@@ -1,14 +1,14 @@
 #!/bin/bash
 #_____________________________________________________________________________________________________________________________________________________________________
-#Name   : 2clickUpdate
+#Name   : uCareSystem
 #Licence: GPL2 (http://www.gnu.org/licenses/gpl.html)
 #Author : Salih Emin
-#Email  : cerebrux.gr (at) gmail.com 
+#Email  : salihemin (at) about.me 
 #Date   : 25-06-2011 (first release 19-02-2009)
-#Version: 7.0
+#Version: 0.9 (based on 2click-update 7.0)
 #System : Ubuntu Linux
-#WebSite: http://www.cerebrux.net
-#Source Code: https://launchpad.net/2clickupdate
+#WebSite: http://ucaresystem.blogspot.com
+#Source Code: https://github.com/cerebrux/uCareSystem
 #Description:
 #This simple script will automaticaly refresh your packagelist, download updates (if there are any), install them, make some clean up, remove unnecessary packages and files and optimize your RAM
 #_____________________________________________________________________________________________________________________________________________________________________
@@ -16,11 +16,11 @@
 
 TEXTDOMAIN="uCareSystem"
 TEXTDOMAINDIR="/usr/local/share/locale/"
-Icon="/modules/2clickupdate_icon_128x128.png"
+Icon="modules/ucaresystemicon.png"
 
 #Below are the messages that are used in 2clickUpdate
 MessageIntro=$"System components will be updated"
-WindowTitle=$"uCareSystem 1.0"
+WindowTitle=$"uCareSystem 0.9"
 MessageProgressTitle=$"Optimizing packages"
 MessageComplete=$"uCareSystem operations are now complete"
 NotifySystem='notify-send -i '$Icon''
@@ -40,7 +40,7 @@ MessageDependency=$"# \n Please wait, this can take some time.\n \n \n Collectin
 zenity --info \
        --title "$WindowTitle" \
        --width 100 \
-       --window-icon=/2clickupdate_icon_128x128.png \
+       --window-icon=/ucaresystemicon.png \
        --text "$MessageIntro"
 
 COMMENT
@@ -115,4 +115,4 @@ set +x
 #Display a cool notification baloon
 $NotifySystem "$NotifyMessageB"
 
-zenity --width 300 --info --window-icon= "/modules/2clickupdate_icon_128x128.png" --title "$WindowTitle" --text="$MessageComplete"
+zenity --width 300 --info --window-icon= "modules/ucaresystemicon.png" --title "$WindowTitle" --text="$MessageComplete"
