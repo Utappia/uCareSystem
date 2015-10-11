@@ -9,8 +9,8 @@
 # Author : Salih Emin
 # WebSite: http://ucaresystem.blogspot.com
 # Email  : salihemin (at) about.me 
-# Date   : 24-08-2012 (first release 19-02-2009)
-# Version: 1.0 (based on the obsolete 2ClickUpdate Core v6.0)
+# Date   : 12-10-2015 (first release 19-02-2009)
+# Version: 2.0 (based on the obsolete 2ClickUpdate Core v6.0)
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install 
@@ -19,16 +19,17 @@
 #
 ## Script starts here
 
-DIR=$HOME
-UCARE_FOLDER=$DIR/.ucaresystem
-PWD=`pwd`
+
+#DIR=$HOME
+#UCARE_FOLDER=$DIR/.ucaresystem
+#PWD=`pwd`
 
 
 # Checking if the user has run the script with "sudo" or not
 if [ $EUID -ne 0 ] ; then
     clear
     echo ""
-    echo "This script must be run as root. Now I will just exit..." 1>&2
+    echo "uCareSystem Core must be run as root. Now I will just exit..." 1>&2
     echo ""
     sleep 2
     exit 1
@@ -37,17 +38,12 @@ fi
 clear
 echo "_______________________________________________________"
 echo "                                                       "
-echo "            uCareSystem Core v1.0                      "
+echo "            uCareSystem Core v2.0                      "
 echo "                 ~  ''  ~                              "
 echo "                                                       "
 echo " Welcome to all-in-one System Update and maintenance   "
 echo " assistant app.                                        "
 echo "                                                       "
-echo " Note that the next time just open terminal and type:  "
-echo "                                                       "
-echo "              sudo updatecore                          "
-echo "                                                       "
-echo "  to run uCareSystem.				     "
 echo "                                                       "
 echo " This simple script will automatically         	     "
 echo " refresh your packagelist, download and                "                                      
@@ -65,6 +61,9 @@ echo "#########################"
 echo "          Started"
 echo "#########################"
 echo
+
+#start of commented old code for review
+: <<'END'
 ## Installation to run on the first run of the script. ONLY on the first run of the script!
 if [ -f /usr/bin/updatecore ]
    then
@@ -75,8 +74,6 @@ if [ -f /usr/bin/updatecore ]
 	sudo ln -s $UCARE_FOLDER/ucaresystemcore.sh /usr/bin/updatecore;
 fi
 
-#start of commented old code for review
-: <<'END'
 firstrun=0
 firstrun=1
 if [ $firstrun -gt 0 ]
@@ -133,7 +130,7 @@ sleep 1
 ## Updates packages and libraries
 echo
 #sudo /usr/bin/speed_apt.CORE.module -y --force-yes --allow-unauthenticated upgrade;
-sudo apt-get -y upgrade;
+sudo apt-get -y dist-upgrade;
 echo
 echo "###############################################"
 echo "Finished updating packages and system libraries"
@@ -142,7 +139,7 @@ sleep 1
 echo
 
 ## Removes unneeded packages
-sudo apt-get -y autoremove;
+sudo apt-get -y --purge autoremove;
 echo
 echo "###################################"
 echo "Finished removing unneeded packages"
@@ -165,7 +162,7 @@ if [ -f /usr/bin/deborphan ]
        echo ""
        sleep 1
 fi
-sudo deborphan -n --find-config | xargs sudo apt-get -y purge; 
+sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove; 
 echo
 echo "#####################################"
 echo "Finished removing unused config files"
