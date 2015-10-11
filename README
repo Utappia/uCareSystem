@@ -4,10 +4,10 @@ Name   : uCareSystem
 License: GPL2 (http://www.gnu.org/licenses/gpl.html)
 Author : Salih Emin
 Email  : salihemin (at) about.me 
-Date   : 24-8-2012
-Version: 1.0
+Date   : 12-10-2015
+Version: 2.0
 System : Ubuntu or Debian derivatives (Not tested every flavor)
-WebSite: http://ucaresystem.blogspot.com
+WebSite: http://utappia.org
 
 						Description:
 This is the succsesor of 2ClickUpdate, that I've created 2 years ago https://launchpad.net/2clickupdate
