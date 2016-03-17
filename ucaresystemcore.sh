@@ -1,16 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #
 #_______________________________________________
 #THIS IS THE Terminal Version of uCareSystem
 #_______________________________________________
 # Name   : uCareSystem Core
-# Licence: GPL2 (http://www.gnu.org/licenses/gpl.html)
+# Licence: GPL3 (http://www.gnu.org/licenses/gpl.html)
 # Author : Salih Emin
-# WebSite: http://ucaresystem.blogspot.com
-# Email  : salihemin (at) about.me 
-# Date   : 12-10-2015 (first release 19-02-2009)
-# Version: 2.0 (based on the obsolete 2ClickUpdate Core v6.0)
+# WebSite: http://utappia.org
+# Email  : salihemin-(at)-about.me 
+# Date   : 16-03-2016 (first release 19-02-2009)
+# Version: 3.0 (based on the obsolete 2ClickUpdate Core v6.0)
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install 
@@ -18,11 +18,6 @@
 #remove any remaining packages and configuration files without interference.
 #
 ## Script starts here
-
-
-#DIR=$HOME
-#UCARE_FOLDER=$DIR/.ucaresystem
-#PWD=`pwd`
 
 
 # Checking if the user has run the script with "sudo" or not
@@ -38,7 +33,7 @@ fi
 clear
 echo "_______________________________________________________"
 echo "                                                       "
-echo "            uCareSystem Core v2.0                      "
+echo "            uCareSystem Core v3.0                      "
 echo "                 ~  ''  ~                              "
 echo "                                                       "
 echo " Welcome to all-in-one System Update and maintenance   "
@@ -47,10 +42,10 @@ echo "                                                       "
 echo "                                                       "
 echo " This simple script will automatically         	     "
 echo " refresh your packagelist, download and                "                                      
-echo " install updates (if there are any) , remove any       "                                          
-echo " remaining packages and configuration files and        "
-echo " free up any unused disk space without any need of     "
-echo " interference.      				     "      
+echo " install updates (if there are any), remove any old    "                                          
+echo " kernels, obsolete packages and configuration files    "
+echo " to free up disk space, without any need of user       "
+echo " interference.                    				     "      
 echo "_______________________________________________________"
 echo
 echo " uCareSystem Core will start in 5 seconds... "		
@@ -62,65 +57,8 @@ echo "          Started"
 echo "#########################"
 echo
 
-#start of commented old code for review
-: <<'END'
-## Installation to run on the first run of the script. ONLY on the first run of the script!
-if [ -f /usr/bin/updatecore ]
-   then
-	echo "ucaresystemcore is on your system"
-   else 
-	mkdir $UCARE_FOLDER;
-	cp $PWD/ucaresystemcore.sh $UCARE_FOLDER;
-	sudo ln -s $UCARE_FOLDER/ucaresystemcore.sh /usr/bin/updatecore;
-fi
-
-firstrun=0
-firstrun=1
-if [ $firstrun -gt 0 ]
-then
-  sed -i '/firstrun=1/d' 2clickUpdateCore
-   if [ -f /usr/bin/speed_apt.CORE.module ]
-   then
-       echo "Speed APT module found"
-       echo ""
-       sleep 1
-   else
-       echo "Speed APT module not found"
-       echo ""
-       sleep 1
-       sudo apt-get -y install axel deborphan
-       sudo chmod +x speed_apt.CORE.module
-       sudo cp speed_apt.CORE.module /usr/bin
-       echo "##################################"
-       echo "Finished installing the APT module"
-       echo "##################################"
-       echo ""
-       sleep 1
-  fi
-  if [ -f /usr/bin/2clickUpdateCore ]
-   then
-       echo "2clickUpdateCore found"
-       echo ""
-       sleep 1
-   else
-       echo "2clickUpdateCore not found"
-       echo ""
-       sleep 1
-       sudo apt-get -y install axel deborphan
-       sudo chmod +x 2clickUpdateCore
-       sudo cp 2clickUpdateCore /usr/bin
-       echo "####################################"
-       echo "Finished installing 2clickUpdateCore"
-       echo "####################################"
-       echo ""
-       sleep 1
-  fi
-fi
-END
-#end of commented old code for review
-
 ## Updates package lists    
-sudo apt-get -y update;
+sudo apt update;
 echo
 echo "###############################"
 echo "Finished updating package lists"
@@ -128,9 +66,7 @@ echo "###############################"
 sleep 1
 
 ## Updates packages and libraries
-echo
-#sudo /usr/bin/speed_apt.CORE.module -y --force-yes --allow-unauthenticated upgrade;
-sudo apt-get -y dist-upgrade;
+sudo apt -y full-upgrade;
 echo
 echo "###############################################"
 echo "Finished updating packages and system libraries"
@@ -147,21 +83,50 @@ echo "###################################"
 sleep 1
 echo
 
-## Removes unused config files
-if [ -f /usr/bin/deborphan ]
-   then
-       echo "Deborphan found"
-       echo ""
-       sleep 1
-   else
-       echo "Deborphan not found"
-       echo ""
-       sleep 1
-       sudo apt-get -y install deborphan
-       echo "Finished installing Deborphan"
-       echo ""
-       sleep 1
+# purge-old-kernels - remove old kernel packages
+#    Copyright (C) 2012 Dustin Kirkland <kirkland -(at)- ubuntu.com>
+#
+#    Authors: Dustin Kirkland <kirkland-(at)-ubuntu.com>
+#             Kees Cook <kees-(at)-ubuntu.com>
+# 
+# NOTE: This script will ALWAYS keep the currently running kernel
+# NOTE: Default is to keep 2 more, user overrides with --keep N
+KEEP=2
+# NOTE: Any unrecognized option will be passed straight through to apt
+APT_OPTS=
+while [ ! -z "$1" ]; do
+	case "$1" in
+		--keep)
+			# User specified the number of kernels to keep
+			KEEP="$2"
+			shift 2
+		;;
+		*)
+			APT_OPTS="$APT_OPTS $1"
+			shift 1
+		;;
+	esac
+done
+
+# Build our list of kernel packages to purge
+CANDIDATES=$(ls -tr /boot/vmlinuz-* | head -n -${KEEP} | grep -v "$(uname -r)$" | cut -d- -f2- | awk '{print "linux-image-" $0 " linux-headers-" $0}' )
+for c in $CANDIDATES; do
+	dpkg-query -s "$c" >/dev/null 2>&1 && PURGE="$PURGE $c"
+done
+
+if [ -z "$PURGE" ]; then
+	echo "No kernels are eligible for removal"
 fi
+
+sudo apt $APT_OPTS remove -y --purge $PURGE;
+
+echo
+echo "###################################"
+echo "Finished removing old kernels"
+echo "###################################"
+sleep 1
+echo
+## Removes unused config files
 sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove; 
 echo
 echo "#####################################"
@@ -170,7 +135,8 @@ echo "#####################################"
 sleep 1
 echo
 
-## Removes package files that can no longer be downloaded and everything except the lock file in /var/cache/apt/archives, including directories.
+## Removes package files that can no longer be downloaded and everything except 
+# the lock file in /var/cache/apt/archives, including directories.
 sudo apt-get -y autoclean; sudo apt-get -y clean;
 echo
 echo "######################################"
@@ -178,17 +144,6 @@ echo " Cleaned downloaded temporary packages"
 echo "######################################"
 echo 
 
-sync #  Synchronize data on disk with system memory 
-echo 
-echo "#########################"
-echo "   Data synced to Disk"
-echo "#########################"
-echo 3 > /proc/sys/vm/drop_caches # Free pagecache, dentries and inodes
-echo
-echo "#########################"
-echo "  Ram freed fom garbage"
-echo "#########################"
-echo
 sleep 2
 echo "#########################"
 echo "          Done"
