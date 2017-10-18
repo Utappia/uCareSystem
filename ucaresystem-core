@@ -25,7 +25,7 @@ set -e
 if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
-    echo "uCareSystem Core must be run as root. Now I will just exit..." 1>&2
+    echo "uCareSystem Core must be run as root or with sudo. Now I will just exit..." 1>&2
     echo ""
     sleep 2
     exit 1
@@ -49,8 +49,8 @@ function WELCOME_SCREEN {
 	echo " interference                                          " 
 	echo "                   				                     "
 	echo " Also, if you started with a parameter (-u, -d) it will"
-	echo " check if for the next available release.              "
-	echo " For more start uCareSystem with '-h'                  "
+	echo " check for the next available release and start the    "
+	echo " upgrade. For more start uCareSystem with '-h'         "
 	echo "_______________________________________________________"
 	echo
 	echo " uCareSystem Core will start in 5 seconds... "
@@ -59,6 +59,8 @@ function WELCOME_SCREEN {
 }
 
 function MAINTENACE {
+	echo
+	echo
 	echo "#########################"
 	echo "          Started"
 	echo "#########################"
