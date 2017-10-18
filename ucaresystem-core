@@ -1,4 +1,4 @@
-#!/usr/bin bash
+#!/bin/bash
 set -e
 #
 #
@@ -9,12 +9,12 @@ set -e
 # Licence: GPL3 (http://www.gnu.org/licenses/gpl.html)
 # Author : Salih Emin
 # WebSite: http://utappia.org
-# Email  : salihemin-(at)-about.me 
+# Email  : salihemin-(at)-about.me
 # Date   : 16-03-2016 (first release 19-02-2009)
 # Version: 3.0 (based on the obsolete 2ClickUpdate Core v6.0)
 # System : Debian Linux and Ubuntu Linux
 # Description:
-#This simple script will automatically refresh your package list, download and install 
+#This simple script will automatically refresh your package list, download and install
 #updates (if there are any),
 #remove any remaining packages and configuration files without interference.
 #
@@ -42,14 +42,14 @@ echo " assistant app.                                        "
 echo "                                                       "
 echo "                                                       "
 echo " This simple script will automatically         	     "
-echo " refresh your packagelist, download and                "                                      
-echo " install updates (if there are any), remove any old    "                                          
+echo " refresh your packagelist, download and                "
+echo " install updates (if there are any), remove any old    "
 echo " kernels, obsolete packages and configuration files    "
 echo " to free up disk space, without any need of user       "
-echo " interference.                    				     "      
+echo " interference.                    				     "
 echo "_______________________________________________________"
 echo
-echo " uCareSystem Core will start in 5 seconds... "		
+echo " uCareSystem Core will start in 5 seconds... "
 
 sleep 6
 
@@ -58,7 +58,7 @@ echo "          Started"
 echo "#########################"
 echo
 
-## Updates package lists    
+## Updates package lists
 sudo apt update;
 echo
 echo "###############################"
@@ -89,7 +89,7 @@ echo
 #
 #    Authors: Dustin Kirkland <kirkland-(at)-ubuntu.com>
 #             Kees Cook <kees-(at)-ubuntu.com>
-# 
+#
 # NOTE: This script will ALWAYS keep the currently running kernel
 # NOTE: Default is to keep 2 more, user overrides with --keep N
 KEEP=2
@@ -128,7 +128,7 @@ echo "###################################"
 sleep 1
 echo
 ## Removes unused config files
-sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove; 
+sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove;
 echo
 echo "#####################################"
 echo "Finished removing unused config files"
@@ -136,14 +136,14 @@ echo "#####################################"
 sleep 1
 echo
 
-## Removes package files that can no longer be downloaded and everything except 
+## Removes package files that can no longer be downloaded and everything except
 # the lock file in /var/cache/apt/archives, including directories.
 sudo apt-get -y autoclean; sudo apt-get -y clean;
 echo
 echo "######################################"
 echo " Cleaned downloaded temporary packages"
 echo "######################################"
-echo 
+echo
 
 sleep 1
 echo "##########################################"
@@ -153,7 +153,7 @@ echo "a recent backup of your important files !!"
 echo "##########################################"
 echo ""
 read -rp "Do you want to UPGRADE to a new version (y/N); " choice
-case "$choice" in 
+case "$choice" in
   y|Y ) sleep 1 && echo " Initiating UPGRADE..." && do-release-upgrade -d;;
   n|N ) sleep 1 && echo " Aborting upgrade";;
     * ) echo "Non readable caracter pressed.. aborting";;
