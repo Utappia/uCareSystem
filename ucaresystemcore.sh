@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin bash
+set -e
 #
 #
 #_______________________________________________
@@ -144,7 +145,22 @@ echo " Cleaned downloaded temporary packages"
 echo "######################################"
 echo 
 
+sleep 1
+echo "##########################################"
+echo "uCareSystem can upgrade your Ubuntu to "
+echo "the next version of Ubuntu? (make sure you have"
+echo "a recent backup of your important files !!"
+echo "##########################################"
+echo ""
+read -rp "Do you want to UPGRADE to a new version (y/N); " choice
+case "$choice" in 
+  y|Y ) sleep 1 && echo " Initiating UPGRADE..." && do-release-upgrade -d;;
+  n|N ) sleep 1 && echo " Aborting upgrade";;
+    * ) echo "Non readable caracter pressed.. aborting";;
+esac
 sleep 2
+echo
+echo
 echo "#########################"
 echo "          Done"
 echo "#########################"
