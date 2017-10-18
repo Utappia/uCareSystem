@@ -221,7 +221,6 @@ while [ "$1" != "" ]; do
         * )                  SHOW_HELP
                              exit 1
     esac
-    shift
 done
 ## If no parameter is given just do the regular maintenance
 WELCOME_SCREEN && MAINTENACE && GOODBYE
