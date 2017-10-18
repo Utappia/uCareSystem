@@ -1,0 +1,227 @@
+#!/bin/bash
+set -e
+#
+#
+#_______________________________________________
+#THIS IS THE Terminal Version of uCareSystem
+#_______________________________________________
+# Name   : uCareSystem Core
+# Licence: GPL3 (http://www.gnu.org/licenses/gpl.html)
+# Author : Salih Emin
+# WebSite: http://utappia.org
+# Email  : salihemin-(at)-about.me
+# Date   : 19-10-2017 (first release 19-02-2009)
+# Version: 4.0
+# System : Debian Linux and Ubuntu Linux
+# Description:
+#This simple script will automatically refresh your package list, download and install
+#updates (if there are any),
+#remove any remaining packages and configuration files without interference.
+#
+## Script starts here
+
+
+# Checking if the user has run the script with "sudo" or not
+if [[ $EUID -ne 0 ]] ; then
+    clear
+    echo ""
+    echo "uCareSystem Core must be run as root or with sudo. Now I will just exit..." 1>&2
+    echo ""
+    sleep 2
+    exit 1
+fi
+function WELCOME_SCREEN {
+	clear
+	echo "_______________________________________________________"
+	echo "                                                       "
+	echo "            uCareSystem Core v4.0                      "
+	echo "                 ~  ''  ~                              "
+	echo "                                                       "
+	echo " Welcome to all-in-one System Update and maintenance   "
+	echo " assistant app.                                        "
+	echo "                                                       "
+	echo "                                                       "
+	echo " This simple script will automatically         	     "
+	echo " refresh your packagelist, download and                "
+	echo " install updates (if there are any), remove any old    "
+	echo " kernels, obsolete packages and configuration files    "
+	echo " to free up disk space, without any need of user       "
+	echo " interference                                          " 
+	echo "                   				                     "
+	echo " Also, if you started with a parameter (-u, -d) it will"
+	echo " check for the next available release and start the    "
+	echo " upgrade. For more start uCareSystem with '-h'         "
+	echo "_______________________________________________________"
+	echo
+	echo " uCareSystem Core will start in 5 seconds... "
+
+	sleep 6
+}
+
+function MAINTENACE {
+	echo
+	echo
+	echo "#########################"
+	echo "          Started"
+	echo "#########################"
+	echo
+
+	## Updates package lists
+	sudo apt update;
+	echo
+	echo "###############################"
+	echo "Finished updating package lists"
+	echo "###############################"
+	sleep 1
+
+	## Updates packages and libraries
+	sudo apt -y full-upgrade;
+	echo
+	echo "###############################################"
+	echo "Finished updating packages and system libraries"
+	echo "###############################################"
+	sleep 1
+	echo
+
+	## Removes unneeded packages
+	sudo apt-get -y --purge autoremove;
+	echo
+	echo "###################################"
+	echo "Finished removing unneeded packages"
+	echo "###################################"
+	sleep 1
+	echo
+
+	# purge-old-kernels - remove old kernel packages
+	#    Copyright (C) 2012 Dustin Kirkland <kirkland -(at)- ubuntu.com>
+	#
+	#    Authors: Dustin Kirkland <kirkland-(at)-ubuntu.com>
+	#             Kees Cook <kees-(at)-ubuntu.com>
+	#
+	# NOTE: This script will ALWAYS keep the currently running kernel
+	# NOTE: Default is to keep 2 more, user overrides with --keep N
+	KEEP=2
+	# NOTE: Any unrecognized option will be passed straight through to apt
+	APT_OPTS=
+	while [ ! -z "$1" ]; do
+		case "$1" in
+			--keep)
+				# User specified the number of kernels to keep
+				KEEP="$2"
+				shift 2
+			;;
+			*)
+				APT_OPTS="$APT_OPTS $1"
+				shift 1
+			;;
+		esac
+	done
+
+	# Build our list of kernel packages to purge
+	CANDIDATES=$(ls -tr /boot/vmlinuz-* | head -n -${KEEP} | grep -v "$(uname -r)$" | cut -d- -f2- | awk '{print "linux-image-" $0 " linux-headers-" $0}' )
+	for c in $CANDIDATES; do
+		dpkg-query -s "$c" >/dev/null 2>&1 && PURGE="$PURGE $c"
+	done
+
+	if [ -z "$PURGE" ]; then
+		echo "No kernels are eligible for removal"
+	fi
+
+	sudo apt $APT_OPTS remove -y --purge $PURGE;
+
+	echo
+	echo "###################################"
+	echo "Finished removing old kernels"
+	echo "###################################"
+	sleep 1
+	echo
+	## Removes unused config files
+	sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove;
+	echo
+	echo "#####################################"
+	echo "Finished removing unused config files"
+	echo "#####################################"
+	sleep 1
+	echo
+
+	## Removes package files that can no longer be downloaded and everything except
+	# the lock file in /var/cache/apt/archives, including directories.
+	sudo apt-get -y autoclean; sudo apt-get -y clean;
+	echo
+	echo "######################################"
+	echo " Cleaned downloaded temporary packages"
+	echo "######################################"
+	echo
+}
+
+function UPGRADE_TO_NEXT_RELEASE {
+	sleep 1
+	echo "##########################################"
+	echo "uCareSystem will now check for the        "
+	echo "availabillity of the next version         "
+	echo "and it will start the upgrade             "
+	echo "##########################################"
+	echo ""
+	sleep 1
+	do-release-upgrade
+	sleep 2
+}
+
+function UPGRADE_TO_DEVEL_RELEASE {
+	sleep 1
+	echo "##########################################"
+	echo "uCareSystem will now check for the        "
+	echo "availabillity of the next development     "
+	echo "version and it will start the upgrade     "
+	echo "##########################################"
+	echo ""
+	sleep 1
+	do-release-upgrade -d
+	sleep 2
+}
+
+function SHOW_HELP {
+	cat << EOF
+	
+	Usage: ucaresystem-core [-hud] 
+		 
+		 -h          display this help and exit
+		 
+		 -u          Upgrade to the next release. Note: If you use a
+		             regular release it will upgrade to the next one. If
+		             you are on a LTS version, it will upgrade only to 
+		             the next LTS.
+		             
+		 -d          Upgrade to the next development release
+EOF
+}
+
+function GOODBYE {
+	sleep 2
+	echo
+	echo
+	echo "#########################"
+	echo "          Done"
+	echo "#########################"
+	## End of script
+}
+
+# The main process starts
+while [ "$1" != "" ]; do
+    case $1 in
+        -u | --upgrade )     WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_NEXT_RELEASE && GOODBYE
+                             exit
+                                ;;
+        -d | --development ) WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_DEVEL_RELEASE && GOODBYE
+                             exit
+                                ;;
+        -h | --help )        SHOW_HELP
+                             exit
+                                ;;
+        * )                  SHOW_HELP
+                             exit 1
+    esac
+    shift
+done
+## If no parameter is given just do the regular maintenance
+WELCOME_SCREEN && MAINTENACE && GOODBYE
