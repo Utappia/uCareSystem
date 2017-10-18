@@ -22,7 +22,7 @@ set -e
 
 
 # Checking if the user has run the script with "sudo" or not
-if [[ $EUID -ne 0]] ; then
+if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
     echo "uCareSystem Core must be run as root. Now I will just exit..." 1>&2
@@ -178,11 +178,48 @@ function UPGRADE_TO_DEVEL_RELEASE {
 	sleep 2
 }
 
+function SHOW_HELP {
+	cat << EOF
+	
+	Usage: ucaresystem-core [-hud] 
+		 
+		 -h          display this help and exit
+		 
+		 -u          Upgrade to the next release. Note: If you use a
+		             regular release it will upgrade to the next one. If
+		             you are on a LTS version, it will upgrade only to 
+		             the next LTS.
+		             
+		 -d          Upgrade to the next development release
+EOF
+}
 
+function GOODBYE {
+	sleep 2
+	echo
+	echo
+	echo "#########################"
+	echo "          Done"
+	echo "#########################"
+	## End of script
+}
 
-echo
-echo
-echo "#########################"
-echo "          Done"
-echo "#########################"
-## End of script
+# The main process starts
+while [ "$1" != "" ]; do
+    case $1 in
+        -u | --upgrade )     WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_NEXT_RELEASE && GOODBYE
+                             exit
+                                ;;
+        -d | --development ) WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_DEVEL_RELEASE && GOODBYE
+                             exit
+                                ;;
+        -h | --help )        SHOW_HELP
+                             exit
+                                ;;
+        * )                  SHOW_HELP
+                             exit 1
+    esac
+    shift
+done
+## If no parameter is given just do the regular maintenance
+WELCOME_SCREEN && MAINTENACE && GOODBYE
