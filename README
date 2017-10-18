@@ -1,4 +1,4 @@
-  					                                 uCareSystem
+# uCareSystem
 
 Name   : uCareSystem
 License: GPL3 (http://www.gnu.org/licenses/gpl.html)
@@ -9,8 +9,12 @@ Version: 4.0
 System : Ubuntu or Debian derivatives (Not tested every flavor)
 WebSite: http://utappia.org
 
-						Description:
+## Description:
 This is the succsesor of 2ClickUpdate, that I've created several years ago https://launchpad.net/2clickupdate
+
+	Note: please use only ucaresystem-core. uCareSystem is the GUI version and currently is not maintained and
+	it is not up to date with the features that ucaresystem-core has.
+
 
 uCaresytems system has the following features:
 
@@ -19,8 +23,8 @@ _______________________________________________________
             uCareSystem Core v4.0                      
                  ~  ''  ~                              
                                                        
- Welcome to all-in-one System Update and maintenance   
- assistant app.                                        
+Welcome to the all-in-one System Update and maintenance   
+assistant app.                                        
                                                        
                                                        
  This simple script will automatically         	     
@@ -30,7 +34,7 @@ _______________________________________________________
  - remove any old kernels that came from updates,
  - remove obsolete packages and their configuration files to free up disk space
 
-without any need of user interference                                           
+ without any need of user interference                                           
                    				                     
 Also, if you started with a parameter (-u, -d) it will
 check for the next available release and start the    
