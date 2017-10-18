@@ -155,8 +155,8 @@ echo ""
 read -rp "Do you want to UPGRADE to a new version (y/N); " choice
 case "$choice" in
   y|Y ) sleep 1 && echo " Initiating UPGRADE..." && do-release-upgrade -d;;
-  n|N ) sleep 1 && echo " Aborting upgrade";;
-    * ) echo "Non readable caracter pressed.. aborting";;
+  n|N ) sleep 1 && echo " skipping upgrade";;
+    * ) echo "Invalid option pressed.. skipping";;
 esac
 sleep 2
 echo
