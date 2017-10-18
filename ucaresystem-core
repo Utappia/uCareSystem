@@ -50,7 +50,7 @@ function WELCOME_SCREEN {
 	echo "                   				                     "
 	echo " Also, if you started with a parameter (-u, -d) it will"
 	echo " check for the next available release and start the    "
-	echo " upgrade. For more start uCareSystem with '-h'         "
+	echo " upgrade. For more start ucaresystem-core with '-h'    "
 	echo "_______________________________________________________"
 	echo
 	echo " uCareSystem Core will start in 5 seconds... "
