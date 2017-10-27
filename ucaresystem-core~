@@ -167,7 +167,7 @@ deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restrict
 EOT
 
 sudo apt-get install update-manager-core
-sudo apt-get -y dist-upgrade
+sudo apt-get dist-upgrade
 sudo do-release-upgrade
 }
 
