@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salihemin-(at)-about.me
-# Date   : 19-10-2017 (first release 19-02-2009)
-# Version: 4.0
+# Date   : 27-10-2017 (first release 19-02-2009)
+# Version: 4.1
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -20,6 +20,10 @@ set -e
 #
 ## Script starts here
 
+#Variables
+DIST_CODENAME=$(lsb_release --codename | cut -f2)
+DATE=(date +%F_%T)
+UCARE_VERSION=(4.1)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -34,8 +38,8 @@ function WELCOME_SCREEN {
 	clear
 	echo "_______________________________________________________"
 	echo "                                                       "
-	echo "            uCareSystem Core v4.0                      "
-	echo "                 ~  ''  ~                              "
+	echo "            uCareSystem Core $UCARE_VERSION            "
+	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
 	echo "                                                       "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
@@ -154,6 +158,21 @@ function MAINTENACE {
 	echo
 }
 
+function UPGRADE_EOL_TO_NEXT {
+
+cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
+cat <<EOT > /etc/apt/sources.list
+deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME main restricted universe multiverse
+deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-updates main restricted universe multiverse
+deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restricted universe multiverse
+
+EOT
+
+sudo apt-get install update-manager-core
+sudo apt-get -y dist-upgrade
+sudo do-release-upgrade
+}
+
 function UPGRADE_TO_NEXT_RELEASE {
 	sleep 1
 	echo "##########################################"
@@ -183,6 +202,10 @@ function UPGRADE_TO_DEVEL_RELEASE {
 function SHOW_HELP {
 	cat << EOF
 	
+				uCareSystem Core v4.1
+					~4.1~
+		     All-in-one system update and maintenance app
+
 	Usage: ucaresystem-core [-hud] 
 		 
 		 -h          display this help and exit
@@ -193,6 +216,14 @@ function SHOW_HELP {
 		             the next LTS.
 		             
 		 -d          Upgrade to the next development release
+
+		 -eol        CAUTION: Do not use this if your Ubuntu has not
+			     reached its End of life support. 
+				Check https://wiki.ubuntu.com/Releases
+			     This option is for Ubuntu releases that have 
+			     reached their EOL and the user wants to upgrade
+			     it to a supported version.
+
 EOF
 }
 
@@ -216,6 +247,9 @@ while [ "$1" != "" ]; do
                              exit
                                 ;;
         -h | --help )        SHOW_HELP
+                             exit
+                                ;;
+        -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
                              exit
                                 ;;
         * )                  SHOW_HELP
