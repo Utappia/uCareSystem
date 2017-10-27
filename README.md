@@ -1,29 +1,29 @@
 # uCareSystem
 
-Name   : uCareSystem
-License: GPL3 (http://www.gnu.org/licenses/gpl.html)
-Author : Salih Emin
-Email  : salihemin (at) about.me 
-Date   : 27-10-2017
-Version: 4.1
-System : Ubuntu or Debian derivatives (Not tested every flavor)
-WebSite: http://utappia.org
+	Name   : uCareSystem
+	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
+	Author : Salih Emin
+	Email  : salihemin (at) about.me 
+	Date   : 27-10-2017
+	Version: 4.1
+	System : Ubuntu or Debian derivatives (Not tested every flavor)
+	WebSite: http://utappia.org
 
 ## Description:
 
 	Note: please use only ucaresystem-core. uCareSystem is the GUI version and currently it is not maintained and
 	not up to date with the features that are integrated in ucaresystem-core.
 
-uCaresytems system has the following features:         
-This simple app will automatically         	     
- 
-- refresh your packagelist, 
-- download and install updates (if there are any),
-- remove any old kernels that came from updates,
-- remove obsolete packages and their configuration files to free up disk space
+In summary, ucaresystem Core automatically performs the following maintenance processes without any need of user interference :
 
-without any need of user interference                                           
-
+- Updates the list of available packages
+- Downloads and installs the available updates
+- Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel.
+- Cleans the cache of the downloaded packages
+- Removes obsolete packages
+- Removes orphan packets
+- Deletes package configuration files from packages that have been uninstalled by you.
+                                          
 ## Usage
 
 Default system updates and maintenace for Ubuntu / debian / Linux Mint (and derivatives) :
