@@ -202,12 +202,12 @@ function UPGRADE_TO_DEVEL_RELEASE {
 function SHOW_HELP {
 	cat << EOF
 	
-				uCareSystem Core v4.1
-					~4.1~
+				uCareSystem Core
+				    ~ $UCARE_VERSION ~
 		     All-in-one system update and maintenance app
 
-	Usage: ucaresystem-core [-hud] 
-		 
+	Usage: sudo ucaresystem-core <parameter> 
+	Parameter:	 
 		 -h          display this help and exit
 		 
 		 -u          Upgrade to the next release. Note: If you use a
@@ -218,11 +218,11 @@ function SHOW_HELP {
 		 -d          Upgrade to the next development release
 
 		 -eol        CAUTION: Do not use this if your Ubuntu has not
-			     reached its End of life support. 
-				Check https://wiki.ubuntu.com/Releases
-			     This option is for Ubuntu releases that have 
-			     reached their EOL and the user wants to upgrade
-			     it to a supported version.
+                     reached its End of life support. 
+                          Check https://wiki.ubuntu.com/Releases
+                     This option is for Ubuntu releases that have 
+                     reached their EOL and the user wants to upgrade
+                     it to the next supported version.
 
 EOF
 }
