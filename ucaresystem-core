@@ -22,6 +22,8 @@ set -e
 
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
+DATE=(date +%F_%T)
+UCARE_VERSION=(4.1)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -36,8 +38,8 @@ function WELCOME_SCREEN {
 	clear
 	echo "_______________________________________________________"
 	echo "                                                       "
-	echo "            uCareSystem Core v4.1                      "
-	echo "                 ~  ''  ~                              "
+	echo "            uCareSystem Core $UCARE_VERSION            "
+	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
 	echo "                                                       "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
@@ -158,7 +160,7 @@ function MAINTENACE {
 
 function UPGRADE_EOL_TO_NEXT {
 
-cp /etc/apt/sources.list /etc/apt/sources.eol
+cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
 cat <<EOT > /etc/apt/sources.list
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-updates main restricted universe multiverse
@@ -200,7 +202,9 @@ function UPGRADE_TO_DEVEL_RELEASE {
 function SHOW_HELP {
 	cat << EOF
 	
-	uCareSystem Core: All-in-one system update and maintenance app
+				uCareSystem Core v4.1
+					~4.1~
+		     All-in-one system update and maintenance app
 
 	Usage: ucaresystem-core [-hud] 
 		 
