@@ -217,12 +217,12 @@ function SHOW_HELP {
 		             
 		 -d          Upgrade to the next development release
 
-		 -eol        CAUTION: Do not use this if your Ubuntu has not
-                     reached its End of life support. 
-                          Check https://wiki.ubuntu.com/Releases
-                     This option is for Ubuntu releases that have 
-                     reached their EOL and the user wants to upgrade
-                     it to the next supported version.
+		 -eol        CAUTION: Do not use this if your Ubuntu has not 
+			     reached its End of life support.
+				    Check https://wiki.ubuntu.com/Releases
+			     This option is for Ubuntu releases that have
+			     reached their EOL and the user wants to upgrade
+			     it to the next supported version.
 
 EOF
 }
