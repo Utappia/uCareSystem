@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salihemin-(at)-about.me
-# Date   : 27-10-2017 (first release 19-02-2009)
-# Version: 4.1
+# Date   : 2-11-2017 (first release 19-02-2009)
+# Version: 4.2
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.1)
+UCARE_VERSION=(4.2)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -79,7 +79,7 @@ function MAINTENACE {
 	sleep 1
 
 	## Updates packages and libraries
-	sudo apt -y full-upgrade;
+	sudo apt full-upgrade -y;
 	echo
 	echo "###############################################"
 	echo "Finished updating packages and system libraries"
@@ -88,7 +88,7 @@ function MAINTENACE {
 	echo
 
 	## Removes unneeded packages
-	sudo apt-get -y --purge autoremove;
+	sudo apt autoremove --purge -y;
 	echo
 	echo "###################################"
 	echo "Finished removing unneeded packages"
