@@ -42,7 +42,7 @@ If your Ubuntu (and official flavors) has reached the EOL support you can upgrad
 	
 	sudo ucaresystem-core -eol
 
-For ifnormation about the availabe parameters start ucaresystem-core with '-h' parameter :
+For information about the availabe parameters, start ucaresystem-core with '-h' parameter :
 
 	sudo ucaresystem-core -h         
 
