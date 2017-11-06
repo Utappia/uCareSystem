@@ -3,8 +3,6 @@
 <p align="center">
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
     <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
-    <a href="https://github.com/Utappia/uCareSystem/network" target="_blank"><img src="https://img.shields.io/github/forks/Utappia/uCareSystem.svg" alt="forks"></a>
-    <a href="https://github.com/Utappia/uCareSystem/issues?q=is%3Aopen" target="_blank"><img src="https://img.shields.io/github/issues/Utappia/uCareSystem.svg" alt="open issues"></a>
     <a href="https://github.com/Utappia/uCareSystem/commits/master" target="_blank"><img src="https://img.shields.io/maintenance/yes/2017.svg" alt="maintained"></a></p>
 
 <p align="center">
