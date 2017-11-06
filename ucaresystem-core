@@ -61,7 +61,7 @@ function WELCOME_SCREEN {
 	echo
 	echo " uCareSystem Core will start in 5 seconds... "
 
-	sleep 110
+	sleep 6
 }
 
 function MAINTENACE {
