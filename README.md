@@ -4,14 +4,14 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salihemin (at) about.me 
-	Date   : 2-11-2017
-	Version: 4.2
+	Date   : 6-11-2017
+	Version: 4.2.1
 	System : Ubuntu or Debian derivatives (Not tested every flavor)
 	WebSite: http://utappia.org
 
 ## Description:
 
-	Note: please use only ucaresystem-core. uCareSystem is the GUI version and currently it is not maintained and
+	Note: please use only **ucaresystem-core**. uCareSystem is the GUI version and currently it is not maintained and
 	not up to date with the features that are integrated in ucaresystem-core.
 
 In summary, ucaresystem Core automatically performs the following maintenance processes without any need of user interference :
@@ -42,7 +42,7 @@ If your Ubuntu (and official flavors) has reached the EOL support you can upgrad
 	
 	sudo ucaresystem-core -eol
 
-For usage start ucaresystem-core with '-h' parameter :
+For ifnormation about the availabe parameters start ucaresystem-core with '-h' parameter :
 
 	sudo ucaresystem-core -h         
 
