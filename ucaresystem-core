@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salihemin-(at)-about.me
-# Date   : 2-11-2017 (first release 19-02-2009)
-# Version: 4.2
+# Date   : 6-11-2017 (first release 19-02-2009)
+# Version: 4.2.1
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.2)
+UCARE_VERSION=(4.2.1)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -50,16 +50,18 @@ function WELCOME_SCREEN {
 	echo " install updates (if there are any), remove any old    "
 	echo " kernels, obsolete packages and configuration files    "
 	echo " to free up disk space, without any need of user       "
-	echo " interference                                          " 
+	echo " interference                                         " 
 	echo "                   				                     "
-	echo " Also, if you started with a parameter (-u, -d) it will"
-	echo " check for the next available release and start the    "
-	echo " upgrade. For more start ucaresystem-core with '-h'    "
+	echo " If you’ve found it useful and saved you time and you  "
+	echo " think it is worth of your support, you can make a     "
+	echo " donation via PayPal by clicking on the following:     "
+	echo "                                                       "
+	echo "           https://www.paypal.me/cerebrux              "
 	echo "_______________________________________________________"
 	echo
 	echo " uCareSystem Core will start in 5 seconds... "
 
-	sleep 6
+	sleep 110
 }
 
 function MAINTENACE {
@@ -207,6 +209,21 @@ function SHOW_HELP {
 		     All-in-one system update and maintenance app
 
 	Usage: sudo ucaresystem-core <parameter> 
+	
+	If no parameter is specified, it will just do the regular
+	maintenance:
+	
+	 * Updates the list of available packages
+	 * Downloads and installs the available updates
+	 * Checks if there are older Linux kernels on the system and removes
+	   them. However it keeps the current and one previous version of 
+	   the kernel.
+	 * Cleans the cache of the downloaded packages
+	 * Removes obsolete packages
+	 * Removes orphan packets
+	 * Deletes package configuration files from packages that have been
+	   uninstalled by you.
+	
 	Parameter:	 
 		 -h          display this help and exit
 		 
@@ -240,10 +257,10 @@ function GOODBYE {
 # The main process starts
 while [ "$1" != "" ]; do
     case $1 in
-        -u | --upgrade )     WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_NEXT_RELEASE && GOODBYE
+        -u | --upgrade )     WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_NEXT_RELEASE
                              exit
                                 ;;
-        -d | --development ) WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_DEVEL_RELEASE && GOODBYE
+        -d | --development ) WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_DEVEL_RELEASE
                              exit
                                 ;;
         -h | --help )        SHOW_HELP
