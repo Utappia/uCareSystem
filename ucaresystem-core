@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salihemin-(at)-about.me
-# Date   : 6-11-2017 (first release 19-02-2009)
-# Version: 4.2.1
+# Date   : 10-11-2017 (first release 19-02-2009)
+# Version: 4.2.3
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.2.1)
+UCARE_VERSION=(4.2.3)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then

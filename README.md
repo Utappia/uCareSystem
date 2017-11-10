@@ -17,7 +17,7 @@
 	Author : Salih Emin
 	Email  : salihemin (at) about.me 
 	Date   : 10-11-2017
-	Version: 4.2.2
+	Version: 4.2.3
 	System : Ubuntu or Debian derivatives (Not tested every flavor)
 	WebSite: http://utappia.org
 
