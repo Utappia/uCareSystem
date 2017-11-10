@@ -1,0 +1,6 @@
+ucaresystem-core (4.2.2) stable; urgency=medium
+
+  * Refactoring versioning for Debian based distributions.
+  * Adding repository installer postinstall
+
+ -- Salih Emin <mail>  Wed, 08 Nov 2017 14:45:44 +0200

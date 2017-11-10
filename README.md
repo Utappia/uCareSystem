@@ -16,8 +16,8 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salihemin (at) about.me 
-	Date   : 6-11-2017
-	Version: 4.2.1
+	Date   : 10-11-2017
+	Version: 4.2.2
 	System : Ubuntu or Debian derivatives (Not tested every flavor)
 	WebSite: http://utappia.org
 
