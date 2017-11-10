@@ -24,12 +24,17 @@ deb http://ppa.launchpad.net/utappia/stable/ubuntu xenial main
 deb-src http://ppa.launchpad.net/utappia/stable/ubuntu xenial main 
 
 EOT
+		echo ""
+		echo "Refreshing package list..."
+		echo ""
+		apt update
 	else
+		echo ""
 		echo "Adding Utappia repository"
 		add-apt-repository -y ppa:utappia/stable
+		echo ""
+		echo "Refreshing package list..."
+		echo ""
+		apt update
 	fi
 fi
-echo ""
-echo ""
-echo "Refreshing package list..."
-apt update
