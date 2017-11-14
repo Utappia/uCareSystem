@@ -1,9 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Check & Install Updates
+Name=uCareSystem Core
 Comment=All in one system maintenance
-Icon=system-software-update
+Icon=ucaresystemicon
 Exec=ucaresystemcore
 Terminal=false
 Categories=PackageManager;
-Name[el_GR]=ucaresystemcore.desktop
