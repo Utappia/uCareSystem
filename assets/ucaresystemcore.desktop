@@ -3,6 +3,6 @@ Type=Application
 Name=uCareSystem Core
 Comment=All in one system maintenance
 Icon=ucaresystemicon
-Exec=ucaresystemcore
+Exec=launch-ucaresystemcore
 Terminal=false
 Categories=PackageManager;

@@ -1,6 +1,5 @@
-ucaresystem-core (4.2.2) stable; urgency=medium
+ucaresystem-core (4.3.0) trusty; urgency=high
 
-  * Refactoring versioning for Debian based distributions.
-  * Adding repository installer postinstall
-
- -- Salih Emin <mail>  Wed, 08 Nov 2017 14:45:44 +0200
+  * Added desktop icon and entry. User can launch ucaresystem form application menu
+  
+ -- Salih Emin <salih-emin@ubuntu.com>  Wed, 15 Nov 2017 14:45:44 +0200
