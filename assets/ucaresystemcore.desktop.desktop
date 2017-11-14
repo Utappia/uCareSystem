@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Check & Install Updates
+Comment=All in one system maintenance
+Icon=system-software-update
+Exec=ucaresystemcore
+Terminal=false
+Categories=PackageManager;
