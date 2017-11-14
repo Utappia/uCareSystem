@@ -1,4 +1,4 @@
 #!/bin/sh
 
 
-gksu -m 'Authentication Required' "uxterm -title 'Software Updates' -hold -e ucaresystem-core"
+gksu -m 'Authentication Required' "uxterm -title 'uCareSystem Core' -hold -e ucaresystem-core"

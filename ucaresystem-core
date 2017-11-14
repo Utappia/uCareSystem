@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salihemin-(at)-about.me
-# Date   : 10-11-2017 (first release 19-02-2009)
-# Version: 4.2.3
+# Date   : 15-11-2017 (first release 19-02-2009)
+# Version: 4.3.0
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install
