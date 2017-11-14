@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.2.3)
+UCARE_VERSION=(4.3.0)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -90,8 +90,8 @@ function MAINTENACE {
 	echo
 
 	## Removes unneeded packages
-	sudo apt autoremove --purge -y;
-	echo
+	sudo apt autoremove -y; # Debian Jessie shows no love for --purge. So 
+	echo					# for the time being I am removing it
 	echo "###################################"
 	echo "Finished removing unneeded packages"
 	echo "###################################"

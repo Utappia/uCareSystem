@@ -15,7 +15,7 @@
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
-	Email  : salihemin (at) about.me 
+	Email  : salihemin (at) about.me
 	Date   : 15-11-2017
 	Version: 4.3.0
 	System : Ubuntu or Debian derivatives (Not tested every flavor)
