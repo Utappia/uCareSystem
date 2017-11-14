@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.2.1)
+UCARE_VERSION=(4.2.3)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -61,7 +61,7 @@ function WELCOME_SCREEN {
 	echo
 	echo " uCareSystem Core will start in 5 seconds... "
 
-	sleep 110
+	sleep 6
 }
 
 function MAINTENACE {
