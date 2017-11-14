@@ -1,0 +1,4 @@
+ucaresystem-core usr/bin
+debian/ucaresystemcore.desktop usr/share/applications
+debian/ucaresystemcore usr/bin
+debian/ucaresystemicon.png usr/share/icons
