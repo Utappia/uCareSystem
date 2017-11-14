@@ -6,3 +6,4 @@ Icon=system-software-update
 Exec=ucaresystemcore
 Terminal=false
 Categories=PackageManager;
+Name[el_GR]=ucaresystemcore.desktop
