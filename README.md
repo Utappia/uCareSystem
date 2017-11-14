@@ -1,11 +1,23 @@
+<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/modules/ucaresystem-image-banner.png"></p>
+
+<p align="center">
+    <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
+    <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
+    <a href="https://github.com/Utappia/uCareSystem/commits/master" target="_blank"><img src="https://img.shields.io/maintenance/yes/2017.svg" alt="maintained"></a></p>
+
+<p align="center">
+    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SATQ6Y9S3UCSG" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-yellow.svg" alt="Donate to project"></a> <a href="https://www.paypal.me/adgellida" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal.me-blue.svg" alt="Donate to developer"></a></p>
+ 
+ 
+
 # uCareSystem
 
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
-	Email  : salihemin (at) about.me 
-	Date   : 6-11-2017
-	Version: 4.2.1
+	Email  : salihemin (at) about.me
+	Date   : 15-11-2017
+	Version: 4.3.0
 	System : Ubuntu or Debian derivatives (Not tested every flavor)
 	WebSite: http://utappia.org
 

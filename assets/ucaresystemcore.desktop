@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=uCareSystem Core
+Comment=All in one system maintenance
+Icon=ucaresystemicon
+Exec=ucaresystemcore
+Terminal=false
+Categories=PackageManager;
