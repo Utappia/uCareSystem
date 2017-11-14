@@ -1,0 +1,40 @@
+#!/bin/sh
+# Utappia repository installer
+# Copyright (c) 2017 Salih Emin. All rights reserved.
+# Use of this source code is governed by GPLv3 license that can be
+# found in the LICENSE file.
+set -e
+DIST_CODENAME=$(lsb_release --codename | cut -f2)
+echo "Checking if Utappia Repository exists in your system"
+sleep 2
+
+if ls /etc/apt/sources.list.d/utappia* 1> /dev/null 2>&1;
+then
+	echo "Utappia Repository exists... skiping"
+else
+	if [ "$DIST_CODENAME" = "jessie" ] || [ "$DIST_CODENAME" = "stretch" ] || [ "$DIST_CODENAME" = "buster" ] || [ "$DIST_CODENAME" = "sid" ]; 
+	then
+		echo "Adding Utappia public key"
+		apt-key adv --keyserver keyserver.ubuntu.com --recv EBC8F9FD
+		echo ""
+		echo "Adding Debian repository"
+		cat <<EOT > /etc/apt/sources.list.d/utappia.list
+# Debian compatible Utappia Repository
+deb http://ppa.launchpad.net/utappia/stable/ubuntu xenial main 
+deb-src http://ppa.launchpad.net/utappia/stable/ubuntu xenial main 
+
+EOT
+		echo ""
+		echo "Refreshing package list..."
+		echo ""
+		apt update
+	else
+		echo ""
+		echo "Adding Utappia repository"
+		add-apt-repository -y ppa:utappia/stable
+		echo ""
+		echo "Refreshing package list..."
+		echo ""
+		apt update
+	fi
+fi
