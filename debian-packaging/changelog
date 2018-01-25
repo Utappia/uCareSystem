@@ -1,5 +1,5 @@
-ucaresystem-core (4.3.0) trusty; urgency=high
+ucaresystem-core (4.4.0) trusty; urgency=high
 
-  * Added desktop icon and entry. User can launch ucaresystem form application menu
+  * Added pkexec, check if reboot is required, fixed Debian Jessie issue
   
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 15 Nov 2017 14:45:44 +0200
+ -- Salih Emin <salih-emin@ubuntu.com>  Wed, 25 Jan 2018 14:45:44 +0200

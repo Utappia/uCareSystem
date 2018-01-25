@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/pkexec /bin/bash
 set -e
 #
 #
@@ -9,9 +9,9 @@ set -e
 # Licence: GPL3 (http://www.gnu.org/licenses/gpl.html)
 # Author : Salih Emin
 # WebSite: http://utappia.org
-# Email  : salihemin-(at)-about.me
-# Date   : 15-11-2017 (first release 19-02-2009)
-# Version: 4.3.0
+# Email  : salih-(at)-utappia.org
+# Date   : 25-01-2018 (first release 19-02-2009)
+# Version: 4.4.0
 # System : Debian Linux and Ubuntu Linux
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.3.0)
+UCARE_VERSION=(4.4.0)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -90,8 +90,8 @@ function MAINTENACE {
 	echo
 
 	## Removes unneeded packages
-	sudo apt autoremove -y; # Debian Jessie shows no love for --purge. So 
-	echo					# for the time being I am removing it
+	sudo apt-get -y --purge autoremove; # Debian Jessie uses old apt. So
+	echo					# for the time being I use old implementation
 	echo "###################################"
 	echo "Finished removing unneeded packages"
 	echo "###################################"
@@ -158,6 +158,26 @@ function MAINTENACE {
 	echo " Cleaned downloaded temporary packages"
 	echo "######################################"
 	echo
+	sleep 1
+
+	echo
+	echo "#########################################"
+	echo " Checking to see if a reboot is required "
+	echo "#########################################"
+	echo
+	## Check to see if a reboot is required
+	if [ -f /var/run/reboot-required ]; then
+ 		echo
+  		echo "* * * * * * * * * * * * * * * * * *"
+ 		echo "*                                 *"
+ 		echo "* Consider rebooting your system  *"
+  		echo "* to finish applying updates      *"
+  		echo "*                                 *"
+  		echo "* * * * * * * * * * * * * * * * * *"
+  		echo
+	fi
+
+
 }
 
 function UPGRADE_EOL_TO_NEXT {
