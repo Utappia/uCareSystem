@@ -158,6 +158,26 @@ function MAINTENACE {
 	echo " Cleaned downloaded temporary packages"
 	echo "######################################"
 	echo
+	sleep 1
+
+	echo
+	echo "#########################################"
+	echo " Checking to see if a reboot is required "
+	echo "#########################################"
+	echo
+	## Check to see if a reboot is required
+	if [ -f /var/run/reboot-required ]; then
+ 		echo
+  		echo "* * * * * * * * * * * * * * * * * *"
+ 		echo "*                                 *"
+ 		echo "* Consider rebooting your system  *"
+  		echo "* to finish applying updates      *"
+  		echo "*                                 *"
+  		echo "* * * * * * * * * * * * * * * * * *"
+  		echo
+	fi
+
+
 }
 
 function UPGRADE_EOL_TO_NEXT {
