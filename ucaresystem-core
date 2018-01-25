@@ -90,8 +90,8 @@ function MAINTENACE {
 	echo
 
 	## Removes unneeded packages
-	sudo apt autoremove -y; # Debian Jessie shows no love for --purge. So 
-	echo					# for the time being I am removing it
+	sudo apt-get -y --purge autoremove; # Debian Jessie uses old apt. So
+	echo					# for the time being I use old implementation
 	echo "###################################"
 	echo "Finished removing unneeded packages"
 	echo "###################################"
