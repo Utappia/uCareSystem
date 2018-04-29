@@ -5,7 +5,7 @@
     <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
 
 <p align="center">
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SATQ6Y9S3UCSG" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-yellow.svg" alt="Donate to project"></a> <a href="https://www.paypal.me/adgellida" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal.me-blue.svg" alt="Donate to developer"></a></p>
+    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SATQ6Y9S3UCSG" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-yellow.svg" alt="Donate to project"></a> <a href="https://www.paypal.me/cerebrux" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal.me-blue.svg" alt="Donate to developer"></a></p>
  
  
 
