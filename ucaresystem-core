@@ -50,7 +50,7 @@ function WELCOME_SCREEN {
 	echo " install updates (if there are any), remove any old    "
 	echo " kernels, obsolete packages and configuration files    "
 	echo " to free up disk space, without any need of user       "
-	echo " interference                                         " 
+	echo " interference                                          "
 	echo "                   				                     "
 	echo " If you’ve found it useful and saved you time and you  "
 	echo " think it is worth of your support, you can make a     "
@@ -271,6 +271,26 @@ function GOODBYE {
 	echo "#########################"
 	echo "          Done"
 	echo "#########################"
+}
+
+function SHUT_DOWN {
+	sleep 1
+	echo
+	echo
+	echo "#########################"
+	echo "      Shutting down"
+	echo "#########################"
+	sudo shutdown now
+}
+
+function RE_BOOT {
+	sleep 1
+	echo
+	echo
+	echo "#########################"
+	echo "        Rebooting"
+	echo "#########################"
+	sudo reboot
 	## End of script
 }
 
@@ -289,6 +309,12 @@ while [ "$1" != "" ]; do
         -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
                              exit
                                 ;;
+		-s | --shutdown )	 WELCOME_SCREEN && MAINTENACE && GOODBYE && SHUT_DOWN
+							 exit
+							    ;;
+		-r | --reboot )		 WELCOME_SCREEN && MAINTENACE && GOODBYE && RE_BOOT
+							 exit
+							    ;;
         * )                  SHOW_HELP
                              exit 1
     esac
