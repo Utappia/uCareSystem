@@ -35,7 +35,6 @@ if [[ $EUID -ne 0 ]] ; then
     exit 1
 fi
 function WELCOME_SCREEN {
-	clear
 	echo "_______________________________________________________"
 	echo "                                                       "
 	echo "            uCareSystem Core $UCARE_VERSION            "
