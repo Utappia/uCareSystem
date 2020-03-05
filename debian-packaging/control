@@ -9,7 +9,7 @@ Vcs-Browser: https://github.com/Utappia/uCareSystem.git
 
 Package: ucaresystem-core
 Architecture: all
-Depends: apt, deborphan, lsb-release, xterm
+Depends: apt, deborphan, lsb-release, xterm, gksu, software-properties-common, policykit-1, dirmngr, gnupg2
 Description: All-in-one System Update and maintenance app
  This simple script will automatically refresh your packagelist, 
  download and install software updates (if there are any), remove old

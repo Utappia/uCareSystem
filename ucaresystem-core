@@ -10,9 +10,9 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 25-01-2018 (first release 19-02-2009)
-# Version: 4.4.0
-# System : Debian Linux and Ubuntu Linux
+# Date   : 05-03-2020 (first release 19-02-2009)
+# Version: 20.03.0
+# System : Ubuntu Linux and derivatives. Partial support for Debian
 # Description:
 #This simple script will automatically refresh your package list, download and install
 #updates (if there are any),
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(4.4.0)
+UCARE_VERSION=(20.03.0)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -35,7 +35,6 @@ if [[ $EUID -ne 0 ]] ; then
     exit 1
 fi
 function WELCOME_SCREEN {
-	clear
 	echo "_______________________________________________________"
 	echo "                                                       "
 	echo "            uCareSystem Core $UCARE_VERSION            "
@@ -50,7 +49,7 @@ function WELCOME_SCREEN {
 	echo " install updates (if there are any), remove any old    "
 	echo " kernels, obsolete packages and configuration files    "
 	echo " to free up disk space, without any need of user       "
-	echo " interference                                         " 
+	echo " interference                                          "
 	echo "                   				                     "
 	echo " If you’ve found it useful and saved you time and you  "
 	echo " think it is worth of your support, you can make a     "
@@ -260,6 +259,10 @@ function SHOW_HELP {
 			     This option is for Ubuntu releases that have
 			     reached their EOL and the user wants to upgrade
 			     it to the next supported version.
+		 
+		 -r          After completing all the tasks, reboot the system
+		 
+		 -s	         After completing all the tasks, shutdown the system
 
 EOF
 }
@@ -269,8 +272,28 @@ function GOODBYE {
 	echo
 	echo
 	echo "#########################"
-	echo "          Done"
+	echo "     All Done... GOODBYE"
 	echo "#########################"
+}
+
+function SHUT_DOWN {
+	sleep 1
+	echo
+	echo
+	echo "#########################"
+	echo "      Shutting down"
+	echo "#########################"
+	sudo shutdown now
+}
+
+function RE_BOOT {
+	sleep 1
+	echo
+	echo
+	echo "#########################"
+	echo "        Rebooting"
+	echo "#########################"
+	sudo reboot
 	## End of script
 }
 
@@ -289,6 +312,12 @@ while [ "$1" != "" ]; do
         -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
                              exit
                                 ;;
+	-s | --shutdown )	 WELCOME_SCREEN && MAINTENACE && GOODBYE && SHUT_DOWN
+							 exit
+							    ;;
+	-r | --reboot )		 WELCOME_SCREEN && MAINTENACE && GOODBYE && RE_BOOT
+							 exit
+							    ;;
         * )                  SHOW_HELP
                              exit 1
     esac

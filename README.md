@@ -3,9 +3,8 @@
 <p align="center">
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
     <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
-
 <p align="center">
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SATQ6Y9S3UCSG" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-yellow.svg" alt="Donate to project"></a> <a href="https://www.paypal.me/cerebrux" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal.me-blue.svg" alt="Donate to developer"></a></p>
+    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SATQ6Y9S3UCSG" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-yellow.svg" alt="Donate to project"></a>
  
  
 
@@ -14,16 +13,16 @@
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
-	Email  : salihemin (at) about.me
-	Date   : 25-01-2018
-	Version: 4.4.0
-	System : Ubuntu or Debian derivatives (Not tested every flavor)
+	Email  : salih-(a)-utappia.org
+	Date   : 05-03-2020 (first release 19-02-2009)
+	Version: 20.03.0
+	System : Ubuntu Linux and derivatives. Partial support for Debian (Not tested every flavor)
 	WebSite: http://utappia.org
 
 ## Description:
 
-	Note: please use only **ucaresystem-core**. uCareSystem is the GUI version and currently it is not maintained and
-	not up to date with the features that are integrated in ucaresystem-core.
+	_**Note**: please use only **ucaresystem-core**. uCareSystem is the GUI version and currently it is not maintained and
+	not up to date with the features that are integrated in ucaresystem-core._
 
 In summary, ucaresystem Core automatically performs the following maintenance processes without any need of user interference :
 
@@ -37,7 +36,9 @@ In summary, ucaresystem Core automatically performs the following maintenance pr
                                           
 ## Usage
 
-Default system updates and maintenace for Ubuntu / debian / Linux Mint (and derivatives) :
+uCareSystem-core creates an launcher icon in your Applications menu. When you click it, it performs the default maintenance by automatically launching a terminal. 
+
+Alternativelly, you can invoke it throu terminal with variours parameters/ flags. The default system updates and maintenace for Ubuntu / debian / Linux Mint (and derivatives) :
 
 	sudo ucaresystem-core
 
@@ -53,7 +54,7 @@ If your Ubuntu (and official flavors) has reached the EOL support you can upgrad
 	
 	sudo ucaresystem-core -eol
 
-For information about the availabe parameters, start ucaresystem-core with '-h' parameter :
+For information about all the availabe parameters / flags, start ucaresystem-core with '-h' parameter :
 
 	sudo ucaresystem-core -h
 
