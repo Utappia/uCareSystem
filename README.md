@@ -13,16 +13,16 @@
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
-	Email  : salihemin (at) about.me
-	Date   : 25-01-2018
-	Version: 4.4.0
-	System : Ubuntu or Debian derivatives (Not tested every flavor)
+	Email  : salih-(a)-utappia.org
+	Date   : 05-03-2020 (first release 19-02-2009)
+	Version: 20.03.0
+	System : Ubuntu Linux and derivatives. Partial support for Debian (Not tested every flavor)
 	WebSite: http://utappia.org
 
 ## Description:
 
-	Note: please use only **ucaresystem-core**. uCareSystem is the GUI version and currently it is not maintained and
-	not up to date with the features that are integrated in ucaresystem-core.
+	_**Note**: please use only **ucaresystem-core**. uCareSystem is the GUI version and currently it is not maintained and
+	not up to date with the features that are integrated in ucaresystem-core._
 
 In summary, ucaresystem Core automatically performs the following maintenance processes without any need of user interference :
 
@@ -36,7 +36,9 @@ In summary, ucaresystem Core automatically performs the following maintenance pr
                                           
 ## Usage
 
-Default system updates and maintenace for Ubuntu / debian / Linux Mint (and derivatives) :
+uCareSystem-core creates an launcher icon in your Applications menu. When you click it, it performs the default maintenance by automatically launching a terminal. 
+
+Alternativelly, you can invoke it throu terminal with variours parameters/ flags. The default system updates and maintenace for Ubuntu / debian / Linux Mint (and derivatives) :
 
 	sudo ucaresystem-core
 
@@ -52,7 +54,7 @@ If your Ubuntu (and official flavors) has reached the EOL support you can upgrad
 	
 	sudo ucaresystem-core -eol
 
-For information about the availabe parameters, start ucaresystem-core with '-h' parameter :
+For information about all the availabe parameters / flags, start ucaresystem-core with '-h' parameter :
 
-	sudo ucaresystem-core -h         
+	sudo ucaresystem-core -h
 
