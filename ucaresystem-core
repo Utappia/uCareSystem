@@ -89,8 +89,8 @@ function MAINTENACE {
 	echo
 
 	## Removes unneeded packages
-	sudo apt-get -y --purge autoremove; # Debian Jessie uses old apt. So
-	echo					# for the time being I use old implementation
+	sudo sudo apt autoremove -y --purge;
+	echo					
 	echo "###################################"
 	echo "Finished removing unneeded packages"
 	echo "###################################"
@@ -141,7 +141,7 @@ function MAINTENACE {
 	sleep 1
 	echo
 	## Removes unused config files
-	sudo deborphan -n --find-config | xargs sudo apt-get -y --purge autoremove;
+	sudo deborphan -n --find-config | xargs sudo apt autoremove -y --purge;
 	echo
 	echo "#####################################"
 	echo "Finished removing unused config files"
