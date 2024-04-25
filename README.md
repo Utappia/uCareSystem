@@ -14,7 +14,7 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
-	Date   : 25-04-2020 (first release 19-02-2009)
+	Date   : 25-04-2024 (first release 19-02-2009)
 	Version: 24.04.0
 	System : Ubuntu Linux and derivatives. Partial support for Debian (Not tested every flavor)
 	WebSite: http://utappia.org
@@ -24,10 +24,12 @@
 	_**Note**: please use only **ucaresystem-core**. uCareSystem is the GUI version and currently it is not maintained and
 	not up to date with the features that are integrated in ucaresystem-core._
 
-In summary, ucaresystem Core automatically performs the following maintenance processes without any need of user interference :
+In summary, uCareSystem automatically performs the following maintenance processes without the need for user interference. :
 
 - Updates the list of available packages
 - Downloads and installs the available updates
+- Downloads and installs Snap Package updates
+- Removes Old Snap revisions
 - Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel.
 - Cleans the cache of the downloaded packages
 - Removes obsolete packages
@@ -36,9 +38,9 @@ In summary, ucaresystem Core automatically performs the following maintenance pr
                                           
 ## Usage
 
-uCareSystem-core creates an launcher icon in your Applications menu. When you click it, it performs the default maintenance by automatically launching a terminal. 
+uCareSystem creates an launcher icon in your Applications menu. When you click it, it performs the default maintenance by automatically launching a terminal. 
 
-Alternativelly, you can invoke it throu terminal with variours parameters/ flags. The default system updates and maintenace for Ubuntu / debian / Linux Mint (and derivatives) :
+Alternatively, you can invoke it through terminal with various parameters/ flags. The default system updates and maintenace for Ubuntu / Debian / Linux Mint (and derivatives) :
 
 	sudo ucaresystem-core
 
