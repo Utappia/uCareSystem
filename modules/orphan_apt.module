@@ -1,7 +1,0 @@
-#!/bin/bash
-#Removing packages and configurations which are not required by any other package upon your system
-
-orphanapt()
-        {
-         deborphan -n --find-config | xargs apt-get -y purge
-        }

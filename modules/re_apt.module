@@ -1,7 +1,0 @@
-#!/bin/bash
-#Module for Refreshing package list
-
-reapt()
-  {
-  synaptic --hide-main-window --non-interactive -o Synaptic::closeZvt=true --update-at-startup
-  }
