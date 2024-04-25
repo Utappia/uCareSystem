@@ -14,8 +14,8 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
-	Date   : 05-03-2020 (first release 19-02-2009)
-	Version: 20.03.0
+	Date   : 25-04-2020 (first release 19-02-2009)
+	Version: 24.04.0
 	System : Ubuntu Linux and derivatives. Partial support for Debian (Not tested every flavor)
 	WebSite: http://utappia.org
 
