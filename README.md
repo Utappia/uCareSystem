@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/modules/ucaresystem-image-banner.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/assets/ucaresystem-image-banner.png"></p>
 
 <p align="center">
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
