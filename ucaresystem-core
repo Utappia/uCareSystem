@@ -181,6 +181,31 @@ function MAINTENACE {
 		echo "Snap is not available on this system. Skipping."
 		sleep 1
 	fi
+
+# Function to check if Flatpak is installed
+check_flatpak_installed() {
+    if command -v flatpak &>/dev/null; then
+        echo "Flatpak is installed."
+        return 0
+    else
+        echo "Flatpak is not installed."
+        return 1
+    fi
+}
+
+# Function to update Flatpak packages
+update_flatpak_packages() {
+    if check_flatpak_installed; then
+        echo "Updating Flatpak packages..."
+        sudo flatpak update -y
+        echo "Flatpak packages updated successfully."
+    else
+        echo "Cannot update Flatpak packages because Flatpak is not installed."
+    fi
+}
+
+# Call the update_flatpak_packages function
+update_flatpak_packages
 	echo					
 	echo "####################################"
 	echo "Finished refreshing of Snap packages"
