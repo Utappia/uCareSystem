@@ -250,6 +250,20 @@ update_flatpak_packages
 
 	sudo apt $APT_OPTS remove -y --purge $PURGE;
 
+# Function to remove a specific Linux image version
+function REMOVE_KERNEL {
+    local kernel_version="$1"
+    sudo apt-get remove -y --purge "linux-image-$kernel_version" "linux-headers-$kernel_version"
+}
+
+# Check if the user provided a kernel version
+if [[ "$1" == "-k" && ! -z "$2" ]]; then
+    kernel_version="$2"
+    REMOVE_KERNEL "$kernel_version"
+    echo "Removed Linux kernel version: $kernel_version"
+    exit 0
+fi
+
 	echo
 	echo "###################################"
 	echo "Finished removing old kernels"
