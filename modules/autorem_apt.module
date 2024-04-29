@@ -1,7 +1,0 @@
-#!/bin/bash
-#Now, autoremove is used to remove packages that were automatically installed to satisfy dependencies for some package and that are no more needed.
-
-autoremapt()
-       {
-        apt-get -y autoremove
-       }
