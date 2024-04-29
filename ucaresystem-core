@@ -181,22 +181,6 @@ function MAINTENACE {
 		echo "Snap is not available on this system. Skipping."
 		sleep 1
 	fi
-# Start previously stopped Snap applications
-echo "Starting previously stopped Snap applications..."
-for snapname in "${stopped_snaps[@]}"; do
-    sudo snap start "$snapname" &>/dev/null
-done
-
-# Print the names of started Snap applications
-if [ ${#stopped_snaps[@]} -gt 0 ]; then
-    echo "Started Snap applications:"
-    for snapname in "${stopped_snaps[@]}"; do
-        echo "$snapname"
-    done
-else
-    echo "No Snap applications were started."
-fi
-
 	echo					
 	echo "####################################"
 	echo "Finished refreshing of Snap packages"
