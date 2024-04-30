@@ -143,7 +143,7 @@ function MAINTENACE {
 	echo "###################################"
 	sleep 1
 	echo
-	echo "Checking for Snap updates and removing old revisions..."
+	echo "Checking for Snap and Flatpak updates and removing unused revisions..."
 	echo
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
@@ -192,11 +192,25 @@ function MAINTENACE {
 		echo "Snap is not available on this system. Skipping."
 		sleep 1
 	fi
-	
+	# Check if flatpak is installed then start maintenance
+	if command -v flatpak &>/dev/null; then
+		echo "Updating Flatpak packages..."
+		sleep 1
+		sudo flatpak update -y
+		echo
+		echo "Removing unused Flatpak packages..."
+		sudo flatpak uninstall --unused -y
+		sleep 1
+		echo    
+	else
+		echo
+		echo "Flatpak is not available on this system. Skipping."
+		sleep 1
+	fi
 	echo					
-	echo "####################################"
-	echo "Finished refreshing of Snap packages"
-	echo "####################################"
+	echo "################################################"
+	echo "Finished refreshing of Snap and Flatpak packages"
+	echo "################################################"
 	sleep 1
 	echo
 
