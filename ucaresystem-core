@@ -10,9 +10,9 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 25-04-2024 (first release 19-02-2009)
-# Version: 24.04.0
-# System : Ubuntu Linux and derivatives. Partial support for Debian
+# Date   : 01-05-2024 (first release 19-02-2009)
+# Version: 24.05.0
+# System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
 #updates (if there are any),
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.04.0)
+UCARE_VERSION=(24.05.0)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -57,7 +57,7 @@ fi
 function COUNTDOWN {
     	secs=$1
 	while [ $secs -gt 0 ]; do
-		echo -ne "uCareSystem will start in $secs seconds... \r"
+		echo -ne "$MESSAGE in $secs seconds... (to stop the countdown Ctrl+C) \r"
 		sleep 1
 		: $((secs--))
 	done
@@ -82,14 +82,18 @@ function WELCOME_SCREEN {
 	echo " to free up disk space, without any need of user       "
 	echo " interference                                          "
 	echo "                   				                     "
-	echo " If you’ve found it useful and saved you time and you  "
-	echo " think it is worth of your support, you can make a     "
-	echo " donation via PayPal by clicking on the following:     "
+	echo " If you've found it helpful and it has saved you time	 "
+	echo " please consider supporting its development with a     "
+	echo " donation via PayPal. Your contribution helps ensure   "
+	echo " the continued improvement and maintenance of this tool"
+	echo " and shows your appreciation for the time and effort   " 
+	echo " that I have put into it.                              "
 	echo "                                                       "
 	echo "           https://www.paypal.me/cerebrux              "
 	echo "_______________________________________________________"
 	echo
 	# start the countdown
+	MESSAGE="uCareSystem will start"
 	COUNTDOWN $duration
 }
 
@@ -139,7 +143,7 @@ function MAINTENACE {
 	echo "###################################"
 	sleep 1
 	echo
-	echo "Checking for Snap updates and removing old revisions..."
+	echo "Checking for Snap and Flatpak updates and removing unused revisions..."
 	echo
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
@@ -158,33 +162,55 @@ function MAINTENACE {
 			for snapname in "${stopped_snaps[@]}"; do
 				echo "$snapname"
 			done
+			# Check for updates and install them
+			echo "Checking for updates and installing them..."
+			echo
+			sudo snap refresh
+
+			# Remove old revisions of Snap packages
+			echo
+			echo "Removing old revisions of Snap packages..."
+			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
+				while read snapname revision; do
+					sudo snap remove --purge "$snapname" --revision="$revision"
+				done
+
+			echo "Old revisions of Snap packages removed successfully."
+			sleep 1
+			# Start previously stopped Snap applications
+			echo
+			echo "Starting previously stopped Snap applications..."
+			for snapname in "${stopped_snaps[@]}"; do
+				sudo snap start "$snapname" &>/dev/null
+			done
 		else
 			echo "No Snap applications were stopped."
 		fi
 
-		# Check for updates and install them
-		echo "Checking for updates and installing them..."
-		echo
-		sudo snap refresh
-
-		# Remove old revisions of Snap packages
-		echo
-		echo "Removing old revisions of Snap packages..."
-		LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
-			while read snapname revision; do
-				sudo snap remove "$snapname" --revision="$revision"
-			done
-
-		echo "Old revisions of Snap packages removed successfully."
 	else
 		echo
 		echo "Snap is not available on this system. Skipping."
 		sleep 1
 	fi
+	# Check if flatpak is installed then start maintenance
+	if command -v flatpak &>/dev/null; then
+		echo "Updating Flatpak packages..."
+		sleep 1
+		sudo flatpak update -y
+		echo
+		echo "Removing unused Flatpak packages..."
+		sudo flatpak uninstall --unused -y
+		sleep 1
+		echo    
+	else
+		echo
+		echo "Flatpak is not available on this system. Skipping."
+		sleep 1
+	fi
 	echo					
-	echo "####################################"
-	echo "Finished refreshing of Snap packages"
-	echo "####################################"
+	echo "################################################"
+	echo "Finished refreshing of Snap and Flatpak packages"
+	echo "################################################"
 	sleep 1
 	echo
 
@@ -265,6 +291,10 @@ function MAINTENACE {
   		echo "*                                 *"
   		echo "* * * * * * * * * * * * * * * * * *"
   		echo
+	else 
+		echo
+		echo "No reboot is required at this time"
+		echo
 	fi
 	sleep 1
 	echo
@@ -362,14 +392,27 @@ function SHOW_HELP {
 		 
 		 -r          After completing all the tasks, reboot the system
 		 
-		 -s	         After completing all the tasks, shutdown the system
+		 -s	       After completing all the tasks, shutdown the system
 
 EOF
 }
 
 function GOODBYE {
-	sleep 2
-	echo
+	sleep 1
+	echo "_______________________________________________________"
+	echo "                                                       "
+	echo "            uCareSystem $UCARE_VERSION                 "
+	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
+	echo "                   				                     "
+	echo " If you've found it helpful and it has saved you time	 "
+	echo " please consider supporting its development with a     "
+	echo " donation via PayPal. Your contribution helps ensure   "
+	echo " the continued improvement and maintenance of this tool"
+	echo " and shows your appreciation for the time and effort   " 
+	echo " that I have put into it.                              "
+	echo "                                                       "
+	echo "           https://www.paypal.me/cerebrux              "
+	echo "_______________________________________________________"
 	echo
 	echo "#########################"
 	echo "     All Done... GOODBYE"
@@ -380,9 +423,12 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo "#########################"
-	echo "      Shutting down"
-	echo "#########################"
+	echo "############################## "
+	echo "Shutting down as you requested"
+	echo "##############################"
+	echo
+	MESSAGE="uCareSystem will shutdown your system"
+	COUNTDOWN $duration
 	sudo shutdown now
 }
 
@@ -390,9 +436,12 @@ function RE_BOOT {
 	sleep 1
 	echo
 	echo
-	echo "#########################"
-	echo "        Rebooting"
-	echo "#########################"
+	echo "##########################"
+	echo "Rebooting as you requested"
+	echo "##########################"
+	echo
+	MESSAGE="uCareSystem will reboot your system"
+	COUNTDOWN $duration
 	sudo reboot
 	## End of script
 }
