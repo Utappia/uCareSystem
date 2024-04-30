@@ -271,9 +271,7 @@ function MAINTENACE {
   		echo
 	else 
 		echo
-		echo "######################################"
 		echo "No reboot is required at this time"
-		echo "######################################"
 		echo
 	fi
 	sleep 1
