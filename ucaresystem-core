@@ -55,7 +55,6 @@ fi
 
 # Simple countdown function
 function COUNTDOWN {
-		MESSAGE=""
     	secs=$1
 	while [ $secs -gt 0 ]; do
 		echo -ne "$MESSAGE in $secs seconds... (to cancel hit Ctrl+C) \r"
