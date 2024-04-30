@@ -1,5 +1,0 @@
-ucaresystem-core (4.4.0) trusty; urgency=high
-
-  * Added pkexec, check if reboot is required, fixed Debian Jessie issue
-  
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 25 Jan 2018 14:45:44 +0200
