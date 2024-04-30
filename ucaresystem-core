@@ -176,7 +176,7 @@ function MAINTENACE {
 		echo "Removing old revisions of Snap packages..."
 		LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
 			while read snapname revision; do
-				sudo snap remove "$snapname" --revision="$revision"
+				sudo snap remove --purge "$snapname" --revision="$revision"
 			done
 
 		echo "Old revisions of Snap packages removed successfully."
