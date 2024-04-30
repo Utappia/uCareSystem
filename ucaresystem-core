@@ -10,9 +10,9 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 25-04-2024 (first release 19-02-2009)
-# Version: 24.04.0
-# System : Ubuntu Linux and derivatives. Partial support for Debian
+# Date   : 01-05-2024 (first release 19-02-2009)
+# Version: 24.05.0
+# System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
 #updates (if there are any),
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.04.0)
+UCARE_VERSION=(24.05.0)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -55,9 +55,10 @@ fi
 
 # Simple countdown function
 function COUNTDOWN {
+		MESSAGE=""
     	secs=$1
 	while [ $secs -gt 0 ]; do
-		echo -ne "uCareSystem will start in $secs seconds... \r"
+		echo -ne "$MESSAGE in $secs seconds... (to cancel hit Ctrl+C) \r"
 		sleep 1
 		: $((secs--))
 	done
@@ -82,14 +83,18 @@ function WELCOME_SCREEN {
 	echo " to free up disk space, without any need of user       "
 	echo " interference                                          "
 	echo "                   				                     "
-	echo " If you’ve found it useful and saved you time and you  "
-	echo " think it is worth of your support, you can make a     "
-	echo " donation via PayPal by clicking on the following:     "
+	echo " If you've found it helpful and it has saved you time	 "
+	echo " please consider supporting its development with a     "
+	echo " donation via PayPal. Your contribution helps ensure   "
+	echo " the continued improvement and maintenance of this tool"
+	echo " and shows your appreciation for the time and effort   " 
+	echo " that I have put into it.                              "
 	echo "                                                       "
 	echo "           https://www.paypal.me/cerebrux              "
 	echo "_______________________________________________________"
 	echo
 	# start the countdown
+	MESSAGE="uCareSystem will start"
 	COUNTDOWN $duration
 }
 
@@ -362,14 +367,27 @@ function SHOW_HELP {
 		 
 		 -r          After completing all the tasks, reboot the system
 		 
-		 -s	         After completing all the tasks, shutdown the system
+		 -s	       After completing all the tasks, shutdown the system
 
 EOF
 }
 
 function GOODBYE {
-	sleep 2
-	echo
+	sleep 1
+	echo "_______________________________________________________"
+	echo "                                                       "
+	echo "            uCareSystem $UCARE_VERSION                 "
+	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
+	echo "                   				                     "
+	echo " If you've found it helpful and it has saved you time	 "
+	echo " please consider supporting its development with a     "
+	echo " donation via PayPal. Your contribution helps ensure   "
+	echo " the continued improvement and maintenance of this tool"
+	echo " and shows your appreciation for the time and effort   " 
+	echo " that I have put into it.                              "
+	echo "                                                       "
+	echo "           https://www.paypal.me/cerebrux              "
+	echo "_______________________________________________________"
 	echo
 	echo "#########################"
 	echo "     All Done... GOODBYE"
@@ -383,6 +401,8 @@ function SHUT_DOWN {
 	echo "#########################"
 	echo "      Shutting down"
 	echo "#########################"
+	MESSAGE="uCareSystem will shutdown your system"
+	COUNTDOWN $duration
 	sudo shutdown now
 }
 
@@ -393,6 +413,8 @@ function RE_BOOT {
 	echo "#########################"
 	echo "        Rebooting"
 	echo "#########################"
+	MESSAGE="uCareSystem will reboot your system"
+	COUNTDOWN $duration
 	sudo reboot
 	## End of script
 }
