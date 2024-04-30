@@ -57,7 +57,7 @@ fi
 function COUNTDOWN {
     	secs=$1
 	while [ $secs -gt 0 ]; do
-		echo -ne "$MESSAGE in $secs seconds... (to cancel hit Ctrl+C) \r"
+		echo -ne "$MESSAGE in $secs seconds... (to stop the countdown Ctrl+C) \r"
 		sleep 1
 		: $((secs--))
 	done
