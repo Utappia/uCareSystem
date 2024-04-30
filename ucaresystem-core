@@ -401,9 +401,10 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo "#########################"
-	echo "      Shutting down"
-	echo "#########################"
+	echo "############################## "
+	echo "Shutting down as you requested"
+	echo "##############################"
+	echo
 	MESSAGE="uCareSystem will shutdown your system"
 	COUNTDOWN $duration
 	sudo shutdown now
@@ -413,9 +414,10 @@ function RE_BOOT {
 	sleep 1
 	echo
 	echo
-	echo "#########################"
-	echo "        Rebooting"
-	echo "#########################"
+	echo "##########################"
+	echo "Rebooting as you requested"
+	echo "##########################"
+	echo
 	MESSAGE="uCareSystem will reboot your system"
 	COUNTDOWN $duration
 	sudo reboot
