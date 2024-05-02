@@ -97,7 +97,7 @@ function WELCOME_SCREEN {
 	COUNTDOWN $duration
 }
 
-function MAINTENACE {
+function MAINTENANCE {
 	echo
 	echo
 	echo "#########################"
@@ -449,10 +449,10 @@ function RE_BOOT {
 # The main process starts
 while [ "$1" != "" ]; do
     case $1 in
-        -u | --upgrade )     WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_NEXT_RELEASE
+        -u | --upgrade )     WELCOME_SCREEN && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
                              exit
                                 ;;
-        -d | --development ) WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_DEVEL_RELEASE
+        -d | --development ) WELCOME_SCREEN && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
                              exit
                                 ;;
         -h | --help )        SHOW_HELP
@@ -461,10 +461,10 @@ while [ "$1" != "" ]; do
         -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
                              exit
                                 ;;
-	-s | --shutdown )	 WELCOME_SCREEN && MAINTENACE && GOODBYE && SHUT_DOWN
+	-s | --shutdown )	 WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
 							 exit
 							    ;;
-	-r | --reboot )		 WELCOME_SCREEN && MAINTENACE && GOODBYE && RE_BOOT
+	-r | --reboot )		 WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
 							 exit
 							    ;;
         * )                  SHOW_HELP
@@ -472,4 +472,4 @@ while [ "$1" != "" ]; do
     esac
 done
 ## If no parameter is given just do the regular maintenance
-WELCOME_SCREEN && MAINTENACE && GOODBYE
+WELCOME_SCREEN && MAINTENANCE && GOODBYE
