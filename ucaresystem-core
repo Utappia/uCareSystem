@@ -404,11 +404,11 @@ function GOODBYE {
 	echo " that I have put into it.                              "
 	echo "                                                       "
 	echo "           https://www.paypal.me/cerebrux              "
+	echo "												     	 "
+	echo "												     	 "
+	echo "     		All maintenace Complete... GOODBYE			 "
 	echo "_______________________________________________________"
 	echo
-	echo "#########################"
-	echo "     All Done... GOODBYE"
-	echo "#########################"
 }
 
 function SHUT_DOWN {
