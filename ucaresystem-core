@@ -419,7 +419,7 @@ function SHUT_DOWN {
 	echo "Shutting down as you requested"
 	echo "##############################"
 	echo
-	MESSAGE="uCareSystem will shutdown your system"
+	MESSAGE="Shuting down"
 	COUNTDOWN $duration
 	sudo shutdown now
 }
@@ -432,7 +432,7 @@ function RE_BOOT {
 	echo "Rebooting as you requested"
 	echo "##########################"
 	echo
-	MESSAGE="uCareSystem will reboot your system"
+	MESSAGE="Rebooting"
 	COUNTDOWN $duration
 	sudo reboot
 	## End of script
