@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 01-05-2024 (first release 19-02-2009)
-# Version: 24.05.0
+# Date   : 08-05-2024 (first release 19-02-2009)
+# Version: 24.05.8
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -73,14 +73,6 @@ function WELCOME_SCREEN {
 	echo "                                                       "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
-	echo "                                                       "
-	echo "                                                       "
-	echo " This simple script will automatically         	     "
-	echo " refresh your packagelist, download and                "
-	echo " install updates (if there are any), remove any old    "
-	echo " kernels, obsolete packages and configuration files    "
-	echo " to free up disk space, without any need of user       "
-	echo " interference                                          "
 	echo "                   				                     "
 	echo " If you've found it helpful and it has saved you time	 "
 	echo " please consider supporting its development with a     "
@@ -97,7 +89,7 @@ function WELCOME_SCREEN {
 	COUNTDOWN $duration
 }
 
-function MAINTENACE {
+function MAINTENANCE {
 	echo
 	echo
 	echo "#########################"
@@ -412,11 +404,11 @@ function GOODBYE {
 	echo " that I have put into it.                              "
 	echo "                                                       "
 	echo "           https://www.paypal.me/cerebrux              "
+	echo "												     	 "
+	echo "												     	 "
+	echo "     		All maintenace Complete... GOODBYE			 "
 	echo "_______________________________________________________"
 	echo
-	echo "#########################"
-	echo "     All Done... GOODBYE"
-	echo "#########################"
 }
 
 function SHUT_DOWN {
@@ -427,7 +419,7 @@ function SHUT_DOWN {
 	echo "Shutting down as you requested"
 	echo "##############################"
 	echo
-	MESSAGE="uCareSystem will shutdown your system"
+	MESSAGE="Shuting down"
 	COUNTDOWN $duration
 	sudo shutdown now
 }
@@ -440,7 +432,7 @@ function RE_BOOT {
 	echo "Rebooting as you requested"
 	echo "##########################"
 	echo
-	MESSAGE="uCareSystem will reboot your system"
+	MESSAGE="Rebooting"
 	COUNTDOWN $duration
 	sudo reboot
 	## End of script
@@ -449,10 +441,10 @@ function RE_BOOT {
 # The main process starts
 while [ "$1" != "" ]; do
     case $1 in
-        -u | --upgrade )     WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_NEXT_RELEASE
+        -u | --upgrade )     WELCOME_SCREEN && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
                              exit
                                 ;;
-        -d | --development ) WELCOME_SCREEN && MAINTENACE && UPGRADE_TO_DEVEL_RELEASE
+        -d | --development ) WELCOME_SCREEN && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
                              exit
                                 ;;
         -h | --help )        SHOW_HELP
@@ -461,10 +453,10 @@ while [ "$1" != "" ]; do
         -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
                              exit
                                 ;;
-	-s | --shutdown )	 WELCOME_SCREEN && MAINTENACE && GOODBYE && SHUT_DOWN
+	-s | --shutdown )	 WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
 							 exit
 							    ;;
-	-r | --reboot )		 WELCOME_SCREEN && MAINTENACE && GOODBYE && RE_BOOT
+	-r | --reboot )		 WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
 							 exit
 							    ;;
         * )                  SHOW_HELP
@@ -472,4 +464,4 @@ while [ "$1" != "" ]; do
     esac
 done
 ## If no parameter is given just do the regular maintenance
-WELCOME_SCREEN && MAINTENACE && GOODBYE
+WELCOME_SCREEN && MAINTENANCE && GOODBYE
