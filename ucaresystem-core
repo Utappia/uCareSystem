@@ -406,9 +406,9 @@ function GOODBYE {
 	echo " T. Turunen, P. Loughman, M. Spinello, M. Torres       "     
 	echo "                 D. Issjö, P. Camilo                   "
 	echo "                       					             "	
-	echo "			https://www.paypal.me/cerebrux 		     	 "
+	echo "		https://www.paypal.me/cerebrux 		     	     "
 	echo "												     	 "
-	echo "     		All maintenace Complete... GOODBYE			 "
+	echo "     	All maintenace Complete... GOODBYE			     "
 	echo "_______________________________________________________"
 	echo
 }
