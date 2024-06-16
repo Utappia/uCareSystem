@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=uCareSystem Core
+Name=uCareSystem
 Comment=All in one system maintenance
 Icon=ucaresystemicon
 Exec=launch-ucaresystemcore

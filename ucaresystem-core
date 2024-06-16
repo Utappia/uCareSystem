@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 08-05-2024 (first release 19-02-2009)
-# Version: 24.05.8
+# Date   : 16-06-2024 (first release 19-02-2009)
+# Version: 24.06.0
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.05.0)
+UCARE_VERSION=(24.06.0)
 
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -76,11 +76,11 @@ function WELCOME_SCREEN {
 	echo "                   				                     "
 	echo " If you've found it helpful and it has saved you time	 "
 	echo " please consider supporting its development with a     "
-	echo " donation via PayPal. Your contribution helps ensure   "
-	echo " the continued improvement and maintenance of this tool"
-	echo " and shows your appreciation for the time and effort   " 
-	echo " that I have put into it.                              "
-	echo "                                                       "
+	echo " donation via PayPal. Your support not only fuels      "
+	echo " continuous improvement but also inspires and          "
+	echo " motivates me to keep pushing forward while also shows " 
+	echo " your appreciation for the time and effort that I have "
+	echo "               put into the project.                   "
 	echo "           https://www.paypal.me/cerebrux              "
 	echo "_______________________________________________________"
 	echo
@@ -396,17 +396,19 @@ function GOODBYE {
 	echo "            uCareSystem $UCARE_VERSION                 "
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
 	echo "                   				                     "
-	echo " If you've found it helpful and it has saved you time	 "
-	echo " please consider supporting its development with a     "
-	echo " donation via PayPal. Your contribution helps ensure   "
-	echo " the continued improvement and maintenance of this tool"
-	echo " and shows your appreciation for the time and effort   " 
-	echo " that I have put into it.                              "
-	echo "                                                       "
-	echo "           https://www.paypal.me/cerebrux              "
+	echo " I am deeply grateful for your generous donations  	 "
+	echo " during the 24.05 development cycle. Your contributions"
+	echo " have been invaluable in helping me enhance and        "
+	echo " maintain the project. Thank you for believing in this "
+	echo " project and for being a crucial part of its success.  " 
+	echo "													     "
+	echo "             24.05 development supporters:		     "
+	echo " T. Turunen, P. Loughman, M. Spinello, M. Torres       "     
+	echo "                 D. Issjö, P. Camilo                   "
+	echo "                       					             "	
+	echo "	https://www.paypal.me/cerebrux  		     	     "
 	echo "												     	 "
-	echo "												     	 "
-	echo "     		All maintenace Complete... GOODBYE			 "
+	echo "     	All maintenace Complete... GOODBYE			     "
 	echo "_______________________________________________________"
 	echo
 }
