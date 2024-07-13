@@ -24,12 +24,13 @@ set -e
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
 UCARE_VERSION=(24.07.0)
-
+USERNAME=$(logname 2>/dev/null)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
-    echo "uCareSystem must be run as root or with sudo. Now I will just exit..." 1>&2
+    echo "uCareSystem must be run as root or with sudo."
+	ehco "Now I will just exit..." 1>&2
     echo ""
     sleep 2
     exit 1
@@ -71,10 +72,11 @@ function WELCOME_SCREEN {
 	echo "                                                       "
 	echo "            uCareSystem $UCARE_VERSION                 "
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
-	echo "                                                       "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
-	echo "                   				                     "
+	ehco "														 "
+	echo " 		Dear $USERNAME 				                     "
+	echo "                                                       "
 	echo " If you've found it helpful and it has saved you time	 "
 	echo " please consider supporting its development with a     "
 	echo " donation via PayPal. Your support not only fuels      "
@@ -278,12 +280,14 @@ function MAINTENANCE {
 	if [ -f /var/run/reboot-required ]; then
  		echo
   		echo "* * * * * * * * * * * * * * * * * *"
- 		echo "*                                 *"
+ 		echo "* Dear $USERNAME                  *"
  		echo "* Consider rebooting your system  *"
   		echo "* to finish applying updates      *"
-  		echo "*                                 *"
+  		echo "* requested by the following      *"
+		echo "* packages:						*"
   		echo "* * * * * * * * * * * * * * * * * *"
   		echo
+		cat /var/run/reboot-required.pkgs
 	else 
 		echo
 		echo "No reboot is required at this time"
@@ -396,16 +400,16 @@ function GOODBYE {
 	echo "                                                       "
 	echo "            uCareSystem $UCARE_VERSION                 "
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
-	echo "                   				                     "
+	echo "          Dear $USERNAME			                     "
 	echo " I am deeply grateful for your generous donations  	 "
-	echo " during the 24.05 development cycle. Your contributions"
+	echo " during the 24.06 development cycle. Your contributions"
 	echo " have been invaluable in helping me enhance and        "
 	echo " maintain the project. Thank you for believing in this "
 	echo " project and for being a crucial part of its success.  " 
 	echo "													     "
-	echo "             24.05 development supporters:		     "
-	echo " T. Turunen, P. Loughman, M. Spinello, M. Torres       "     
-	echo "                 D. Issjö, P. Camilo                   "
+	echo "             24.06 development supporters:		     "
+	echo " P. Loughman, E. Dennis, L. Alexander, I. Eleftherios  "     
+	echo "      		W. Schreinemachers	                     "
 	echo "                       					             "	
 	echo "	https://www.paypal.me/cerebrux  		     	     "
 	echo "												     	 "
