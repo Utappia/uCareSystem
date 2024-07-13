@@ -1,0 +1,17 @@
+Source: ucaresystem-core
+Section: utils
+Priority: optional
+Maintainer: Salih Emin <salih-emin@ubuntu.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 4.1.1
+Homepage: http://utappia.org
+Vcs-Browser: https://github.com/Utappia/uCareSystem.git
+
+Package: ucaresystem-core
+Architecture: all
+Depends: apt, deborphan, lsb-release, pkexec
+Description: All-in-one System Update and maintenance app
+ This simple script will automatically refresh your packagelist, 
+ download and install software updates (if there are any), remove old
+ kernels, obsolete packages and configuration files and free up disk space 
+ without any user intervention
