@@ -36,7 +36,7 @@ if [[ $EUID -ne 0 ]] ; then
 fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
-    if ping -q -c 1 -W 1 archive.ubuntu.com &> /dev/null; then
+    if curl -4 -s --head http://archive.ubuntu.com | head -n 1 | grep "200 OK" > /dev/null; then
         return 0  # Internet connection is available
     else
         return 1  # No internet connection
@@ -47,7 +47,8 @@ if ! CHECK_INTERNET; then
    echo "No internet connection detected... "
    sleep 1
    echo "Please ensure that your device is connected to the internet,"
-   echo "and try again.... Now I will just exit..." 1>&2
+   echo "and try again.... " 
+   echo "Now I will just exit..."1>&2
    echo ""
    sleep 2
    exit 1
