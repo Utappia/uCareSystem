@@ -31,11 +31,12 @@ In summary, uCareSystem automatically performs the following maintenance process
 - Cleans the cache of the downloaded packages
 - Removes obsolete packages
 - Removes orphan packets
-- Deletes package configuration files from packages that have been uninstalled by you.
+- Deletes package configuration files from packages that have been uninstalled by you
+- If there is a required reboot, it will inform you with the packeages that requsted for a system reboot
                                           
 ## Usage
 
-uCareSystem creates an launcher icon in your Applications menu. When you click it, it performs the default maintenance by automatically launching a terminal. 
+uCareSystem creates an launcher icon in your Applications menu. Just search your applications manu for `ucare`. When you click it, it performs the default maintenance by automatically launching a terminal. 
 
 Alternatively, you can invoke it through terminal with various options/flags. The default system updates and maintenace for Ubuntu / Debian / Linux Mint (and derivatives) :
 ```
