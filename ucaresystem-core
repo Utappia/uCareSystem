@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 16-06-2024 (first release 19-02-2009)
-# Version: 24.06.0
+# Date   : 14-07-2024 (first release 19-02-2009)
+# Version: 24.07.14
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,20 +23,21 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.06.0)
-
+UCARE_VERSION=(24.07.14)
+USERNAME=$(logname 2>/dev/null)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
-    echo "uCareSystem must be run as root or with sudo. Now I will just exit..." 1>&2
+    echo "uCareSystem must be run as root or with sudo."
+	ehco "Now I will just exit..." 1>&2
     echo ""
     sleep 2
     exit 1
 fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
-    if ping -q -c 1 -W 1 archive.ubuntu.com &> /dev/null; then
+    if curl -4 -s --head http://archive.ubuntu.com | head -n 1 | grep "200 OK" > /dev/null; then
         return 0  # Internet connection is available
     else
         return 1  # No internet connection
@@ -47,7 +48,8 @@ if ! CHECK_INTERNET; then
    echo "No internet connection detected... "
    sleep 1
    echo "Please ensure that your device is connected to the internet,"
-   echo "and try again.... Now I will just exit..." 1>&2
+   echo "and try again.... " 
+   echo "Now I will just exit..."1>&2
    echo ""
    sleep 2
    exit 1
@@ -70,10 +72,11 @@ function WELCOME_SCREEN {
 	echo "                                                       "
 	echo "            uCareSystem $UCARE_VERSION                 "
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
-	echo "                                                       "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
-	echo "                   				                     "
+	echo "														 "
+	echo " 		Dear $USERNAME 				                     "
+	echo "                                                       "
 	echo " If you've found it helpful and it has saved you time	 "
 	echo " please consider supporting its development with a     "
 	echo " donation via PayPal. Your support not only fuels      "
@@ -277,12 +280,14 @@ function MAINTENANCE {
 	if [ -f /var/run/reboot-required ]; then
  		echo
   		echo "* * * * * * * * * * * * * * * * * *"
- 		echo "*                                 *"
+ 		echo "* Dear $USERNAME                  *"
  		echo "* Consider rebooting your system  *"
   		echo "* to finish applying updates      *"
-  		echo "*                                 *"
+  		echo "* requested by the following      *"
+		echo "* packages:						*"
   		echo "* * * * * * * * * * * * * * * * * *"
   		echo
+		cat /var/run/reboot-required.pkgs
 	else 
 		echo
 		echo "No reboot is required at this time"
@@ -395,16 +400,17 @@ function GOODBYE {
 	echo "                                                       "
 	echo "            uCareSystem $UCARE_VERSION                 "
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
-	echo "                   				                     "
+	echo "         							                     "
 	echo " I am deeply grateful for your generous donations  	 "
-	echo " during the 24.05 development cycle. Your contributions"
+	echo " during the 24.06 development cycle. Your contributions"
 	echo " have been invaluable in helping me enhance and        "
 	echo " maintain the project. Thank you for believing in this "
 	echo " project and for being a crucial part of its success.  " 
-	echo "													     "
-	echo "             24.05 development supporters:		     "
-	echo " T. Turunen, P. Loughman, M. Spinello, M. Torres       "     
-	echo "                 D. Issjö, P. Camilo                   "
+	echo "		 												 "
+	echo " Dear $USERNAME, the following names are the 24.06	 "
+	echo " development supporters:							     "
+	echo " P. Loughman, E. Dennis, L. Alexander, I. Eleftherios  "     
+	echo "      		W. Schreinemachers	                     "
 	echo "                       					             "	
 	echo "	https://www.paypal.me/cerebrux  		     	     "
 	echo "												     	 "

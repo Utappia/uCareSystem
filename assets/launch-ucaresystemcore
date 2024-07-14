@@ -4,13 +4,12 @@
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 
-#Get the default terminal emulator command                                                                     
+#Get the default terminal emulator command
 TERMINAL_CMD=$(update-alternatives --query x-terminal-emulator | grep 'Value:' | cut -d' ' -f2)
-                                            
+
 # Check if TERMINAL_CMD is empty, if so, set a default value
-if [ -z "$TERMINAL_CMD" ]; then             
-    TERMINAL_CMD="x-terminal-emulator"           
-fi                                               
-                                                  
+if [ -z "$TERMINAL_CMD" ]; then
+    TERMINAL_CMD="x-terminal-emulator"
+fi
 # Open the default terminal emulator and execute ucaresystem-core
-$TERMINAL_CMD -e "bash -c 'ucaresystem-core; read -p \"Press Enter to exit...\"'"                                                      
+$TERMINAL_CMD -e "bash -c 'ucaresystem-core; read -p \"Press Enter to exit...\"'"
