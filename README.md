@@ -32,7 +32,7 @@ In summary, uCareSystem automatically performs the following maintenance process
 - Removes obsolete packages
 - Removes orphan packets
 - Deletes package configuration files from packages that have been uninstalled by you
-- If there is a required reboot, it will inform you with the packeages that requsted for a system reboot
+- If there is a required reboot, it will inform you with the packeages that requested for a system reboot
                                           
 ## Usage
 
