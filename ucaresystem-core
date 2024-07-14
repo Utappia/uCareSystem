@@ -74,7 +74,7 @@ function WELCOME_SCREEN {
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
-	ehco "														 "
+	echo "														 "
 	echo " 		Dear $USERNAME 				                     "
 	echo "                                                       "
 	echo " If you've found it helpful and it has saved you time	 "
