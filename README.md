@@ -17,6 +17,16 @@
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 
+# Previous development cycle of v24.06 Sponsors
+
+With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous development cycle:
+
+- P. Loughman (the legend! I wish you the best, my friend)
+- E. Dennis
+- L. Alexander
+- I. Eleftherios
+- W. Shreinemachers
+
 ## Description:
 
 In summary, uCareSystem automatically performs the following maintenance processes without the need for user interference. :
