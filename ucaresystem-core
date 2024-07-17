@@ -288,6 +288,7 @@ function MAINTENANCE {
   		echo "* * * * * * * * * * * * * * * * * *"
   		echo
 		cat /var/run/reboot-required.pkgs
+		sleep 1
 	else 
 		echo
 		echo "No reboot is required at this time"
