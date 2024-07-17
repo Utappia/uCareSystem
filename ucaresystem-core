@@ -287,7 +287,11 @@ function MAINTENANCE {
 		echo "* packages:						*"
   		echo "* * * * * * * * * * * * * * * * * *"
   		echo
-		cat /var/run/reboot-required.pkgs
+		if [ -f /var/run/reboot-required.pkgs ]; then
+        	cat /var/run/reboot-required.pkgs
+    	else
+        	echo "Cannot find the list of packages... Skipping"
+    	fi
 		sleep 1
 	else 
 		echo
