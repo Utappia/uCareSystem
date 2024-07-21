@@ -30,7 +30,7 @@ if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
     echo "uCareSystem must be run as root or with sudo."
-	ehco "Now I will just exit..." 1>&2
+	echo "Now I will just exit..." 1>&2
     echo ""
     sleep 2
     exit 1
