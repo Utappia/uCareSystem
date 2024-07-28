@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 14-07-2024 (first release 19-02-2009)
-# Version: 24.07.14
+# Date   : 28-07-2024 (first release 19-02-2009)
+# Version: 24.07.28
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,14 +23,14 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.07.17)
-USERNAME=$(logname 2>/dev/null)
+UCARE_VERSION=(24.07.28)
+USERNAME=$(logname 2>/dev/null || echo $USER)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
     echo "uCareSystem must be run as root or with sudo."
-	ehco "Now I will just exit..." 1>&2
+    echo "Now I will just exit..." 1>&2
     echo ""
     sleep 2
     exit 1
@@ -74,10 +74,10 @@ function WELCOME_SCREEN {
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
 	echo " Welcome to all-in-one System Update and maintenance   "
 	echo " assistant app.                                        "
-	echo "														 "
-	echo " 		Dear $USERNAME 				                     "
+	echo "					 		     "
+	echo " 		Dear $USERNAME 		                     "
 	echo "                                                       "
-	echo " If you've found it helpful and it has saved you time	 "
+	echo " If you've found it helpful and it has saved you time  "
 	echo " please consider supporting its development with a     "
 	echo " donation via PayPal. Your support not only fuels      "
 	echo " continuous improvement but also inspires and          "
@@ -85,6 +85,15 @@ function WELCOME_SCREEN {
 	echo " your appreciation for the time and effort that I have "
 	echo "               put into the project.                   "
 	echo "           https://www.paypal.me/cerebrux              "
+	echo "		  ____  ____  ____ 			     "
+ 	echo "		 / __ \/ __ \/ __ \			    "
+	echo "		/ /_/ / /_/ / /_/ /			     "
+    echo "		\____/\____/\____/			     "
+    echo "		   / __ \/ __ \				     "
+   	echo "		  / /_/ / /_/ / 			    "
+    echo "  	  	  \____/\____/ 				     "
+	echo "	In honor of the 2024 Olympic Games"
+	echo "	Προς τιμήν της 33ης Ολυμπιάδας"
 	echo "_______________________________________________________"
 	echo
 	# start the countdown
@@ -284,7 +293,7 @@ function MAINTENANCE {
  		echo "* Consider rebooting your system  *"
   		echo "* to finish applying updates      *"
   		echo "* requested by the following      *"
-		echo "* packages:						*"
+		echo "* packages:			*"
   		echo "* * * * * * * * * * * * * * * * * *"
   		echo
 		if [ -f /var/run/reboot-required.pkgs ]; then
@@ -330,7 +339,7 @@ function UPGRADE_TO_NEXT_RELEASE {
 	sleep 1
 	echo "##########################################"
 	echo "uCareSystem will now check for the        "
-	echo "availability of the next version         "
+	echo "availability of the next version          "
 	echo "and it will start the upgrade             "
 	echo "##########################################"
 	echo ""
@@ -343,7 +352,7 @@ function UPGRADE_TO_DEVEL_RELEASE {
 	sleep 1
 	echo "##########################################"
 	echo "uCareSystem will now check for the        "
-	echo "availability of the next development     "
+	echo "availability of the next development      "
 	echo "version and it will start the upgrade     "
 	echo "##########################################"
 	echo ""
@@ -394,7 +403,7 @@ function SHOW_HELP {
 		 
 		 -r          After completing all the tasks, reboot the system
 		 
-		 -s	       After completing all the tasks, shutdown the system
+		 -s	     After completing all the tasks, shutdown the system
 
 EOF
 }
@@ -405,21 +414,30 @@ function GOODBYE {
 	echo "                                                       "
 	echo "            uCareSystem $UCARE_VERSION                 "
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
-	echo "         							                     "
-	echo " I am deeply grateful for your generous donations  	 "
+	echo "         				                     "
+	echo " I am deeply grateful for your generous donations      "
 	echo " during the 24.06 development cycle. Your contributions"
 	echo " have been invaluable in helping me enhance and        "
 	echo " maintain the project. Thank you for believing in this "
 	echo " project and for being a crucial part of its success.  " 
-	echo "		 												 "
-	echo " Dear $USERNAME, the following names are the 24.06	 "
-	echo " development supporters:							     "
+	echo "		 					     "
+	echo " Dear $USERNAME, the following names are the 24.06     "
+	echo " development supporters:				     "
 	echo " P. Loughman, E. Dennis, L. Alexander, I. Eleftherios  "     
-	echo "      		W. Schreinemachers	                     "
-	echo "                       					             "	
-	echo "	https://www.paypal.me/cerebrux  		     	     "
-	echo "												     	 "
-	echo "     	All maintenace Complete... GOODBYE			     "
+	echo "      		W. Schreinemachers	             "
+	echo "                       				     "	
+	echo "	https://www.paypal.me/cerebrux  		     "
+	echo "		  ____  ____  ____ 			     "
+ 	echo "		 / __ \/ __ \/ __ \			    "
+	echo "		/ /_/ / /_/ / /_/ /			     "
+    echo "		\____/\____/\____/			     "
+    echo "		   / __ \/ __ \				     "
+   	echo "		  / /_/ / /_/ / 			    "
+    echo "  	  	  \____/\____/ 				     "
+	echo "	In honor of the 2024 Olympic Games"
+	echo "	Προς τιμήν της 33ης Ολυμπιάδας"
+	echo "							     "
+	echo "     	All maintenace Complete... GOODBYE	     "
 	echo "_______________________________________________________"
 	echo
 }
@@ -428,7 +446,7 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo "############################## "
+	echo "##############################"
 	echo "Shutting down as you requested"
 	echo "##############################"
 	echo
