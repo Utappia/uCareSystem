@@ -294,7 +294,6 @@ function MAINTENANCE {
   		echo "* to finish applying updates      *"
   		echo "* requested by the following      *"
 		echo "* packages:			*"
-  		echo "* * * * * * * * * * * * * * * * * *"
   		echo
 		if [ -f /var/run/reboot-required.pkgs ]; then
         	cat /var/run/reboot-required.pkgs
