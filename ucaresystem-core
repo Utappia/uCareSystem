@@ -127,6 +127,8 @@ function MAINTENANCE {
 		echo 
 		sudo systemctl daemon-reload
 		echo 
+	fi
+	
 	echo "Updating package lists..."
 	echo
 	sudo apt update;
@@ -327,8 +329,8 @@ function MAINTENANCE {
 
 function UPGRADE_EOL_TO_NEXT {
 
-cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
-cat <<EOT > /etc/apt/sources.list
+	cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
+	cat <<EOT > /etc/apt/sources.list
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-updates main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restricted universe multiverse
