@@ -48,7 +48,7 @@ function CHECK_INTERNET {
 if ! CHECK_INTERNET; then
    echo "No internet connection detected..."
    sleep 1
-   echo "Please ensure that your device is connected to the internet,"
+   echo "Please ensure that your system is connected to the internet,"
    echo "and try again..." 
    echo "Now I will just exit..."1>&2
    echo ""
