@@ -130,7 +130,7 @@ function MAINTENANCE {
 	## Updates package lists
 	echo "Updating package lists..."
 	echo
-	sudo apt update;
+	sudo apt update 2> >(sed 's/^WARNING.*//') | xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
 	echo
 	echo "###############################"
 	echo "Finished updating package lists"
