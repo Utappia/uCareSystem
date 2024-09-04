@@ -131,6 +131,9 @@ function MAINTENANCE {
 	echo "Updating package lists..."
 	echo
 	sudo apt update 2> >(sed 's/^WARNING.*//') | xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
+	echo "Here are the packages that can be upgraded if they are not kept back due to phased releases:"
+	sleep 1
+	sudo apt list -a --upgradable;
 	echo
 	echo "###############################"
 	echo "Finished updating package lists"
