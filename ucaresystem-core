@@ -297,7 +297,7 @@ function MAINTENANCE {
 		echo "* packages:			*"
   		echo
 		if [ -f /var/run/reboot-required.pkgs ]; then
-        	cat /var/run/reboot-required.pkgs
+        	cat /var/run/reboot-required.pkgs | uniq
     	else
         	echo "Cannot find the list of packages... Skipping"
     	fi
