@@ -272,11 +272,11 @@ function MAINTENANCE {
 	sleep 1
 	echo
 	## Removes unused config files
-	sudo deborphan -n --find-config | xargs sudo apt autoremove -y --purge;
+	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
 	echo
-	echo "#####################################"
-	echo "Finished removing unused config files"
-	echo "#####################################"
+	echo "######################################################"
+	echo "Finished removing config files of uninstalled packages"
+	echo "######################################################"
 	sleep 1
 	echo
 
