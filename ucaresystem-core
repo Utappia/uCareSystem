@@ -141,7 +141,7 @@ function MAINTENANCE {
 	sleep 1
 
 	## Updates packages and libraries
-	sudo apt full-upgrade -y;
+	sudo apt full-upgrade -V -y;
 	echo
 	echo "###############################################"
 	echo "Finished updating packages and system libraries"
