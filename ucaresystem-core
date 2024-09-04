@@ -297,14 +297,16 @@ function MAINTENANCE {
 	if [ -f /var/run/reboot-required ]; then
  		echo
   		echo "* * * * * * * * * * * * * * * * * *"
- 		echo "* Dear $USERNAME                  *"
- 		echo "* Consider rebooting your system  *"
-  		echo "* to finish applying updates      *"
-  		echo "* requested by the following      *"
-		echo "* packages:						*"
-  		echo
+ 		echo "* 	Dear $USERNAME                  "
+  		echo "*"
+ 		echo "* Consider rebooting your system"  
+  		echo "* to finish applying updates"      
+  		echo "* requested by the following"      
+		echo "* packages:"						
+  		echo "*"
 		if [ -f /var/run/reboot-required.pkgs ]; then
         	cat /var/run/reboot-required.pkgs | uniq
+			echo "* * * * * * * * * * * * * * * * * *"
     	else
         	echo "Cannot find the list of packages... Skipping"
     	fi
