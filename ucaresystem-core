@@ -25,6 +25,7 @@ DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
 UCARE_VERSION=(24.09.05)
 USERNAME=$(logname 2>/dev/null || echo $USER)
+PREV_VER=(24.07)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
@@ -415,13 +416,13 @@ function GOODBYE {
 	echo "            ~~~~~~~~~~~~~~~~~~~~~                      "
 	echo "         				                     "
 	echo " I am deeply grateful for your generous donations      "
-	echo " during the 24.07 development cycle. Your contributions"
+	echo " during the $PREV_VER development cycle. Your contributions"
 	echo " have been invaluable in helping me enhance and        "
 	echo " maintain the project. Thank you for believing in this "
 	echo " project and for being a crucial part of its success.  " 
 	echo "		 					     "
 	echo " Dear $USERNAME, the following names are the legneds   "
-	echo " of 24.07 development cycle, supporters:				 "
+	echo " of $PREV_VER development cycle, supporters:				 "
 	echo " 	E. Dennis, S. Slagle, M. Van Hoof, B. Breitfeld  "     
 	echo "  Dom. Babic, L. Miller, St. Matsumoto, C. Quimbay  "
 	echo "                       				     "	
