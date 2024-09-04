@@ -271,7 +271,7 @@ function MAINTENANCE {
 	echo "###################################"
 	sleep 1
 	echo
-	## Removes unused config files
+	## Removes unused config files of uninstalled packages
 	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
 	echo
 	echo "######################################################"
