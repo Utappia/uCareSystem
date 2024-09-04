@@ -121,13 +121,14 @@ function MAINTENANCE {
 	echo
 	sleep 1
 
-	## Updates package lists
+	# The following is for when the unit file, source configuration file or drop-ins 
+	# of apt-news.service changed on disk and systemd wasn't aware of it.
 	if command -v systemctl &> /dev/null; then
 		echo "Reloading systemd manager configuration"
 		sudo systemctl daemon-reload
 		echo 
 	fi
-
+	## Updates package lists
 	echo "Updating package lists..."
 	echo
 	sudo apt update;
