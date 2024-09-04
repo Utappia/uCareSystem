@@ -124,11 +124,10 @@ function MAINTENANCE {
 	## Updates package lists
 	if command -v systemctl &> /dev/null; then
 		echo "Reloading systemd manager configuration"
-		echo 
 		sudo systemctl daemon-reload
 		echo 
 	fi
-	
+
 	echo "Updating package lists..."
 	echo
 	sudo apt update;
@@ -301,7 +300,7 @@ function MAINTENANCE {
  		echo "* Consider rebooting your system  *"
   		echo "* to finish applying updates      *"
   		echo "* requested by the following      *"
-		echo "* packages:			*"
+		echo "* packages:						*"
   		echo
 		if [ -f /var/run/reboot-required.pkgs ]; then
         	cat /var/run/reboot-required.pkgs | uniq
