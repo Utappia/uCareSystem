@@ -122,6 +122,11 @@ function MAINTENANCE {
 	sleep 1
 
 	## Updates package lists
+	if command -v systemctl &> /dev/null; then
+		echo "Reloading systemd manager configuration"
+		echo 
+		sudo systemctl daemon-reload
+		echo 
 	echo "Updating package lists..."
 	echo
 	sudo apt update;
