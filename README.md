@@ -46,7 +46,9 @@ In summary, uCareSystem automatically performs the following maintenance process
 - Removes orphan packets
 - Deletes package configuration files from packages that have been uninstalled by you
 - If there is a required reboot, it will inform you with the packeages that requested for a system reboot
-                                          
+
+![ucaresystem](https://github.com/user-attachments/assets/c50cbf3b-e4db-46bc-8ec4-8e71963321ee)
+				  
 ## Usage
 
 uCareSystem creates an launcher icon in your Applications menu. Just search your applications manu for `ucare`. When you click it, it performs the default maintenance by automatically launching a terminal. 
