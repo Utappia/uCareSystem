@@ -12,20 +12,23 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
-	Date   : 31-07-2024 (first release 19-02-2009)
-	Version: 24.07.31
+	Date   : 05-09-2024 (first release 19-02-2009)
+	Version: 24.09.05
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 
-## Sponsors of the previous development cycle (v24.06)
+## Sponsors of the previous development cycle (v24.07)
 
 With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous development cycle:
 
-- P. Loughman (the legend! I wish you the best, my friend)
-- E. Dennis
-- L. Alexander
-- I. Eleftherios
-- W. Shreinemachers
+- E. Dennis (Thanks for your continued support)
+- S. Slagle
+- M. Van Hoof
+- B. Breitfeld
+- Dom. Babic
+- L. Miller
+- St. Matsumoto
+- C. Quimbay
 
 ## Description:
 
