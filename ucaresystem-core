@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 05-09-2024 (first release 19-02-2009)
-# Version: 24.09.05
+# Date   : 08-09-2024 (first release 19-02-2009)
+# Version: 24.09.08
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,7 +23,7 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.09.05)
+UCARE_VERSION=(24.09.08)
 USERNAME=$(logname 2>/dev/null || echo $USER)
 PREV_VER=(24.07)
 # Checking if the user has run the script with "sudo" or not
@@ -84,16 +84,8 @@ function WELCOME_SCREEN {
 	echo " motivates me to keep pushing forward while also shows" 
 	echo " your appreciation for the time and effort that I have"
 	echo "               put into the project."
+	echo ""
 	echo "           https://www.paypal.me/cerebrux"
-	echo "		  ____  ____  ____"
- 	echo "		 / __ \/ __ \/ __ \ "
-	echo "		/ /_/ / /_/ / /_/ /"
-    echo "		\____/\____/\____/"
-    echo "		   / __ \/ __ \ "
-   	echo "		  / /_/ / /_/ /"
-    echo "  	  	  \____/\____/"
-	echo "	In honor of the 2024 Olympic Games"
-	echo "	Προς τιμήν της 33ης Ολυμπιάδας"
 	echo "________________________________________________________"
 	echo
 	# start the countdown
@@ -438,15 +430,6 @@ function GOODBYE {
 	echo "   Dom. Babic, L. Miller, St. Matsumoto, C. Quimbay"
 	echo ""	
 	echo "	https://www.paypal.me/cerebrux"
-	echo "		  ____  ____  ____"
- 	echo "		 / __ \/ __ \/ __ \ "
-	echo "		/ /_/ / /_/ / /_/ /"
-    echo "		\____/\____/\____/"
-    echo "		   / __ \/ __ \ "
-   	echo "		  / /_/ / /_/ /"
-    echo "  	  	  \____/\____/"
-	echo "	In honor of the 2024 Olympic Games"
-	echo "	Προς τιμήν της 33ης Ολυμπιάδας"
 	echo ""
 	echo "     	All maintenace Complete... GOODBYE"
 	echo "___________________________________________________________"
