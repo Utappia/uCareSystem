@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 08-09-2024 (first release 19-02-2009)
-# Version: 24.09.08
+# Date   : 07-10-2024 (first release 19-02-2009)
+# Version: 24.10.07
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,9 +23,9 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.09.08)
+UCARE_VERSION=(24.10.07)
 USERNAME=$(logname 2>/dev/null || echo $USER)
-PREV_VER=(24.07)
+PREV_VER=(24.09)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
@@ -424,10 +424,9 @@ function GOODBYE {
 	echo " maintain the project. Thank you for believing in this"
 	echo " project and for being a crucial part of its success." 
 	echo ""
-	echo " Dear $USERNAME, the following names are the legneds"
+	echo " Dear $USERNAME, the following names are the legends"
 	echo " of $PREV_VER development cycle, supporters:"
-	echo "   E. Dennis, S. Slagle, M. Van Hoof, B. Breitfeld"     
-	echo "   Dom. Babic, L. Miller, St. Matsumoto, C. Quimbay"
+	echo "   P. Loughman, D. Emge, H. Karasoulis, D. Anastasopoulos"
 	echo ""	
 	echo "	https://www.paypal.me/cerebrux"
 	echo ""
