@@ -1,4 +1,4 @@
-#!/usr/bin/pkexec /bin/bash
+#!/usr/bin/sudo /bin/bash
 set -e
 #
 #
