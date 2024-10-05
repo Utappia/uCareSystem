@@ -12,23 +12,19 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
-	Date   : 08-09-2024 (first release 19-02-2009)
-	Version: 24.09.08
+	Date   : 07-10-2024 (first release 19-02-2009)
+	Version: 24.10.07
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 
-## Sponsors of the previous development cycle (v24.07)
+## Sponsors of the previous development cycle (v24.09)
 
-With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous development cycle:
+With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous (v24.09) development cycle:
 
-- E. Dennis (Thanks for your continued support)
-- S. Slagle
-- M. Van Hoof
-- B. Breitfeld
-- Dom. Babic
-- L. Miller
-- St. Matsumoto
-- C. Quimbay
+- P. Loughman (Thanks for your continued support)
+- D. Emge (Thanks for your continued support)
+- H. Karasoulis
+- D. Anastasopoulos
 
 ## Description:
 
@@ -47,8 +43,8 @@ In summary, uCareSystem automatically performs the following maintenance process
 - Deletes package configuration files from packages that have been uninstalled by you
 - If there is a required reboot, it will inform you with the packeages that requested for a system reboot
 
-![ucaresystem](https://github.com/user-attachments/assets/c50cbf3b-e4db-46bc-8ec4-8e71963321ee)
-				  
+![ucaresystem-core](https://github.com/user-attachments/assets/a684a40e-403f-4306-a4dc-930575e066c5)
+
 ## Usage
 
 uCareSystem creates an launcher icon in your Applications menu. Just search your applications manu for `ucare`. When you click it, it performs the default maintenance by automatically launching a terminal. 
