@@ -6,7 +6,7 @@
 set -e
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DIST_ID=$(lsb_release --id | cut -f2)
-DIST_CODE_NAME="xenial"
+COMPATIBLE_DIST_NAME="xenial"
 KEYSERVER="hkp://keyserver.ubuntu.com"
 KEY="EBC8F9FD"
 REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
@@ -26,8 +26,8 @@ else
     if [ "$DIST_ID" = "Debian" ]; then
         cat <<EOT > "$REPO_FILE"
 # Debian compatible Utappia Repository
-deb $REPO_URL $DIST_CODE_NAME main
-deb-src $REPO_URL $DIST_CODE_NAME main
+deb $REPO_URL $COMPATIBLE_DIST_NAME main
+deb-src $REPO_URL $COMPATIBLE_DIST_NAME main
 EOT
         echo ""
         echo "Refreshing package list..."
