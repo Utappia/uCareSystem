@@ -20,6 +20,32 @@ set -e
 #
 ## Script starts here
 
+# List of required binaries
+binaries=(
+    "pkexec"
+    "bash"
+    "lsb_release"
+    "date"
+    "logname"
+    "curl"
+    "grep"
+    "awk"
+    "df"
+    "systemctl"
+    "sudo"
+    "apt"
+    "xargs"
+    "snap"
+    "flatpak"
+    "dpkg-query"
+    "dpkg"
+    "shutdown"
+    "reboot"
+)
+
+# Check for required binaries
+exit_if_binary_not_installed "${binaries[@]}"
+
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
@@ -461,6 +487,16 @@ function RE_BOOT {
 	COUNTDOWN $duration
 	sudo reboot
 	## End of script
+}
+
+# Checks if a binary is present on the local system
+exit_if_binary_not_installed() {
+  for binary in "$@"; do
+    command -v "$binary" >/dev/null 2>&1 || {
+      echo >&2 "Script requires '$binary' command-line utility to be installed on your local machine. Aborting..."
+      exit 1
+    }
+  done
 }
 
 # The main process starts
