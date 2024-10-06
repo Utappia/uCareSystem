@@ -1,4 +1,4 @@
-#!/usr/bin/pkexec /bin/bash
+#!/usr/bin/sudo /bin/bash
 set -e
 #
 #
@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 08-09-2024 (first release 19-02-2009)
-# Version: 24.09.08
+# Date   : 07-10-2024 (first release 19-02-2009)
+# Version: 24.10.07
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,9 +23,9 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.09.08)
+UCARE_VERSION=(24.10.07)
 USERNAME=$(logname 2>/dev/null || echo $USER)
-PREV_VER=(24.07)
+PREV_VER=(24.09)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
@@ -60,12 +60,12 @@ fi
 function COUNTDOWN {
     	secs=$1
 	while [ $secs -gt 0 ]; do
-		echo -ne "$MESSAGE in $secs seconds... (to stop the countdown Ctrl+C) \r"
+		echo -ne "$MESSAGE in $secs seconds... (to exit now, press Ctrl+C) \r"
 		sleep 1
 		: $((secs--))
 	done
 	
-	}
+}
 duration=5 # countdown duration in seconds
 
 function WELCOME_SCREEN {
@@ -125,7 +125,7 @@ function MAINTENANCE {
 	sudo apt update 2> >(sed 's/^WARNING.*//') | xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
 	echo "Here are the packages that can be upgraded if they are not kept back due to phased releases:"
 	sleep 1
-	sudo apt list -a --upgradable;
+	sudo apt list --upgradable;
 	echo
 	echo "###############################"
 	echo "Finished updating package lists"
@@ -424,10 +424,9 @@ function GOODBYE {
 	echo " maintain the project. Thank you for believing in this"
 	echo " project and for being a crucial part of its success." 
 	echo ""
-	echo " Dear $USERNAME, the following names are the legneds"
+	echo " Dear $USERNAME, the following names are the legends"
 	echo " of $PREV_VER development cycle, supporters:"
-	echo "   E. Dennis, S. Slagle, M. Van Hoof, B. Breitfeld"     
-	echo "   Dom. Babic, L. Miller, St. Matsumoto, C. Quimbay"
+	echo "   P. Loughman, D. Emge, H. Karasoulis, D. Anastasopoulos"
 	echo ""	
 	echo "	https://www.paypal.me/cerebrux"
 	echo ""
