@@ -23,9 +23,9 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.10.07)
+UCARE_VERSION=(24.11.17)
 USERNAME=$(logname 2>/dev/null || echo $USER)
-PREV_VER=(24.09)
+PREV_VER=(24.10)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
