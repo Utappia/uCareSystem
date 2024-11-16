@@ -461,6 +461,12 @@ function RE_BOOT {
 	echo
 	MESSAGE="Rebooting"
 	COUNTDOWN $duration
+	if command -v systemctl &> /dev/null; then
+		sudo systemctl reboot
+	else
+		sudo reboot
+	fi
+	
 	sudo reboot
 	## End of script
 }
