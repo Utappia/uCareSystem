@@ -12,23 +12,28 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
-	Date   : 07-10-2024 (first release 19-02-2009)
-	Version: 24.10.07
+	Date   : 17-11-2024 (first release 19-02-2009)
+	Version: 24.11.17
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 
 ## Sponsors of the previous development cycle (v24.09)
 
-With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous (v24.09) development cycle:
+With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous (v24.10) development cycle:
 
 - P. Loughman (Thanks for your continued support)
 - D. Emge (Thanks for your continued support)
-- H. Karasoulis
-- D. Anastasopoulos
+- N. Karanikolas
+- J. Michailidis
+- M. Stade
+- M. C. Enache
+- Er. Vlyziotis
+- J. Cain
+- D. Luchini
 
 ## Description:
 
-In summary, uCareSystem automatically performs the following maintenance processes without the need for user interference. :
+In summary, uCareSystem performs the following list of maintenance tasks automatically and without the need for user interference. :
 
 - Updates the list of available packages
 - Downloads and installs the available updates
@@ -41,35 +46,35 @@ In summary, uCareSystem automatically performs the following maintenance process
 - Removes obsolete packages
 - Removes orphan packets
 - Deletes package configuration files from packages that have been uninstalled by you
-- If there is a required reboot, it will inform you with the packeages that requested for a system reboot
+- If there is a need for a system reboot, it will inform you and it will provide the list of packeages that requested that system reboot
 
 ![ucaresystem-core](https://github.com/user-attachments/assets/a684a40e-403f-4306-a4dc-930575e066c5)
 
 ## Usage
 
-uCareSystem creates an launcher icon in your Applications menu. Just search your applications manu for `ucare`. When you click it, it performs the default maintenance by automatically launching a terminal. 
+uCareSystem creates an launcher icon in your Applications menu. Just search your applications manu for `ucare`. If you click the icon, it starts performing the default maintenance tasks. 
 
 Alternatively, you can invoke it through terminal with various options/flags. The default system updates and maintenace for Ubuntu / Debian / Linux Mint (and derivatives) :
 ```
-sudo ucaresystem-core
+ucaresystem-core
 ```
 If you want to shutdown your system after using the uCareSystem you can use the `-s` option :
 ```
-sudo ucaresystem-core -s
+ucaresystem-core -s
 ```
 When the next available release is availabe for Ubuntu (and official flavors) you can upgrade with `-u`:
 ```	
-sudo ucaresystem-core -u
+ucaresystem-core -u
 ```
 If you are a tester, developer, or simply an enthusiast, you can upgrade to the next development cycle of Ubuntu (and official flavors) with `-d` which actually turns your Ubuntu into a rolling release distribution:
 ```
-sudo ucaresystem-core -d
+ucaresystem-core -d
 ```
 If your Ubuntu (and official flavors) has reached the EOL support you can upgrade to the next supported release with `-eol`:
 ```
-sudo ucaresystem-core -eol
+ucaresystem-core -eol
 ```
 For information about all the availabe options / flags, start ucaresystem-core with `-h` option :
 ```
-sudo ucaresystem-core -h
+ucaresystem-core -h
 ```
