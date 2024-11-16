@@ -142,7 +142,7 @@ function MAINTENANCE {
 	echo
 
 	## Removes unneeded packages
-	sudo sudo apt autoremove -y --purge;
+	sudo apt autoremove -y --purge;
 	echo					
 	echo "###################################"
 	echo "Finished removing unneeded packages"
