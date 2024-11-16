@@ -374,42 +374,35 @@ function SHOW_HELP {
 				    ~ $UCARE_VERSION ~
 		     All-in-one system update and maintenance app
 
-	Usage: sudo ucaresystem-core <parameter> 
+	Usage: sudo ucaresystem-core <option> 
 	
-	If no parameter is specified, it will just do the regular
-	maintenance:
+		If no option is specified, it performs the regular maintenance tasks.
+		It updates system, snap, and flatpak packages, removes old kernels, old 
+		Snap and flatpack revisions and unneeded packages, and cleans up 
+		configurations of uninstalled packages.
 	
-	 * Updates the list of available packages
-	 * Downloads and installs the available updates
-	 * Checks if there are older Linux kernels on the system and removes
-	   them. However it keeps the current and one previous version of 
-	   the kernel.
-	 * Cleans the cache of the downloaded packages
-	 * Removes obsolete packages
-	 * Removes orphan packets
-	 * Deletes package configuration files from packages that have been
-	   uninstalled by you.
-	
-	Parameter:	 
-		 -h          display this help and exit
-		 
-		 -u          Upgrade to the next release. Note: If you use a
-		             regular release it will upgrade to the next one. If
-		             you are on a LTS version, it will upgrade only to 
-		             the next LTS.
-		             
-		 -d          Upgrade to the next development release
+	Options:
 
-		 -eol        CAUTION: Do not use this if your Ubuntu has not 
-			     reached its End of life support.
-				    Check https://wiki.ubuntu.com/Releases
-			     This option is for Ubuntu releases that have
-			     reached their EOL and the user wants to upgrade
-			     it to the next supported version.
+		 -h --help         Display this help and exit
 		 
-		 -r          After completing all the tasks, reboot the system
+		 -u --upgrade      Upgrade to the next release. Note: If you use a
+		                   regular release it will upgrade to the next one. If
+		                   you are on a LTS version, it will upgrade only to 
+		                   the next LTS.
+		             
+		 -d --development  Upgrade to the next development release
+
+		 -eol --end-of-life-upgrade      
+				   CAUTION: Do not use this if your Ubuntu has not
+			  	   reached its End of life support.
+			           Check https://wiki.ubuntu.com/Releases
+			           This option is ONLY for Ubuntu releases that have
+			           reached their EOL and you want to upgrade
+			           it to the next supported version.
 		 
-		 -s	     After completing all the tasks, shutdown the system
+		 -r --reboot       Reboot the system, after completing all the tasks, 
+
+		 -s --shutdown     Shutdown the system, after completing all the tasks, 
 
 EOF
 }
