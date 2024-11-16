@@ -274,7 +274,7 @@ function MAINTENANCE {
 
 	## Removes package files that can no longer be downloaded and everything except
 	# the lock file in /var/cache/apt/archives, including directories.
-	sudo apt-get -y autoclean; sudo apt-get -y clean;
+	sudo apt -y autoclean; sudo apt -y clean;
 	echo
 	echo "######################################"
 	echo " Cleaned downloaded temporary packages"
@@ -333,8 +333,8 @@ deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restrict
 
 EOT
 
-sudo apt-get install update-manager-core
-sudo apt-get -y dist-upgrade
+sudo apt install update-manager-core
+sudo apt -y dist-upgrade
 sudo do-release-upgrade
 }
 
