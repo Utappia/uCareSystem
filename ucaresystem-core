@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 07-10-2024 (first release 19-02-2009)
-# Version: 24.10.07
+# Date   : 17-11-2024 (first release 19-02-2009)
+# Version: 24.11.17
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -23,9 +23,9 @@ set -e
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=(date +%F_%T)
-UCARE_VERSION=(24.10.07)
+UCARE_VERSION=(24.11.17)
 USERNAME=$(logname 2>/dev/null || echo $USER)
-PREV_VER=(24.09)
+PREV_VER=(24.10)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
@@ -49,7 +49,7 @@ if ! CHECK_INTERNET; then
    echo "No internet connection detected..."
    sleep 1
    echo "Please ensure that your system is connected to the internet,"
-   echo "and try again..." 
+   echo "and then try again..." 
    echo "Now I will just exit..."1>&2
    echo ""
    sleep 2
@@ -96,18 +96,13 @@ function WELCOME_SCREEN {
 function MAINTENANCE {
 	echo
 	echo
-	echo "#########################"
-	echo "          Started"
-	echo "#########################"
-	echo
+	echo "====== Started ======"
 	sleep 1
 	echo
-	echo "#######################################"
-	echo "Checking Disk before System Maintenance"
-	echo "#######################################"
+	echo "====== Checking Disk usage before System Maintenance ======"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
-	echo "Here is the disk space before cleaning"
+	echo ""
 	echo "$df_output"
 	echo
 	sleep 1
@@ -120,36 +115,34 @@ function MAINTENANCE {
 		echo 
 	fi
 	## Updates package lists
-	echo "Updating package lists..."
+	echo "====== Updating package lists ======"
 	echo
-	sudo apt update 2> >(sed 's/^WARNING.*//') | xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
+	# Update package lists and filter out warnings
+	sudo apt update 2> >(sed 's/^WARNING.*//') |
+	# Print each line with padding to fit the terminal width
+	xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
 	echo "Here are the packages that can be upgraded if they are not kept back due to phased releases:"
 	sleep 1
 	sudo apt list --upgradable;
 	echo
-	echo "###############################"
-	echo "Finished updating package lists"
-	echo "###############################"
+	echo "====== Finished updating package lists ======"
 	sleep 1
+	echo
 
 	## Updates packages and libraries
 	sudo apt full-upgrade -V -y;
 	echo
-	echo "###############################################"
-	echo "Finished updating packages and system libraries"
-	echo "###############################################"
+	echo "====== Finished upgrading system packages and libraries ======"
 	sleep 1
 	echo
 
 	## Removes unneeded packages
-	sudo sudo apt autoremove -y --purge;
+	sudo apt autoremove -y --purge;
 	echo					
-	echo "###################################"
-	echo "Finished removing unneeded packages"
-	echo "###################################"
+	echo "====== Finished removing unneeded packages ======"
 	sleep 1
 	echo
-	echo "Checking for Snap and Flatpak updates and removing unused revisions..."
+	echo "====== Checking for Snap and Flatpak updates ======"
 	echo
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
@@ -175,7 +168,8 @@ function MAINTENANCE {
 
 			# Remove old revisions of Snap packages
 			echo
-			echo "Removing old revisions of Snap packages..."
+			echo "===== Removing old revisions of Snap packages ====="
+			echo
 			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
 				while read snapname revision; do
 					sudo snap remove --purge "$snapname" --revision="$revision"
@@ -200,23 +194,23 @@ function MAINTENANCE {
 	fi
 	# Check if flatpak is installed then start maintenance
 	if command -v flatpak &>/dev/null; then
-		echo "Updating Flatpak packages..."
+		echo ""
+		echo "===== Updating Flatpak packages ====="
 		sleep 1
 		sudo flatpak update -y
-		echo
-		echo "Removing unused Flatpak packages..."
+		echo ""
+		echo "===== Removing unused Flatpak packages ====="
 		sudo flatpak uninstall --unused -y
 		sleep 1
 		echo    
 	else
-		echo
+		echo ""
+		echo "===== Updating Flatpak packages ====="
 		echo "Flatpak is not available on this system. Skipping."
 		sleep 1
 	fi
 	echo					
-	echo "################################################"
-	echo "Finished refreshing of Snap and Flatpak packages"
-	echo "################################################"
+	echo "===== Finished refreshing Snap and Flatpak packages ====="
 	sleep 1
 	echo
 
@@ -258,35 +252,25 @@ function MAINTENANCE {
 	sudo apt $APT_OPTS remove -y --purge $PURGE;
 
 	echo
-	echo "###################################"
-	echo "Finished removing old kernels"
-	echo "###################################"
+	echo "===== Finished removing old kernels ====="
 	sleep 1
 	echo
 	## Removes unused config files of uninstalled packages
 	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
 	echo
-	echo "######################################################"
-	echo "Finished removing config files of uninstalled packages"
-	echo "######################################################"
+	echo "===== Finished removing the config files of uninstalled packages ====="
 	sleep 1
 	echo
 
 	## Removes package files that can no longer be downloaded and everything except
 	# the lock file in /var/cache/apt/archives, including directories.
-	sudo apt-get -y autoclean; sudo apt-get -y clean;
+	sudo apt -y autoclean; sudo apt -y clean;
 	echo
-	echo "######################################"
-	echo " Cleaned downloaded temporary packages"
-	echo "######################################"
-	echo
+	echo "===== Finished cleaning up downloaded packages ====="
 	sleep 1
 
 	echo
-	echo "#########################################"
-	echo " Checking to see if a reboot is required"
-	echo "#########################################"
-	echo
+	echo "===== Checking to see if a reboot is required ====="
 	## Check to see if a reboot is required
 	if [ -f /var/run/reboot-required ]; then
  		echo
@@ -312,9 +296,7 @@ function MAINTENANCE {
 	fi
 	sleep 1
 	echo
-	echo "######################################"
-	echo "Checking Disk after System Maintenance"
-	echo "######################################"
+	echo "===== checking Disk usage after System Maintenance ====="
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo "$df_output"
@@ -333,8 +315,8 @@ deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restrict
 
 EOT
 
-sudo apt-get install update-manager-core
-sudo apt-get -y dist-upgrade
+sudo apt install update-manager-core
+sudo apt -y dist-upgrade
 sudo do-release-upgrade
 }
 
@@ -371,42 +353,35 @@ function SHOW_HELP {
 				    ~ $UCARE_VERSION ~
 		     All-in-one system update and maintenance app
 
-	Usage: sudo ucaresystem-core <parameter> 
+	Usage: sudo ucaresystem-core <option> 
 	
-	If no parameter is specified, it will just do the regular
-	maintenance:
+		If no option is specified, it performs the regular maintenance tasks.
+		It updates system, snap, and flatpak packages, removes old kernels, old 
+		Snap and flatpack revisions and unneeded packages, and cleans up 
+		configurations of uninstalled packages.
 	
-	 * Updates the list of available packages
-	 * Downloads and installs the available updates
-	 * Checks if there are older Linux kernels on the system and removes
-	   them. However it keeps the current and one previous version of 
-	   the kernel.
-	 * Cleans the cache of the downloaded packages
-	 * Removes obsolete packages
-	 * Removes orphan packets
-	 * Deletes package configuration files from packages that have been
-	   uninstalled by you.
-	
-	Parameter:	 
-		 -h          display this help and exit
-		 
-		 -u          Upgrade to the next release. Note: If you use a
-		             regular release it will upgrade to the next one. If
-		             you are on a LTS version, it will upgrade only to 
-		             the next LTS.
-		             
-		 -d          Upgrade to the next development release
+	Options:
 
-		 -eol        CAUTION: Do not use this if your Ubuntu has not 
-			     reached its End of life support.
-				    Check https://wiki.ubuntu.com/Releases
-			     This option is for Ubuntu releases that have
-			     reached their EOL and the user wants to upgrade
-			     it to the next supported version.
+		 -h --help         Display this help and exit
 		 
-		 -r          After completing all the tasks, reboot the system
+		 -u --upgrade      Upgrade to the next release. Note: If you use a
+		                   regular release it will upgrade to the next one. If
+		                   you are on a LTS version, it will upgrade only to 
+		                   the next LTS.
+		             
+		 -d --development  Upgrade to the next development release
+
+		 -eol --end-of-life-upgrade      
+				   CAUTION: Do not use this if your Ubuntu has not
+			  	   reached its End of life support.
+			           Check https://wiki.ubuntu.com/Releases
+			           This option is ONLY for Ubuntu releases that have
+			           reached their EOL and you want to upgrade
+			           it to the next supported version.
 		 
-		 -s	     After completing all the tasks, shutdown the system
+		 -r --reboot       Reboot the system, after completing all the tasks, 
+
+		 -s --shutdown     Shutdown the system, after completing all the tasks, 
 
 EOF
 }
@@ -426,11 +401,12 @@ function GOODBYE {
 	echo ""
 	echo " Dear $USERNAME, the following names are the legends"
 	echo " of $PREV_VER development cycle, supporters:"
-	echo "   P. Loughman, D. Emge, H. Karasoulis, D. Anastasopoulos"
+	echo "   P. Loughman, D. Emge, N. Karanikolas, J. Michailidis"
+	echo "M. Stade, M. C. Enache, Er. Vlyziotis, J. Cain, D. Luchini"
 	echo ""	
 	echo "	https://www.paypal.me/cerebrux"
 	echo ""
-	echo "     	All maintenace Complete... GOODBYE"
+	echo "     	All maintenance Complete... GOODBYE"
 	echo "___________________________________________________________"
 	echo
 }
@@ -439,25 +415,31 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo "##############################"
-	echo "Shutting down as you requested"
-	echo "##############################"
+	echo "===== Shutting down as you requested ====="
 	echo
-	MESSAGE="Shuting down"
+	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
-	sudo shutdown now
+	if command -v systemctl &> /dev/null; then
+		sudo systemctl poweroff
+	else
+		sudo poweroff
+	fi
 }
 
 function RE_BOOT {
 	sleep 1
 	echo
 	echo
-	echo "##########################"
-	echo "Rebooting as you requested"
-	echo "##########################"
+	echo "===== Rebooting as you requested ====="
 	echo
-	MESSAGE="Rebooting"
+	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
+	if command -v systemctl &> /dev/null; then
+		sudo systemctl reboot
+	else
+		sudo reboot
+	fi
+	
 	sudo reboot
 	## End of script
 }
