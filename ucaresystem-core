@@ -21,6 +21,8 @@ set -e
 ## Script starts here
 
 #Variables
+GREEN="\e[32m"
+ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
 UCARE_VERSION="24.11.24"
@@ -96,10 +98,10 @@ function WELCOME_SCREEN {
 function MAINTENANCE {
 	echo
 	echo
-	echo "====== Started ======"
+	echo -e "${GREEN} Started ${ENDCOLOR} "
 	sleep 1
 	echo
-	echo "====== Checking Disk usage before System Maintenance ======"
+	echo -e " ${GREEN} Checking Disk usage before System Maintenance ${ENDCOLOR}"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo ""
@@ -115,7 +117,7 @@ function MAINTENANCE {
 		echo 
 	fi
 	## Updates package lists
-	echo "====== Updating package lists ======"
+	echo -e "${GREEN} Updating package lists ${ENDCOLOR}"
 	echo
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
@@ -125,24 +127,24 @@ function MAINTENANCE {
 	sleep 1
 	sudo apt list --upgradable;
 	echo
-	echo "====== Finished updating package lists ======"
+	echo -e "${GREEN} Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Updates packages and libraries
 	sudo apt full-upgrade -V -y;
 	echo
-	echo "====== Finished upgrading system packages and libraries ======"
+	echo -e "${GREEN} Finished upgrading system packages and libraries ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Removes unneeded packages
 	sudo apt autoremove -y --purge;
 	echo					
-	echo "====== Finished removing unneeded packages ======"
+	echo -e "${GREEN} Finished removing unneeded packages ${ENDCOLOR}"
 	sleep 1
 	echo
-	echo "====== Checking for Snap and Flatpak updates ======"
+	echo -e "${GREEN} Checking for Snap and Flatpak updates ${ENDCOLOR}"
 	echo
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
@@ -168,7 +170,7 @@ function MAINTENANCE {
 
 			# Remove old revisions of Snap packages
 			echo
-			echo "===== Removing old revisions of Snap packages ====="
+			echo -e "${GREEN} Removing old revisions of Snap packages ${ENDCOLOR}"
 			echo
 			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
 				while read snapname revision; do
@@ -195,22 +197,22 @@ function MAINTENANCE {
 	# Check if flatpak is installed then start maintenance
 	if command -v flatpak &>/dev/null; then
 		echo ""
-		echo "===== Updating Flatpak packages ====="
+		echo -e  "${GREEN} Updating Flatpak packages ${ENDCOLOR}"
 		sleep 1
 		sudo flatpak update -y
 		echo ""
-		echo "===== Removing unused Flatpak packages ====="
+		echo -e "${GREEN} Removing unused Flatpak packages ${ENDCOLOR}"
 		sudo flatpak uninstall --unused -y
 		sleep 1
 		echo    
 	else
 		echo ""
-		echo "===== Updating Flatpak packages ====="
+		echo -e "${GREEN} Updating Flatpak packages ${ENDCOLOR}"
 		echo "Flatpak is not available on this system. Skipping."
 		sleep 1
 	fi
 	echo					
-	echo "===== Finished refreshing Snap and Flatpak packages ====="
+	echo -e "${GREEN} Finished refreshing Snap and Flatpak packages ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -252,13 +254,13 @@ function MAINTENANCE {
 	sudo apt $APT_OPTS remove -y --purge $PURGE;
 
 	echo
-	echo "===== Finished removing old kernels ====="
+	echo -e "${GREEN} Finished removing old kernels ${ENDCOLOR}"
 	sleep 1
 	echo
 	## Removes unused config files of uninstalled packages
 	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
 	echo
-	echo "===== Finished removing the config files of uninstalled packages ====="
+	echo -e "${GREEN} Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -266,11 +268,11 @@ function MAINTENANCE {
 	# the lock file in /var/cache/apt/archives, including directories.
 	sudo apt autoclean -y; sudo apt clean -y;
 	echo
-	echo "===== Finished cleaning up downloaded packages ====="
+	echo -e "${GREEN} Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
 
 	echo
-	echo "===== Checking to see if a reboot is required ====="
+	echo -e " ${GREEN} Checking to see if a reboot is required ${ENDCOLOR}"
 	## Check to see if a reboot is required
 	if [ -f /var/run/reboot-required ]; then
  		echo
@@ -296,7 +298,7 @@ function MAINTENANCE {
 	fi
 	sleep 1
 	echo
-	echo "===== checking Disk usage after System Maintenance ====="
+	echo -e "${GREEN} checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo "$df_output"
@@ -415,7 +417,7 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo "===== Shutting down as you requested ====="
+	echo -e "${GREEN} Shutting down as you requested ${ENDCOLOR}"
 	echo
 	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
@@ -430,7 +432,7 @@ function RE_BOOT {
 	sleep 1
 	echo
 	echo
-	echo "===== Rebooting as you requested ====="
+	echo -e "${GREEN} Rebooting as you requested ${ENDCOLOR}"
 	echo
 	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
