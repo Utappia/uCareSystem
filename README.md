@@ -12,8 +12,8 @@
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
-	Date   : 17-11-2024 (first release 19-02-2009)
-	Version: 24.11.17
+	Date   : 24-11-2024 (first release 19-02-2009)
+	Version: 24.11.24
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 
