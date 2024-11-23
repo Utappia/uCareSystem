@@ -4,14 +4,25 @@
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 set -e
-DIST_CODENAME=$(lsb_release --codename | cut -f2)
-DIST_ID=$(lsb_release --id | cut -f2)
+
+# Repository configuration
 COMPATIBLE_DIST_NAME="xenial"
 KEYSERVER="hkp://keyserver.ubuntu.com"
 KEY="EBC8F9FD"
 REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
 REPO_FILE="/etc/apt/sources.list.d/utappia.list"
 
+# Distribution detection
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    DIST_ID="$ID"
+    DIST_FAMILY="$ID_LIKE"
+else
+    DIST_ID=$(lsb_release -si 2>/dev/null || echo "Unknown")
+    DIST_FAMILY=""
+fi
+
+# Repository existence check
 echo "Checking if Utappia Repository exists in your system"
 sleep 2
 
@@ -23,17 +34,7 @@ else
     echo ""
     
     echo "Adding Utappia repository"
-    if [ "$DIST_ID" = "Debian" ]; then
-        cat <<EOT > "$REPO_FILE"
-# Debian compatible Utappia Repository
-deb $REPO_URL $COMPATIBLE_DIST_NAME main
-deb-src $REPO_URL $COMPATIBLE_DIST_NAME main
-EOT
-        echo ""
-        echo "Refreshing package list..."
-        echo ""
-        apt-get update -o Acquire::ForceIPv4=true
-    else
+    if [ "$DIST_ID" = "ubuntu" ] || echo "$DIST_FAMILY" | grep -q "ubuntu"; then
         echo "Temporarily disabling IPv6"
         sleep 1
         echo ""
@@ -52,6 +53,16 @@ EOT
         sysctl -w net.ipv6.conf.default.disable_ipv6=0
         sysctl -w net.ipv6.conf.lo.disable_ipv6=0
 
+        echo ""
+        echo "Refreshing package list..."
+        echo ""
+        apt-get update -o Acquire::ForceIPv4=true
+    else
+        cat <<EOT > "$REPO_FILE"
+# Debian compatible Utappia Repository
+deb $REPO_URL $COMPATIBLE_DIST_NAME main
+deb-src $REPO_URL $COMPATIBLE_DIST_NAME main
+EOT
         echo ""
         echo "Refreshing package list..."
         echo ""
