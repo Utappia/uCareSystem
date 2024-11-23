@@ -22,7 +22,7 @@ set -e
 
 #Variables
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
-DATE=(date +%F_%T)
+DATE=$(date +%F_%T)
 UCARE_VERSION=(24.11.17)
 USERNAME=$(logname 2>/dev/null || echo $USER)
 PREV_VER=(24.10)
