@@ -264,7 +264,7 @@ function MAINTENANCE {
 
 	## Removes package files that can no longer be downloaded and everything except
 	# the lock file in /var/cache/apt/archives, including directories.
-	sudo apt -y autoclean; sudo apt -y clean;
+	sudo apt autoclean -y; sudo apt clean -y;
 	echo
 	echo "===== Finished cleaning up downloaded packages ====="
 	sleep 1
@@ -316,7 +316,7 @@ deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restrict
 EOT
 
 sudo apt install update-manager-core
-sudo apt -y dist-upgrade
+sudo apt dist-upgrade -y
 sudo do-release-upgrade
 }
 
