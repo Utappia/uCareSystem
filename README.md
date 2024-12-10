@@ -37,24 +37,24 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 
 - Updates the list of available packages
 - Downloads and installs the available updates
-- Downloads and installs Snap Package updates (It's skiped if Snap is not installed)
+- Downloads and installs Snap Package updates (It's skipped if Snap is not installed)
 - Removes Old Snap revisions to free up space
-- Downloads and installs Flatpak Package updates (It's skiped if Flatpak is not installed)
+- Downloads and installs Flatpak Package updates (It's skipped if Flatpak is not installed)
 - Removes unused Flatpak packages to free up space
 - Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel.
 - Cleans the cache of the downloaded packages
 - Removes obsolete packages
-- Removes orphan packets
+- Removes orphan packages
 - Deletes package configuration files from packages that have been uninstalled by you
-- If there is a need for a system reboot, it will inform you and it will provide the list of packeages that requested that system reboot
+- If there is a need for a system reboot, it will inform you and it will provide the list of packages that requested that system reboot
 
 ![ucaresystem-core](https://github.com/user-attachments/assets/a684a40e-403f-4306-a4dc-930575e066c5)
 
 ## Usage
 
-uCareSystem creates an launcher icon in your Applications menu. Just search your applications manu for `ucare`. If you click the icon, it starts performing the default maintenance tasks. 
+uCareSystem creates a launcher icon in your Applications menu. Just search your applications menu for `ucare`. If you click the icon, it starts performing the default maintenance tasks. 
 
-Alternatively, you can invoke it through terminal with various options/flags. The default system updates and maintenace for Ubuntu / Debian / Linux Mint (and derivatives) :
+Alternatively, you can invoke it through terminal with various options/flags. The default system updates and maintenance for Ubuntu / Debian / Linux Mint (and derivatives) :
 ```
 ucaresystem-core
 ```
@@ -62,7 +62,7 @@ If you want to shutdown your system after using the uCareSystem you can use the 
 ```
 ucaresystem-core -s
 ```
-When the next available release is availabe for Ubuntu (and official flavors) you can upgrade with `-u`:
+When the next available release is available for Ubuntu (and official flavors) you can upgrade with `-u`:
 ```	
 ucaresystem-core -u
 ```
@@ -74,7 +74,16 @@ If your Ubuntu (and official flavors) has reached the EOL support you can upgrad
 ```
 ucaresystem-core -eol
 ```
-For information about all the availabe options / flags, start ucaresystem-core with `-h` option :
+For information about all the available options / flags, start ucaresystem-core with `-h` option :
 ```
 ucaresystem-core -h
 ```
+## Code contribution
+
+If you have an idea and want to contribute code:
+
+1. Open an Issue describing what you want to fix/change/enhance
+2. From the branches button, change the "master" to "develop" branch
+3. Start coding and once you are done, create a pull request that you want to be merged to the "develop" branch
+
+Please do not use master branch for code contribution. Use the develop branch for forking and pull requests
