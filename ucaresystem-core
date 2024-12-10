@@ -10,8 +10,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
-# Date   : 24-11-2024 (first release 19-02-2009)
-# Version: 24.11.24
+# Date   : 11-12-2024 (first release 19-02-2009)
+# Version: 24.12.11
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -25,8 +25,8 @@ GREEN="\e[32m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="24.11.24"
-PREV_VER="24.10"
+UCARE_VERSION="24.12.11"
+PREV_VER="24.11"
 USERNAME=$(logname 2>/dev/null || echo $USER)
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
