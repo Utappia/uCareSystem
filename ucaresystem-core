@@ -22,6 +22,9 @@ set -e
 
 #Variables
 GREEN="\e[32m"
+CYAN="\e[36m"
+MAGENTA="\e[35m"
+YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
@@ -33,8 +36,8 @@ DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
-    echo "uCareSystem must be run as root or with sudo."
-    echo "Now I will just exit..." 1>&2
+    echo -e "${YELLOW} uCareSystem must be run as root or with sudo. ${ENDCOLOR}"
+    echo -e "${YELLOW} Now I will just exit... ${ENDCOLOR}" 1>&2
     echo ""
     sleep 2
     exit 1
@@ -49,7 +52,7 @@ function CHECK_INTERNET {
 }
 # Check internet connectivity
 if ! CHECK_INTERNET; then
-   echo "No internet connection detected..."
+   echo -e "${YELLOW} No internet connection detected... ${ENDCOLOR}"
    sleep 1
    echo "Please ensure that your system is connected to the internet,"
    echo "and then try again..." 
@@ -63,7 +66,7 @@ fi
 function COUNTDOWN {
     	secs=$1
 	while [ $secs -gt 0 ]; do
-		echo -ne "$MESSAGE in $secs seconds... (to exit now, press Ctrl+C) \r"
+		echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
 		sleep 1
 		: $((secs--))
 	done
@@ -74,7 +77,7 @@ duration=5 # countdown duration in seconds
 function WELCOME_SCREEN {
 	echo "________________________________________________________"
 	echo ""
-	echo "            uCareSystem $UCARE_VERSION"
+	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~"
 	echo " Welcome to all-in-one System Update and maintenance app"
 	echo ""
@@ -86,9 +89,9 @@ function WELCOME_SCREEN {
 	echo " continuous improvement but also inspires and"
 	echo " motivates me to keep pushing forward while also shows" 
 	echo " your appreciation for the time and effort that I have"
-	echo "               put into the project."
+	echo "               put into the project:"
 	echo ""
-	echo "$DONATE"
+	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo "________________________________________________________"
 	echo
 	# start the countdown
@@ -99,22 +102,24 @@ function WELCOME_SCREEN {
 function MAINTENANCE {
 	echo
 	echo
-	echo -e "${GREEN} Started ${ENDCOLOR} "
+	echo -e "${MAGENTA} Started ${ENDCOLOR} "
 	sleep 1
 	echo
 	echo -e " ${GREEN} Checking Disk usage before System Maintenance ${ENDCOLOR}"
+	sleep 1	
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo ""
-	echo "$df_output"
+	echo -e "${YELLOW}$df_output ${ENDCOLOR}"
 	echo
 	sleep 1
 
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
 	if command -v systemctl &> /dev/null; then
-		echo "Reloading systemd manager configuration"
+		echo -e "${YELLOW}Reloading systemd manager configuration ${ENDCOLOR}"
 		sudo systemctl daemon-reload
+		sleep 1
 		echo 
 	fi
 	## Updates package lists
@@ -124,7 +129,7 @@ function MAINTENANCE {
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
 	# Print each line with padding to fit the terminal width
 	xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
-	echo "Here are the packages that can be upgraded if they are not kept back due to phased releases:"
+	echo -e "${YELLOW}Here are the packages that can be upgraded if they are not kept back due to phased releases: ${ENDCOLOR}"
 	sleep 1
 	sudo apt list --upgradable;
 	echo
@@ -150,7 +155,7 @@ function MAINTENANCE {
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
 	# Stop all running Snap applications
-		echo "Stopping all running Snap applications..."
+		echo -e "${YELLOW}Stopping all running Snap applications... ${ENDCOLOR}"
 		stopped_snaps=()
 		while IFS= read -r snapname; do
 			if sudo snap stop "$snapname" &>/dev/null; then
@@ -160,60 +165,59 @@ function MAINTENANCE {
 
 		# Print the names of stopped Snap applications
 		if [ ${#stopped_snaps[@]} -gt 0 ]; then
-			echo "Stopped Snap applications:"
+			echo -e "${YELLOW}Stopped Snap applications: ${ENDCOLOR}"
 			for snapname in "${stopped_snaps[@]}"; do
 				echo "$snapname"
 			done
 			# Check for updates and install them
-			echo "Checking for updates and installing them..."
+			echo -e "${YELLOW}Checking for Snap package updates and installing them... ${ENDCOLOR}"
 			echo
 			sudo snap refresh
 
 			# Remove old revisions of Snap packages
 			echo
-			echo -e "${GREEN} Removing old revisions of Snap packages ${ENDCOLOR}"
+			echo -e "${YELLOW}Removing old revisions of Snap packages ${ENDCOLOR}"
 			echo
 			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
 				while read snapname revision; do
 					sudo snap remove --purge "$snapname" --revision="$revision"
 				done
 
-			echo "Old revisions of Snap packages removed successfully."
+			echo -e "${YELLOW}Old revisions of Snap packages removed successfully. ${ENDCOLOR}"
 			sleep 1
 			# Start previously stopped Snap applications
 			echo
-			echo "Starting previously stopped Snap applications..."
+			echo -e "${YELLOW}Starting previously stopped Snap applications... ${ENDCOLOR}"
 			for snapname in "${stopped_snaps[@]}"; do
 				sudo snap start "$snapname" &>/dev/null
 			done
 		else
-			echo "No Snap applications were stopped."
+			echo -e "${YELLOW}No Snap applications were stopped. ${ENDCOLOR}"
 		fi
 
 	else
 		echo
-		echo "Snap is not available on this system. Skipping."
+		echo -e "${YELLOW}Snap is not available on this system. Skipping. ${ENDCOLOR}"
 		sleep 1
 	fi
 	# Check if flatpak is installed then start maintenance
 	if command -v flatpak &>/dev/null; then
 		echo ""
-		echo -e  "${GREEN} Updating Flatpak packages ${ENDCOLOR}"
+		echo -e "${YELLOW}Checking for Flatpak package updates and installing them...  ${ENDCOLOR}"
 		sleep 1
 		sudo flatpak update -y
 		echo ""
-		echo -e "${GREEN} Removing unused Flatpak packages ${ENDCOLOR}"
+		echo -e "${YELLOW}Removing unused Flatpak packages ${ENDCOLOR}"
 		sudo flatpak uninstall --unused -y
 		sleep 1
 		echo    
 	else
 		echo ""
-		echo -e "${GREEN} Updating Flatpak packages ${ENDCOLOR}"
-		echo "Flatpak is not available on this system. Skipping."
+		echo -e "${YELLOW}Flatpak is not available on this system. Skipping. ${ENDCOLOR}"
 		sleep 1
 	fi
 	echo					
-	echo -e "${GREEN} Finished refreshing Snap and Flatpak packages ${ENDCOLOR}"
+	echo -e "${GREEN} Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -249,7 +253,7 @@ function MAINTENANCE {
 	done
 
 	if [ -z "$PURGE" ]; then
-		echo "No kernels are eligible for removal"
+		echo -e  "${YELLOW}No kernels are eligible for removal ${ENDCOLOR}"
 	fi
 
 	sudo apt $APT_OPTS remove -y --purge $PURGE;
@@ -273,36 +277,40 @@ function MAINTENANCE {
 	sleep 1
 
 	echo
-	echo -e " ${GREEN} Checking to see if a reboot is required ${ENDCOLOR}"
+	echo -e "${GREEN} Checking to see if a reboot is required ${ENDCOLOR}"
 	## Check to see if a reboot is required
 	if [ -f /var/run/reboot-required ]; then
  		echo
-  		echo "* * * * * * * * * * * * * * * * * *"
- 		echo "* 	Dear $USERNAME"
-  		echo "*"
- 		echo "* Consider rebooting your system"  
-  		echo "* to finish applying updates"      
-  		echo "* requested by the following"      
-		echo "* packages:"						
-  		echo "*"
+  		echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
+ 		echo -e "${MAGENTA}*${ENDCOLOR} 	Dear $USERNAME"
+  		echo -e "${MAGENTA}*${ENDCOLOR}"
+ 		echo -e "${MAGENTA}*${ENDCOLOR}  Consider rebooting your system"  
+  		echo -e "${MAGENTA}*${ENDCOLOR}  to finish applying updates"      
+  		echo -e "${MAGENTA}*${ENDCOLOR}  requested by the following"      
+		echo -e "${MAGENTA}*${ENDCOLOR}  packages:"						
+  		echo -e "${MAGENTA}*${ENDCOLOR} "
 		if [ -f /var/run/reboot-required.pkgs ]; then
         	cat /var/run/reboot-required.pkgs | uniq
-			echo "* * * * * * * * * * * * * * * * * *"
+			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
-        	echo "Cannot find the list of packages... Skipping"
+        	echo -e "${YELLOW}Cannot find the list of packages... Skipping ${ENDCOLOR}"
     	fi
 		sleep 1
 	else 
 		echo
-		echo "No reboot is required at this time"
+		echo -e "${YELLOW}  No reboot is required at this time...  ${ENDCOLOR}"
+		echo -e "${YELLOW}  Happy to be $(uptime -p) ${ENDCOLOR}"
+		echo -e "${YELLOW}  and serve you since $(uptime -s)... ${ENDCOLOR}"
+		echo -e "${YELLOW}  Enjoy your system... ${ENDCOLOR}"
 		echo
+		sleep 1
 	fi
 	sleep 1
 	echo
-	echo -e "${GREEN} checking Disk usage after System Maintenance ${ENDCOLOR}"
+	echo -e "${GREEN} Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
-	echo "$df_output"
+	echo -e "${YELLOW}$df_output ${ENDCOLOR}"
 	echo
 	sleep 1
 
@@ -393,7 +401,7 @@ function GOODBYE {
 	sleep 1
 	echo "___________________________________________________________"
 	echo ""
-	echo "            uCareSystem $UCARE_VERSION"
+	echo -e "            ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~"
 	echo ""
 	echo " I am deeply grateful for your generous donations"
@@ -404,14 +412,22 @@ function GOODBYE {
 	echo ""
 	echo " Dear $USERNAME, the following names are the legends"
 	echo " of $PREV_VER development cycle, supporters:"
-	echo "   P. Loughman, D. Emge, K. A. Gkountras (Jemadux),"
-	echo "B. Breitfeld, S. McClatchie, J. A. Villareal, D. E. Swarthout"
-	echo ""	
-	echo "$DONATE"
 	echo ""
-	echo "     	All maintenance Complete... GOODBYE"
+	echo " - P. Loughman"
+	echo " - D. Emge"
+	echo " - K. A. Gkountras (Jemadux)"
+	echo " - B. Breitfeld"
+	echo " - S. McClatchie"
+	echo " - J. A. Villareal"
+	echo " - D. E. Swarthout"
+	echo ""	
+	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
+	echo ""
+	sleep 2
+	echo -e "     	${MAGENTA}All maintenance Complete... GOODBYE${ENDCOLOR}"
 	echo "___________________________________________________________"
 	echo
+	sleep 1
 }
 
 function SHUT_DOWN {
