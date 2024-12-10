@@ -23,13 +23,11 @@ With version 24.06 of uCareSystem, I added a section to acknowledge the people w
 
 - P. Loughman (Thanks for your continued support)
 - D. Emge (Thanks for your continued support)
-- N. Karanikolas
-- J. Michailidis
-- M. Stade
-- M. C. Enache
-- Er. Vlyziotis
-- J. Cain
-- D. Luchini
+- K. A. Gkountras (Jemadux)
+- B. Breitfeld
+- S. McClatchie
+- J. A. Villareal
+- D. E. Swarthout
 
 ## Description:
 
