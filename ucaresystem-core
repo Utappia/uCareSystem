@@ -28,6 +28,7 @@ DATE=$(date +%F_%T)
 UCARE_VERSION="24.12.11"
 PREV_VER="24.11"
 USERNAME=$(logname 2>/dev/null || echo $USER)
+DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
     clear
@@ -87,7 +88,7 @@ function WELCOME_SCREEN {
 	echo " your appreciation for the time and effort that I have"
 	echo "               put into the project."
 	echo ""
-	echo "           https://www.paypal.me/cerebrux"
+	echo "$DONATE"
 	echo "________________________________________________________"
 	echo
 	# start the countdown
@@ -406,7 +407,7 @@ function GOODBYE {
 	echo "   P. Loughman, D. Emge, K. A. Gkountras (Jemadux),"
 	echo "B. Breitfeld, S. McClatchie, J. A. Villareal, D. E. Swarthout"
 	echo ""	
-	echo "	https://www.paypal.me/cerebrux"
+	echo "$DONATE"
 	echo ""
 	echo "     	All maintenance Complete... GOODBYE"
 	echo "___________________________________________________________"
