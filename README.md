@@ -46,7 +46,7 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 - Deletes package configuration files from packages that have been uninstalled by you
 - If there is a need for a system reboot, it will inform you and it will provide the list of packages that requested that system reboot
 
-![ucaresystem-core](https://github.com/user-attachments/assets/a684a40e-403f-4306-a4dc-930575e066c5)
+![ucaresystem-color](https://github.com/user-attachments/assets/6f5171c2-5a64-465b-b794-920e225ce7f7)
 
 ## Usage
 
