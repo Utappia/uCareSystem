@@ -2,10 +2,11 @@ Source: ucaresystem-core
 Section: utils
 Priority: optional
 Maintainer: Salih Emin <salih-emin@ubuntu.com>
-Build-Depends: debhelper (>= 9)
-Standards-Version: 4.1.1
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.0
 Homepage: http://utappia.org
-Vcs-Browser: https://github.com/Utappia/uCareSystem.git
+Vcs-Browser: https://github.com/Utappia/uCareSystem
+Vcs-Git: https://github.com/Utappia/uCareSystem.git
 
 Package: ucaresystem-core
 Architecture: all
