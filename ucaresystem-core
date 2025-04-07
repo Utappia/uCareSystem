@@ -1,4 +1,4 @@
-#!/usr/bin/sudo /bin/bash
+#!/bin/bash
 #shellcheck disable=SC1008
 set -e
 #
@@ -65,13 +65,18 @@ fi
 
 # Simple countdown function
 function COUNTDOWN {
-    	secs=$1
-	while [ "$secs" -gt 0 ]; do
-		echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
-		sleep 1
-		: $((secs--))
-	done
-	
+    secs=$1
+    while [ "$secs" -ge 0 ]; do
+        if [ "$secs" -eq 0 ]; then
+            # Clear the line completely and show just the "now!" message
+            echo -ne "\r$MESSAGE ${YELLOW}now${ENDCOLOR}!                                                  \n"
+            break
+        else
+            echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
+        fi
+        sleep 1
+        : $((secs--))
+    done
 }
 duration=5 # countdown duration in seconds
 
