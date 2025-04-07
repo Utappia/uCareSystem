@@ -102,7 +102,7 @@ function WELCOME_SCREEN {
 	echo
 	# start the countdown
 	MESSAGE="uCareSystem will start"
-	COUNTDOWN $duration
+	COUNTDOWN "$duration"
 }
 
 # Function to handle kernel cleanup
