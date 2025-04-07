@@ -57,7 +57,7 @@ if ! CHECK_INTERNET; then
    sleep 1
    echo "Please ensure that your system is connected to the internet,"
    echo "and then try again..." 
-   echo "Now I will just exit..."1>&2
+   echo "Now I will just exit..." 1>&2
    echo ""
    sleep 2
    exit 1
@@ -512,9 +512,6 @@ function RE_BOOT {
 	else
 		sudo reboot
 	fi
-	
-	sudo reboot
-	## End of script
 }
 
 # The main process starts
