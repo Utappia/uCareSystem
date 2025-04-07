@@ -14,6 +14,7 @@ REPO_FILE="/etc/apt/sources.list.d/utappia.list"
 
 # Distribution detection
 if [ -f /etc/os-release ]; then
+    # shellcheck disable=SC1091
     . /etc/os-release
     DIST_ID="$ID"
     DIST_FAMILY="$ID_LIKE"
