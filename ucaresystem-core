@@ -332,7 +332,7 @@ function MAINTENANCE {
 		echo -e "${MAGENTA}*${ENDCOLOR}  packages:"						
   		echo -e "${MAGENTA}*${ENDCOLOR} "
 		if [ -f /var/run/reboot-required.pkgs ]; then
-        	cat /var/run/reboot-required.pkgs | uniq
+        	uniq < /var/run/reboot-required.pkgs
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
         	echo -e "${YELLOW}Cannot find the list of packages... Skipping ${ENDCOLOR}"
