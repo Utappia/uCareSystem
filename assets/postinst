@@ -6,7 +6,7 @@
 set -e
 
 # Repository configuration
-COMPATIBLE_DIST_NAME="xenial"
+COMPATIBLE_DIST_NAME="jammy"
 KEYSERVER="hkp://keyserver.ubuntu.com"
 KEY="EBC8F9FD"
 REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
