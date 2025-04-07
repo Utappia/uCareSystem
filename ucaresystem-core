@@ -248,7 +248,7 @@ function MAINTENANCE {
 		done < <(sudo snap list | awk '/^name/ {next} {print $1}')
 
 		# Print the names of stopped Snap applications
-		if [ ${#stopped_snaps[@]} -gt 0 ]; then
+		if [ "${#stopped_snaps[@]}" -gt 0 ]; then
 			echo -e "${YELLOW}Stopped Snap applications: ${ENDCOLOR}"
 			for snapname in "${stopped_snaps[@]}"; do
 				echo "$snapname"
