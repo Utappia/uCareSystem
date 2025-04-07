@@ -69,3 +69,8 @@ EOT
         apt-get update -o Acquire::ForceIPv4=true
     fi
 fi
+
+# This is the debhelper token required by lintian
+#DEBHELPER#
+
+exit 0
