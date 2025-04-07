@@ -12,7 +12,7 @@ set -e
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
 # Date   : 11-12-2024 (first release 19-02-2009)
-# Version: 24.12.11
+# Version: 25.04.08
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -29,8 +29,9 @@ YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="24.12.11"
-PREV_VER="24.11"
+UCARE_VERSION="25.04.08"
+VER_CODENAME="P. Loughman"
+PREV_VER="24.12"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 # Checking if the user has run the script with "sudo" or not
@@ -84,7 +85,8 @@ function WELCOME_SCREEN {
 	echo "________________________________________________________"
 	echo ""
 	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
-	echo "            ~~~~~~~~~~~~~~~~~~~~"
+	echo -e "           ${CYAN} Code Name: $VER_CODENAME ${ENDCOLOR}"
+	echo "            ~~~~~~~~~~~~~~~~~~~~~"
 	echo " Welcome to all-in-one System Update and maintenance app"
 	echo ""
 	echo " 		Dear $USERNAME"
@@ -456,7 +458,8 @@ function GOODBYE {
 	echo "___________________________________________________________"
 	echo ""
 	echo -e "            ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
-	echo "            ~~~~~~~~~~~~~~~~~~~~"
+	echo -e "            ${CYAN} Code Name: $VER_CODENAME ${ENDCOLOR}"
+	echo "            ~~~~~~~~~~~~~~~~~~~~~"
 	echo ""
 	echo " I am deeply grateful for your generous donations"
 	echo " during the $PREV_VER development cycle. Your contributions"
