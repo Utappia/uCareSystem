@@ -1,4 +1,5 @@
 #!/usr/bin/sudo /bin/bash
+#shellcheck disable=SC1008
 set -e
 #
 #
@@ -30,7 +31,7 @@ DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
 UCARE_VERSION="24.12.11"
 PREV_VER="24.11"
-USERNAME=$(logname 2>/dev/null || echo $USER)
+USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 # Checking if the user has run the script with "sudo" or not
 if [[ $EUID -ne 0 ]] ; then
@@ -65,7 +66,7 @@ fi
 # Simple countdown function
 function COUNTDOWN {
     	secs=$1
-	while [ $secs -gt 0 ]; do
+	while [ "$secs" -gt 0 ]; do
 		echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
 		sleep 1
 		: $((secs--))
@@ -247,7 +248,7 @@ function MAINTENANCE {
 	done
 
 	# Build our list of kernel packages to purge
-	CANDIDATES=$(ls -tr /boot/vmlinuz-* | head -n -${KEEP} | grep -v "$(uname -r)$" | cut -d- -f2- | awk '{print "linux-image-" $0 " linux-headers-" $0}' )
+	CANDIDATES=$(ls -tr /boot/vmlinuz-* | head -n -"${KEEP}" | grep -v "$(uname -r)$" | cut -d- -f2- | awk '{print "linux-image-" $0 " linux-headers-" $0}' )
 	for c in $CANDIDATES; do
 		dpkg-query -s "$c" >/dev/null 2>&1 && PURGE="$PURGE $c"
 	done
@@ -256,7 +257,7 @@ function MAINTENANCE {
 		echo -e  "${YELLOW}No kernels are eligible for removal ${ENDCOLOR}"
 	fi
 
-	sudo apt $APT_OPTS remove -y --purge $PURGE;
+	sudo apt "$APT_OPTS" remove -y --purge "$PURGE";
 
 	echo
 	echo -e "${GREEN} Finished removing old kernels ${ENDCOLOR}"
