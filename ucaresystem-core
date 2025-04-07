@@ -38,10 +38,10 @@ if [[ $EUID -ne 0 ]] ; then
     clear
     echo ""
     echo -e "${YELLOW} uCareSystem must be run as root or with sudo. ${ENDCOLOR}"
-    echo -e "${YELLOW} Now I will just exit... ${ENDCOLOR}" 1>&2
+    echo -e "${YELLOW} Restarting with sudo... ${ENDCOLOR}"
     echo ""
-    sleep 2
-    exit 1
+    exec sudo "$0" "$@"
+    exit 1  # Should not reach here
 fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
