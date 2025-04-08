@@ -1,0 +1,44 @@
+name: ShellCheck
+
+on:
+  push:
+    paths:
+      - '**.sh'
+      - 'ucaresystem-core'
+      - 'launch-ucaresystemcore'
+      - 'assets/**'
+  pull_request:
+    paths:
+      - '**.sh'
+      - 'ucaresystem-core'
+      - 'launch-ucaresystemcore'
+      - 'assets/**'
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+      
+      - name: Run ShellCheck on main scripts
+        run: |
+          # Main scripts
+          find . -type f -name "ucaresystem-core" -o -name "launch-ucaresystemcore" | xargs shellcheck -x
+        
+      - name: Run ShellCheck on shell scripts in assets
+        run: |
+          # Check shell scripts by examining file contents, not extension
+          find . -type f -not -path "*/\.*" -exec grep -l "^#!/bin/\(bash\|sh\)" {} \; | xargs shellcheck || true
+
+      - name: ShellCheck Report Summary
+        if: always()
+        run: |
+          echo "### ShellCheck Results" >> $GITHUB_STEP_SUMMARY
+          shellcheck -f json ucaresystem-core launch-ucaresystemcore $(find . -type f -name "*.sh") 2>/dev/null | \
+          jq -r '.[] | "- File: \(.file), Line: \(.line), Col: \(.column), Level: \(.level), Message: \(.message)"' | \
+          tee -a $GITHUB_STEP_SUMMARY || echo "No issues found or jq not available" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
