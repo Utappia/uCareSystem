@@ -50,7 +50,7 @@ function CHECK_INTERNET {
 }
 # Check internet connectivity
 if ! CHECK_INTERNET; then
-   echo -e "${YELLOW} No internet connection detected... ${ENDCOLOR}"
+   echo -e "${YELLOW}No internet connection detected... ${ENDCOLOR}"
    sleep 1
    echo "Please ensure that your system is connected to the internet,"
    echo "and then try again..." 
