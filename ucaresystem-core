@@ -34,15 +34,11 @@ VER_CODENAME="P. Loughman"
 PREV_VER="24.12"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
-# Checking if the user has run the script with "sudo" or not
+# Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
-    clear
-    echo ""
-    echo -e "${YELLOW} uCareSystem must be run as root or with sudo. ${ENDCOLOR}"
-    echo -e "${YELLOW} Restarting with sudo... ${ENDCOLOR}"
-    echo ""
-    exec sudo "$0" "$@"
-    exit 1  # Should not reach here
+    echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
+    exec sudo "$0" "$@" 
+    exit 1
 fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
