@@ -13,7 +13,7 @@
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
 	Date   : 24-12-2024 (first release 19-02-2009)
-	Version: 24.12.11
+	Version: 25.04.09
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 

@@ -12,7 +12,7 @@ set -e
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
 # Date   : 11-12-2024 (first release 19-02-2009)
-# Version: 25.04.08
+# Version: 25.04.09
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -29,7 +29,7 @@ YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="25.04.08"
+UCARE_VERSION="25.04.09"
 VER_CODENAME="P. Loughman"
 PREV_VER="24.12"
 USERNAME=$(logname 2>/dev/null || echo "$USER")

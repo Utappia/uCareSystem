@@ -9,7 +9,7 @@ Vcs-Browser: https://github.com/Utappia/uCareSystem
 Vcs-Git: https://github.com/Utappia/uCareSystem.git
 
 Package: ucaresystem-core
-Version: 24.12.13
+Version: 25.04.09
 Architecture: all
 Depends: apt, lsb-release, curl, software-properties-common, ${misc:Depends}
 Description: All-in-one System Update and maintenance app
