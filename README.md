@@ -42,14 +42,14 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 - Removes Old Snap revisions to free up space
 - Downloads and installs Flatpak Package updates (It's skipped if Flatpak is not installed)
 - Removes unused Flatpak packages to free up space
-- Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel.
+- Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel. Also you can specify the number of kernels to keep
 - Cleans the cache of the downloaded packages
 - Removes obsolete packages
 - Removes orphan packages
 - Deletes package configuration files from packages that have been uninstalled by you
 - If there is a need for a system reboot, it will inform you and it will provide the list of packages that requested that system reboot
 
-![ucaresystem-core](https://github.com/user-attachments/assets/a684a40e-403f-4306-a4dc-930575e066c5)
+![ucaresystem-color](https://github.com/user-attachments/assets/6f5171c2-5a64-465b-b794-920e225ce7f7)
 
 ## Usage
 
@@ -74,6 +74,10 @@ ucaresystem-core -d
 If your Ubuntu (and official flavors) has reached the EOL support you can upgrade to the next supported release with `-eol`:
 ```
 ucaresystem-core -eol
+```
+You can specify if you need to keep more kernels and remove the rest
+```
+ucaresystem-core -k 3
 ```
 For information about all the available options / flags, start ucaresystem-core with `-h` option :
 ```
