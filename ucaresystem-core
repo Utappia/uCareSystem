@@ -85,8 +85,7 @@ function WELCOME_SCREEN {
 	echo "________________________________________________________"
 	echo ""
 	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
-	echo -e "           ${CYAN} Code Name: $VER_CODENAME ${ENDCOLOR}"
-	echo "            ~~~~~~~~~~~~~~~~~~~~~"
+	echo "            ~~~~~~~~~~~~~~~~~~~~"
 	echo " Welcome to all-in-one System Update and maintenance app"
 	echo ""
 	echo " 		Dear $USERNAME"
@@ -101,7 +100,8 @@ function WELCOME_SCREEN {
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo "________________________________________________________"
-	echo
+	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo ""
 	# start the countdown
 	MESSAGE="uCareSystem will start"
 	COUNTDOWN "$duration"
@@ -411,6 +411,8 @@ function SHOW_HELP {
 	
 				     uCareSystem
 				    ~ $UCARE_VERSION ~
+			  Release honored to: $VER_CODENAME
+
 		     All-in-one system update and maintenance app
 
 	Usage: sudo ucaresystem-core <option> 
@@ -458,7 +460,6 @@ function GOODBYE {
 	echo "___________________________________________________________"
 	echo ""
 	echo -e "            ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
-	echo -e "            ${CYAN} Code Name: $VER_CODENAME ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~~"
 	echo ""
 	echo " I am deeply grateful for your generous donations"
@@ -483,6 +484,7 @@ function GOODBYE {
 	sleep 2
 	echo -e "     	${MAGENTA}All maintenance Complete... GOODBYE${ENDCOLOR}"
 	echo "___________________________________________________________"
+	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
 	sleep 1
 }
