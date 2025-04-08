@@ -111,7 +111,7 @@ function CLEANUP_OLD_KERNELS {
     local purge_list=""
     local min_kernels=2  # Minimum required: current + one backup
     
-    echo -e "${GREEN}Starting kernel cleanup...${ENDCOLOR}"
+    echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
     
     # Validate keep_count
     if ! [[ "$keep_count" =~ ^[0-9]+$ ]]; then
@@ -177,7 +177,7 @@ function CLEANUP_OLD_KERNELS {
             fi
         done
         
-        echo -e "${GREEN}Kernel cleanup completed${ENDCOLOR}"
+        echo -e "${YELLOW} Kernel cleanup completed${ENDCOLOR}"
     fi
 }
 
@@ -187,7 +187,7 @@ function MAINTENANCE {
 	echo -e "${MAGENTA} Started ${ENDCOLOR} "
 	sleep 1
 	echo
-	echo -e " ${GREEN} Checking Disk usage before System Maintenance ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking Disk usage before System Maintenance ${ENDCOLOR}"
 	sleep 1	
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
@@ -205,7 +205,7 @@ function MAINTENANCE {
 		echo 
 	fi
 	## Updates package lists
-	echo -e "${GREEN} Updating package lists ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
 	echo
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
@@ -215,24 +215,24 @@ function MAINTENANCE {
 	sleep 1
 	sudo apt list --upgradable;
 	echo
-	echo -e "${GREEN} Finished updating package lists ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Updates packages and libraries
 	sudo apt full-upgrade -V -y;
 	echo
-	echo -e "${GREEN} Finished upgrading system packages and libraries ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished upgrading system packages and libraries ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Removes unneeded packages
 	sudo apt autoremove -y --purge;
 	echo					
-	echo -e "${GREEN} Finished removing unneeded packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished removing unneeded packages ${ENDCOLOR}"
 	sleep 1
 	echo
-	echo -e "${GREEN} Checking for Snap and Flatpak updates ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking for Snap and Flatpak updates ${ENDCOLOR}"
 	echo
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
@@ -299,18 +299,18 @@ function MAINTENANCE {
 		sleep 1
 	fi
 	echo					
-	echo -e "${GREEN} Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	# Call kernel cleanup with default value
-	echo -e "${GREEN}Checking for old kernels...${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking for old kernels...${ENDCOLOR}"
 	CLEANUP_OLD_KERNELS 2
 
 	## Removes unused config files of uninstalled packages
 	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
 	echo
-	echo -e "${GREEN} Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -318,11 +318,11 @@ function MAINTENANCE {
 	# the lock file in /var/cache/apt/archives, including directories.
 	sudo apt autoclean -y; sudo apt clean -y;
 	echo
-	echo -e "${GREEN} Finished cleaning up downloaded packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
 
 	echo
-	echo -e "${GREEN} Checking to see if a reboot is required ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking to see if a reboot is required ${ENDCOLOR}"
 	## Check to see if a reboot is required
 	if [ -f /var/run/reboot-required ]; then
  		echo
@@ -352,7 +352,7 @@ function MAINTENANCE {
 	fi
 	sleep 1
 	echo
-	echo -e "${GREEN} Checking Disk usage after System Maintenance ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo -e "${YELLOW}$df_output ${ENDCOLOR}"
@@ -489,7 +489,7 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo -e "${GREEN} Shutting down as you requested ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Shutting down as you requested ${ENDCOLOR}"
 	echo
 	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
@@ -504,7 +504,7 @@ function RE_BOOT {
 	sleep 1
 	echo
 	echo
-	echo -e "${GREEN} Rebooting as you requested ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Rebooting as you requested ${ENDCOLOR}"
 	echo
 	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
