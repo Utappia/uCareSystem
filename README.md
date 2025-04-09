@@ -32,6 +32,7 @@ With version 24.06 of uCareSystem, I added a section to acknowledge the people w
 - M. Spinello
 - D. Luchini
 
+
 ## Description:
 
 In summary, uCareSystem performs the following list of maintenance tasks automatically and without the need for user interference. :
@@ -79,6 +80,7 @@ You can specify if you need to keep more kernels and remove the rest
 ```
 ucaresystem-core -k 3
 ```
+
 For information about all the available options / flags, start ucaresystem-core with `-h` option :
 ```
 ucaresystem-core -h

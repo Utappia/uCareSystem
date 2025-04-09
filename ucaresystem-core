@@ -177,7 +177,7 @@ function CLEANUP_OLD_KERNELS {
             fi
         done
         
-        echo -e "${YELLOW} Kernel cleanup completed${ENDCOLOR}"
+        echo -e "${YELLOW} Kernel cleanup completed${ENDCOLOR}"Develop
     fi
 }
 
