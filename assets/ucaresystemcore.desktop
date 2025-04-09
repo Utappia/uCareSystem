@@ -1,9 +1,12 @@
 [Desktop Entry]
 Type=Application
 Name=uCareSystem
+GenericName=uCareSystem Maintenance
 Comment=All in one system maintenance
 Icon=ucaresystemicon
 Exec=launch-ucaresystemcore
 Terminal=false
-Categories=PackageManager;System;Settings;
+Categories=PackageManager;System;Settings;Utility;
+Version=1.0
+Keywords=system;maintenance;update;cleanup;kernel;
 

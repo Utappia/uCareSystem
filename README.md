@@ -13,21 +13,25 @@
 	Author : Salih Emin
 	Email  : salih-(a)-utappia.org
 	Date   : 24-12-2024 (first release 19-02-2009)
-	Version: 24.12.11
+	Version: 25.04.09
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 	WebSite: http://utappia.org
 
 ## Sponsors of the previous development cycle (v24.09)
 
-With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous (v24.11) development cycle:
+With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous (v24.12) development cycle:
 
 - P. Loughman (Thanks for your continued support)
 - D. Emge (Thanks for your continued support)
-- K. A. Gkountras (Jemadux)
-- B. Breitfeld
-- S. McClatchie
-- J. A. Villareal
-- D. E. Swarthout
+- W. Schreinemachers (Thanks for your continued support)
+- W. Schwartz
+- O. Majila
+- N. Karanikolas
+- C. Alfaro
+- K. Leymann
+- M. Spinello
+- D. Luchini
+
 
 ## Description:
 
@@ -39,7 +43,7 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 - Removes Old Snap revisions to free up space
 - Downloads and installs Flatpak Package updates (It's skipped if Flatpak is not installed)
 - Removes unused Flatpak packages to free up space
-- Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel.
+- Checks if there are older Linux kernels on the system and removes them. However it keeps the current and one previous version of the kernel. Also you can specify the number of kernels to keep
 - Cleans the cache of the downloaded packages
 - Removes obsolete packages
 - Removes orphan packages
@@ -72,6 +76,11 @@ If your Ubuntu (and official flavors) has reached the EOL support you can upgrad
 ```
 ucaresystem-core -eol
 ```
+You can specify if you need to keep more kernels and remove the rest
+```
+ucaresystem-core -k 3
+```
+
 For information about all the available options / flags, start ucaresystem-core with `-h` option :
 ```
 ucaresystem-core -h

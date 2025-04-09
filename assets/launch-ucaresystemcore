@@ -1,15 +1,27 @@
 #!/bin/bash
 # uCareSystem Launcher
-# Copyright (c) 2009-2024 Salih Emin. All rights reserved.
+# Copyright (c) 2009-2025 Salih Emin. All rights reserved.
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 
-#Get the default terminal emulator command
-TERMINAL_CMD=$(update-alternatives --query x-terminal-emulator | grep 'Value:' | cut -d' ' -f2)
+# Enable strict error handling
+set -euo pipefail
 
-# Check if TERMINAL_CMD is empty, if so, set a default value
-if [ -z "$TERMINAL_CMD" ]; then
-    TERMINAL_CMD="x-terminal-emulator"
+# Get the default terminal emulator command
+if ! TERMINAL_CMD=$(update-alternatives --query x-terminal-emulator | grep 'Value:' | cut -d' ' -f2); then
+    echo "Error: Could not determine default terminal emulator" >&2
+    exit 1
 fi
+
+# Check if TERMINAL_CMD is empty or terminal doesn't exist, if so, set a default value
+if [ -z "${TERMINAL_CMD:-}" ] || ! command -v "$TERMINAL_CMD" >/dev/null 2>&1; then
+    if command -v x-terminal-emulator >/dev/null 2>&1; then
+        TERMINAL_CMD="x-terminal-emulator"
+    else
+        echo "Error: No suitable terminal emulator found" >&2
+        exit 1
+    fi
+fi
+
 # Open the default terminal emulator and execute ucaresystem-core
-$TERMINAL_CMD -e "bash -c 'ucaresystem-core; read -p \"Press Enter to exit...\"'"
+"$TERMINAL_CMD" -e "bash -c 'ucaresystem-core; read -p \"Press Enter to exit...\"'"

@@ -1,4 +1,5 @@
-#!/usr/bin/sudo /bin/bash
+#!/bin/bash
+#shellcheck disable=SC1008
 set -e
 #
 #
@@ -11,7 +12,7 @@ set -e
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
 # Date   : 11-12-2024 (first release 19-02-2009)
-# Version: 24.12.11
+# Version: 25.04.09
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -28,18 +29,15 @@ YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="24.12.11"
-PREV_VER="24.11"
-USERNAME=$(logname 2>/dev/null || echo $USER)
+UCARE_VERSION="25.04.09"
+VER_CODENAME="P. Loughman"
+PREV_VER="24.12"
+USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
-# Checking if the user has run the script with "sudo" or not
+# Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
-    clear
-    echo ""
-    echo -e "${YELLOW} uCareSystem must be run as root or with sudo. ${ENDCOLOR}"
-    echo -e "${YELLOW} Now I will just exit... ${ENDCOLOR}" 1>&2
-    echo ""
-    sleep 2
+    echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
+    exec sudo "$0" "$@" 
     exit 1
 fi
 # Function to check internet connectivity
@@ -52,11 +50,11 @@ function CHECK_INTERNET {
 }
 # Check internet connectivity
 if ! CHECK_INTERNET; then
-   echo -e "${YELLOW} No internet connection detected... ${ENDCOLOR}"
+   echo -e "${YELLOW}No internet connection detected... ${ENDCOLOR}"
    sleep 1
    echo "Please ensure that your system is connected to the internet,"
    echo "and then try again..." 
-   echo "Now I will just exit..."1>&2
+   echo "Now I will just exit..." 1>&2
    echo ""
    sleep 2
    exit 1
@@ -64,13 +62,18 @@ fi
 
 # Simple countdown function
 function COUNTDOWN {
-    	secs=$1
-	while [ $secs -gt 0 ]; do
-		echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
-		sleep 1
-		: $((secs--))
-	done
-	
+    secs=$1
+    while [ "$secs" -ge 0 ]; do
+        if [ "$secs" -eq 0 ]; then
+            # Clear the line completely and show just the "now!" message
+            echo -ne "\r$MESSAGE ${YELLOW}now${ENDCOLOR}!                                                  \n"
+            break
+        else
+            echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
+        fi
+        sleep 1
+        : $((secs--))
+    done
 }
 duration=5 # countdown duration in seconds
 
@@ -93,10 +96,89 @@ function WELCOME_SCREEN {
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo "________________________________________________________"
-	echo
+	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo ""
 	# start the countdown
 	MESSAGE="uCareSystem will start"
-	COUNTDOWN $duration
+	COUNTDOWN "$duration"
+}
+
+# Function to handle kernel cleanup
+function CLEANUP_OLD_KERNELS {
+    local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
+    local current_kernel
+    local kernel_list
+    local purge_list=""
+    local min_kernels=2  # Minimum required: current + one backup
+    
+    echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
+    
+    # Validate keep_count
+    if ! [[ "$keep_count" =~ ^[0-9]+$ ]]; then
+        echo -e "${YELLOW}Error: Invalid number specified for kernels to keep${ENDCOLOR}"
+        echo -e "${YELLOW}Usage: Must be a positive number greater than or equal to $min_kernels${ENDCOLOR}"
+        return 1
+    fi
+    
+    # Safety check - ensure we keep at least current + one backup
+    if [ "$keep_count" -lt "$min_kernels" ]; then
+        echo -e "${YELLOW}Warning: Cannot keep fewer than $min_kernels kernels for safety${ENDCOLOR}"
+        echo -e "${YELLOW}Setting keep count to minimum safe value: $min_kernels${ENDCOLOR}"
+        keep_count=$min_kernels
+    fi
+    
+    # Get current running kernel
+    current_kernel=$(uname -r)
+    echo -e "${YELLOW}Current kernel: ${current_kernel}${ENDCOLOR}"
+    
+    # Find all installed kernels, sort by version
+    kernel_list=$(dpkg -l 'linux-image-*' | \
+        awk '/^ii/{ print $2 }' | \
+        sort -V)
+    
+    # Count total installed kernels
+    total_kernels=$(echo "$kernel_list" | wc -l)
+    
+    if [ "$total_kernels" -le "$keep_count" ]; then
+        echo -e "${YELLOW}No kernels eligible for removal (found $total_kernels, keeping $keep_count)${ENDCOLOR}"
+        return 0
+    fi
+    
+    # Calculate how many kernels to remove
+    remove_count=$((total_kernels - keep_count))
+    
+    echo -e "${YELLOW}Found $total_kernels kernels, keeping $keep_count, will remove $remove_count${ENDCOLOR}"
+    
+    # Build list of kernels to remove (oldest first)
+    # Explicitly exclude the running kernel
+    purge_list=$(echo "$kernel_list" | \
+        grep -v "$(uname -r)$" | \
+        head -n "$remove_count")
+    
+    if [ -n "$purge_list" ]; then
+        echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
+        echo "$purge_list"
+        echo
+        
+        # Double check that running kernel is not in purge list
+        if echo "$purge_list" | grep -q "$(uname -r)"; then
+            echo -e "${YELLOW}ERROR: Safety check failed - current kernel was in remove list${ENDCOLOR}"
+            echo -e "${YELLOW}Aborting kernel cleanup to prevent system damage${ENDCOLOR}"
+            return 1
+        fi
+        
+        # For each kernel image, also remove its headers
+        for kernel in $purge_list; do
+            header_pkg=${kernel/image/headers}
+            if dpkg -l "$header_pkg" >/dev/null 2>&1; then
+                sudo apt remove -y --purge "$kernel" "$header_pkg"
+            else
+                sudo apt remove -y --purge "$kernel"
+            fi
+        done
+        
+        echo -e "${YELLOW} Kernel cleanup completed${ENDCOLOR}"Develop
+    fi
 }
 
 function MAINTENANCE {
@@ -105,7 +187,7 @@ function MAINTENANCE {
 	echo -e "${MAGENTA} Started ${ENDCOLOR} "
 	sleep 1
 	echo
-	echo -e " ${GREEN} Checking Disk usage before System Maintenance ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking Disk usage before System Maintenance ${ENDCOLOR}"
 	sleep 1	
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
@@ -123,34 +205,34 @@ function MAINTENANCE {
 		echo 
 	fi
 	## Updates package lists
-	echo -e "${GREEN} Updating package lists ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
 	echo
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
 	# Print each line with padding to fit the terminal width
-	xargs -I{} printf '%-*s\r' $(tput cols) "{}" && echo
+	xargs -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
 	echo -e "${YELLOW}Here are the packages that can be upgraded if they are not kept back due to phased releases: ${ENDCOLOR}"
 	sleep 1
 	sudo apt list --upgradable;
 	echo
-	echo -e "${GREEN} Finished updating package lists ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Updates packages and libraries
 	sudo apt full-upgrade -V -y;
 	echo
-	echo -e "${GREEN} Finished upgrading system packages and libraries ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished upgrading system packages and libraries ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Removes unneeded packages
 	sudo apt autoremove -y --purge;
 	echo					
-	echo -e "${GREEN} Finished removing unneeded packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished removing unneeded packages ${ENDCOLOR}"
 	sleep 1
 	echo
-	echo -e "${GREEN} Checking for Snap and Flatpak updates ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking for Snap and Flatpak updates ${ENDCOLOR}"
 	echo
 	# Check if Snap is installed
 	if command -v snap &> /dev/null; then
@@ -164,7 +246,7 @@ function MAINTENANCE {
 		done < <(sudo snap list | awk '/^name/ {next} {print $1}')
 
 		# Print the names of stopped Snap applications
-		if [ ${#stopped_snaps[@]} -gt 0 ]; then
+		if [ "${#stopped_snaps[@]}" -gt 0 ]; then
 			echo -e "${YELLOW}Stopped Snap applications: ${ENDCOLOR}"
 			for snapname in "${stopped_snaps[@]}"; do
 				echo "$snapname"
@@ -179,7 +261,7 @@ function MAINTENANCE {
 			echo -e "${YELLOW}Removing old revisions of Snap packages ${ENDCOLOR}"
 			echo
 			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
-				while read snapname revision; do
+				while read -r snapname revision; do
 					sudo snap remove --purge "$snapname" --revision="$revision"
 				done
 
@@ -217,55 +299,18 @@ function MAINTENANCE {
 		sleep 1
 	fi
 	echo					
-	echo -e "${GREEN} Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
 	sleep 1
 	echo
 
-	# purge-old-kernels - remove old kernel packages
-	#    Copyright (C) 2012 Dustin Kirkland <kirkland -(at)- ubuntu.com>
-	#
-	#    Authors: Dustin Kirkland <kirkland-(at)-ubuntu.com>
-	#             Kees Cook <kees-(at)-ubuntu.com>
-	#
-	# NOTE: This script will ALWAYS keep the currently running kernel
-	# NOTE: Default is to keep 2 more, user overrides with --keep N
-	KEEP=2
-	# NOTE: Any unrecognized option will be passed straight through to apt
-	APT_OPTS=
-	while [ ! -z "$1" ]; do
-		case "$1" in
-			--keep)
-				# User specified the number of kernels to keep
-				KEEP="$2"
-				shift 2
-			;;
-			*)
-				APT_OPTS="$APT_OPTS $1"
-				shift 1
-			;;
-		esac
-	done
+	# Call kernel cleanup with default value
+	echo -e "${GREEN}▸ Checking for old kernels...${ENDCOLOR}"
+	CLEANUP_OLD_KERNELS 2
 
-	# Build our list of kernel packages to purge
-	CANDIDATES=$(ls -tr /boot/vmlinuz-* | head -n -${KEEP} | grep -v "$(uname -r)$" | cut -d- -f2- | awk '{print "linux-image-" $0 " linux-headers-" $0}' )
-	for c in $CANDIDATES; do
-		dpkg-query -s "$c" >/dev/null 2>&1 && PURGE="$PURGE $c"
-	done
-
-	if [ -z "$PURGE" ]; then
-		echo -e  "${YELLOW}No kernels are eligible for removal ${ENDCOLOR}"
-	fi
-
-	sudo apt $APT_OPTS remove -y --purge $PURGE;
-
-	echo
-	echo -e "${GREEN} Finished removing old kernels ${ENDCOLOR}"
-	sleep 1
-	echo
 	## Removes unused config files of uninstalled packages
 	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
 	echo
-	echo -e "${GREEN} Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -273,11 +318,11 @@ function MAINTENANCE {
 	# the lock file in /var/cache/apt/archives, including directories.
 	sudo apt autoclean -y; sudo apt clean -y;
 	echo
-	echo -e "${GREEN} Finished cleaning up downloaded packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
 
 	echo
-	echo -e "${GREEN} Checking to see if a reboot is required ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking to see if a reboot is required ${ENDCOLOR}"
 	## Check to see if a reboot is required
 	if [ -f /var/run/reboot-required ]; then
  		echo
@@ -290,7 +335,7 @@ function MAINTENANCE {
 		echo -e "${MAGENTA}*${ENDCOLOR}  packages:"						
   		echo -e "${MAGENTA}*${ENDCOLOR} "
 		if [ -f /var/run/reboot-required.pkgs ]; then
-        	cat /var/run/reboot-required.pkgs | uniq
+        	uniq < /var/run/reboot-required.pkgs
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
         	echo -e "${YELLOW}Cannot find the list of packages... Skipping ${ENDCOLOR}"
@@ -307,7 +352,7 @@ function MAINTENANCE {
 	fi
 	sleep 1
 	echo
-	echo -e "${GREEN} Checking Disk usage after System Maintenance ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo -e "${YELLOW}$df_output ${ENDCOLOR}"
@@ -362,6 +407,8 @@ function SHOW_HELP {
 	
 				     uCareSystem
 				    ~ $UCARE_VERSION ~
+			  Release honored to: $VER_CODENAME
+
 		     All-in-one system update and maintenance app
 
 	Usage: sudo ucaresystem-core <option> 
@@ -394,6 +441,13 @@ function SHOW_HELP {
 
 		 -s --shutdown     Shutdown the system, after completing all the tasks, 
 
+		 -k --keep-kernels <number>
+			   Specify the number of kernels to keep during cleanup.
+			   Minimum value is 2 to ensure system stability
+			   (current kernel + backup). Default is 2 if not
+			   specified. The script will never remove the currently
+			   running kernel.
+			   Example: --keep-kernels 3 (keeps current + 2 older versions)
 EOF
 }
 
@@ -402,7 +456,7 @@ function GOODBYE {
 	echo "___________________________________________________________"
 	echo ""
 	echo -e "            ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
-	echo "            ~~~~~~~~~~~~~~~~~~~~"
+	echo "            ~~~~~~~~~~~~~~~~~~~~~"
 	echo ""
 	echo " I am deeply grateful for your generous donations"
 	echo " during the $PREV_VER development cycle. Your contributions"
@@ -415,17 +469,21 @@ function GOODBYE {
 	echo ""
 	echo " - P. Loughman"
 	echo " - D. Emge"
-	echo " - K. A. Gkountras (Jemadux)"
-	echo " - B. Breitfeld"
-	echo " - S. McClatchie"
-	echo " - J. A. Villareal"
-	echo " - D. E. Swarthout"
-	echo ""	
+	echo " - W. Schwartz"
+	echo " - O. Majila"
+	echo " - W. Schreinemachers"
+	echo " - N. Karanikolas"
+	echo " - C. Alfaro"
+	echo " - K. Leymann"
+	echo " - M. Spinello"
+	echo " - D. Luchini"
+	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo ""
 	sleep 2
 	echo -e "     	${MAGENTA}All maintenance Complete... GOODBYE${ENDCOLOR}"
 	echo "___________________________________________________________"
+	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
 	sleep 1
 }
@@ -434,7 +492,7 @@ function SHUT_DOWN {
 	sleep 1
 	echo
 	echo
-	echo -e "${GREEN} Shutting down as you requested ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Shutting down as you requested ${ENDCOLOR}"
 	echo
 	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
@@ -449,7 +507,7 @@ function RE_BOOT {
 	sleep 1
 	echo
 	echo
-	echo -e "${GREEN} Rebooting as you requested ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Rebooting as you requested ${ENDCOLOR}"
 	echo
 	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
@@ -458,9 +516,6 @@ function RE_BOOT {
 	else
 		sudo reboot
 	fi
-	
-	sudo reboot
-	## End of script
 }
 
 # The main process starts
@@ -484,6 +539,22 @@ while [ "$1" != "" ]; do
 	-r | --reboot )		 WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
 							 exit
 							    ;;
+        -k | --keep-kernels)
+            shift
+            if [ -n "$1" ] && [[ "$1" =~ ^[0-9]+$ ]]; then
+                min_kernels=2
+                if [ "$1" -lt "$min_kernels" ]; then
+                    echo -e "${YELLOW}Error: Cannot specify fewer than $min_kernels kernels${ENDCOLOR}"
+                    echo -e "${YELLOW}This ensures you always have a backup kernel${ENDCOLOR}"
+                    exit 1
+                fi
+                WELCOME_SCREEN && CLEANUP_OLD_KERNELS "$1" && GOODBYE
+            else
+                echo -e "${YELLOW}Error: --keep-kernels requires a positive number (minimum: 2)${ENDCOLOR}"
+                exit 1
+            fi
+            exit
+            ;;
         * )                  SHOW_HELP
                              exit 1
     esac

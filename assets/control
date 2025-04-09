@@ -2,14 +2,16 @@ Source: ucaresystem-core
 Section: utils
 Priority: optional
 Maintainer: Salih Emin <salih-emin@ubuntu.com>
-Build-Depends: debhelper (>= 9)
-Standards-Version: 4.1.1
+Build-Depends: debhelper-compat (= 13), help2man
+Standards-Version: 4.6.0
 Homepage: http://utappia.org
-Vcs-Browser: https://github.com/Utappia/uCareSystem.git
+Vcs-Browser: https://github.com/Utappia/uCareSystem
+Vcs-Git: https://github.com/Utappia/uCareSystem.git
 
 Package: ucaresystem-core
+Version: 25.04.09
 Architecture: all
-Depends: apt, lsb-release, curl, software-properties-common
+Depends: apt, lsb-release, curl, software-properties-common, ${misc:Depends}
 Description: All-in-one System Update and maintenance app
  This simple script will automatically refresh your packagelist, 
  download and install software updates (if there are any), remove old
