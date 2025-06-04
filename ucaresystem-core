@@ -12,7 +12,7 @@ set -e
 # WebSite: http://utappia.org
 # Email  : salih-(at)-utappia.org
 # Date   : 11-12-2024 (first release 19-02-2009)
-# Version: 25.04.09
+# Version: 25.06.05
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -29,9 +29,9 @@ YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="25.04.09"
-VER_CODENAME="P. Loughman"
-PREV_VER="24.12"
+UCARE_VERSION="25.06.05"
+VER_CODENAME="W. Schwartz"
+PREV_VER="25.04"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 # Check for root/sudo privileges
@@ -470,13 +470,11 @@ function GOODBYE {
 	echo " - P. Loughman"
 	echo " - D. Emge"
 	echo " - W. Schwartz"
-	echo " - O. Majila"
 	echo " - W. Schreinemachers"
-	echo " - N. Karanikolas"
-	echo " - C. Alfaro"
-	echo " - K. Leymann"
-	echo " - M. Spinello"
+	echo " - D. e Swarthout"
 	echo " - D. Luchini"
+	echo " - M. Stanley"
+	echo " - N. Evangelista"
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo ""
