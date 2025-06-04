@@ -42,7 +42,7 @@ if [[ $EUID -ne 0 ]] ; then
 fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
-    if curl -4 -s --head http://archive.ubuntu.com | head -n 1 | grep "200 OK" > /dev/null; then
+    if curl -4 -s --head https://www.google.com | head -n 1 | grep "200 OK" > /dev/null; then
         return 0  # Internet connection is available
     else
         return 1  # No internet connection
