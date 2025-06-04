@@ -11,6 +11,8 @@ KEYSERVER="hkp://keyserver.ubuntu.com"
 KEY="EBC8F9FD"
 REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
 REPO_FILE="/etc/apt/sources.list.d/utappia.list"
+KEYRING_DIR="/etc/apt/keyrings"
+KEYRING_FILE="$KEYRING_DIR/utappia-archive-keyring.gpg"
 
 # Distribution detection
 if [ -f /etc/os-release ]; then
@@ -31,7 +33,14 @@ if ls /etc/apt/sources.list.d/utappia* 1> /dev/null 2>&1; then
     echo "Utappia Repository exists... skipping"
 else
     echo "Adding Utappia public key"
-    apt-key adv --keyserver "$KEYSERVER" --keyserver-options no-ipv6 --recv-keys "$KEY"
+    # Create keyrings directory if it doesn't exist
+    mkdir -p "$KEYRING_DIR"
+    # Create GPG directory
+    mkdir -p /root/.gnupg
+    chmod 700 /root/.gnupg
+    # Download and install GPG key directly from keyserver
+    gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$KEYSERVER" --recv-keys "$KEY"
+    chmod 644 "$KEYRING_FILE"
     echo ""
     
     echo "Adding Utappia repository"
@@ -61,8 +70,8 @@ else
     else
         cat <<EOT > "$REPO_FILE"
 # Debian compatible Utappia Repository
-deb $REPO_URL $COMPATIBLE_DIST_NAME main
-deb-src $REPO_URL $COMPATIBLE_DIST_NAME main
+deb [signed-by=$KEYRING_FILE] $REPO_URL $COMPATIBLE_DIST_NAME main
+deb-src [signed-by=$KEYRING_FILE] $REPO_URL $COMPATIBLE_DIST_NAME main
 EOT
         echo ""
         echo "Refreshing package list..."
