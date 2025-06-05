@@ -42,7 +42,7 @@ if [[ $EUID -ne 0 ]] ; then
 fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
-    if curl -4 -s --head https://www.google.com | head -n 1 | grep "200 OK" > /dev/null; then
+    if curl -4 -s --head http://www.google.com | head -n 1 | grep "200 OK" > /dev/null; then
         return 0  # Internet connection is available
     else
         return 1  # No internet connection
@@ -107,7 +107,6 @@ function WELCOME_SCREEN {
 function CLEANUP_OLD_KERNELS {
     local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
     local current_kernel
-    local kernel_list
     local purge_list=""
     local min_kernels=2  # Minimum required: current + one backup
     
@@ -131,54 +130,35 @@ function CLEANUP_OLD_KERNELS {
     current_kernel=$(uname -r)
     echo -e "${YELLOW}Current kernel: ${current_kernel}${ENDCOLOR}"
     
-    # Find all installed kernels, sort by version
-    kernel_list=$(dpkg -l 'linux-image-*' | \
-        awk '/^ii/{ print $2 }' | \
-        sort -V)
+    # Build list of kernel packages to purge
+    # This uses the actual kernel files in /boot to determine which kernels to keep
+    purge_list=$(ls -tr /boot/vmlinuz-* | \
+        head -n -${keep_count} | \
+        grep -v "$current_kernel$" | \
+        cut -d- -f2- | \
+        awk '{print "linux-image-" $0 " linux-headers-" $0}')
     
-    # Count total installed kernels
-    total_kernels=$(echo "$kernel_list" | wc -l)
+    # Verify each package exists before adding to purge list
+    final_purge_list=""
+    for pkg in $purge_list; do
+        if dpkg-query -s "$pkg" >/dev/null 2>&1; then
+            final_purge_list="$final_purge_list $pkg"
+        fi
+    done
     
-    if [ "$total_kernels" -le "$keep_count" ]; then
-        echo -e "${YELLOW}No kernels eligible for removal (found $total_kernels, keeping $keep_count)${ENDCOLOR}"
+    if [ -z "$final_purge_list" ]; then
+        echo -e "${YELLOW}No kernels are eligible for removal${ENDCOLOR}"
         return 0
     fi
     
-    # Calculate how many kernels to remove
-    remove_count=$((total_kernels - keep_count))
+    echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
+    echo "$final_purge_list"
+    echo
     
-    echo -e "${YELLOW}Found $total_kernels kernels, keeping $keep_count, will remove $remove_count${ENDCOLOR}"
+    # Remove the packages
+    sudo apt autoremove -y --purge $final_purge_list
     
-    # Build list of kernels to remove (oldest first)
-    # Explicitly exclude the running kernel
-    purge_list=$(echo "$kernel_list" | \
-        grep -v "$(uname -r)$" | \
-        head -n "$remove_count")
-    
-    if [ -n "$purge_list" ]; then
-        echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
-        echo "$purge_list"
-        echo
-        
-        # Double check that running kernel is not in purge list
-        if echo "$purge_list" | grep -q "$(uname -r)"; then
-            echo -e "${YELLOW}ERROR: Safety check failed - current kernel was in remove list${ENDCOLOR}"
-            echo -e "${YELLOW}Aborting kernel cleanup to prevent system damage${ENDCOLOR}"
-            return 1
-        fi
-        
-        # For each kernel image, also remove its headers
-        for kernel in $purge_list; do
-            header_pkg=${kernel/image/headers}
-            if dpkg -l "$header_pkg" >/dev/null 2>&1; then
-                sudo apt remove -y --purge "$kernel" "$header_pkg"
-            else
-                sudo apt remove -y --purge "$kernel"
-            fi
-        done
-        
-        echo -e "${YELLOW} Kernel cleanup completed${ENDCOLOR}"Develop
-    fi
+    echo -e "${YELLOW}Kernel cleanup completed${ENDCOLOR}"
 }
 
 function MAINTENANCE {
@@ -440,14 +420,6 @@ function SHOW_HELP {
 		 -r --reboot       Reboot the system, after completing all the tasks, 
 
 		 -s --shutdown     Shutdown the system, after completing all the tasks, 
-
-		 -k --keep-kernels <number>
-			   Specify the number of kernels to keep during cleanup.
-			   Minimum value is 2 to ensure system stability
-			   (current kernel + backup). Default is 2 if not
-			   specified. The script will never remove the currently
-			   running kernel.
-			   Example: --keep-kernels 3 (keeps current + 2 older versions)
 EOF
 }
 
@@ -537,22 +509,6 @@ while [ "$1" != "" ]; do
 	-r | --reboot )		 WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
 							 exit
 							    ;;
-        -k | --keep-kernels)
-            shift
-            if [ -n "$1" ] && [[ "$1" =~ ^[0-9]+$ ]]; then
-                min_kernels=2
-                if [ "$1" -lt "$min_kernels" ]; then
-                    echo -e "${YELLOW}Error: Cannot specify fewer than $min_kernels kernels${ENDCOLOR}"
-                    echo -e "${YELLOW}This ensures you always have a backup kernel${ENDCOLOR}"
-                    exit 1
-                fi
-                WELCOME_SCREEN && CLEANUP_OLD_KERNELS "$1" && GOODBYE
-            else
-                echo -e "${YELLOW}Error: --keep-kernels requires a positive number (minimum: 2)${ENDCOLOR}"
-                exit 1
-            fi
-            exit
-            ;;
         * )                  SHOW_HELP
                              exit 1
     esac
