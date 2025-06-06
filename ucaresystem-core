@@ -21,7 +21,7 @@ set -e
 #
 ## Script starts here
 
-#Variables
+# Variables
 GREEN="\e[32m"
 CYAN="\e[36m"
 MAGENTA="\e[35m"
@@ -40,6 +40,7 @@ if [[ $EUID -ne 0 ]] ; then
     exec sudo "$0" "$@" 
     exit 1
 fi
+
 # Function to check internet connectivity
 function CHECK_INTERNET {
     if curl -4 -s --head http://www.google.com | head -n 1 | grep "200 OK" > /dev/null; then
@@ -48,6 +49,7 @@ function CHECK_INTERNET {
         return 1  # No internet connection
     fi
 }
+
 # Check internet connectivity
 if ! CHECK_INTERNET; then
    echo -e "${YELLOW}No internet connection detected... ${ENDCOLOR}"
@@ -62,7 +64,7 @@ fi
 
 # Simple countdown function
 function COUNTDOWN {
-    secs=$1
+    local secs=$1
     while [ "$secs" -ge 0 ]; do
         if [ "$secs" -eq 0 ]; then
             # Clear the line completely and show just the "now!" message
@@ -108,6 +110,7 @@ function CLEANUP_OLD_KERNELS {
     local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
     local current_kernel
     local purge_list=""
+    local final_purge_list=""
     local min_kernels=2  # Minimum required: current + one backup
     
     echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
@@ -132,9 +135,11 @@ function CLEANUP_OLD_KERNELS {
     
     # Build list of kernel packages to purge
     # This uses the actual kernel files in /boot to determine which kernels to keep
-    purge_list=$(ls -tr /boot/vmlinuz-* | \
-        head -n -${keep_count} | \
-        grep -v "$current_kernel$" | \
+    purge_list=$(find /boot -maxdepth 1 -name "vmlinuz-*" -printf "%T@ %p\n" | \
+        sort -n | \
+        cut -d' ' -f2- | \
+        head -n -"${keep_count}" | \
+        grep -v "${current_kernel}$" | \
         cut -d- -f2- | \
         awk '{print "linux-image-" $0 " linux-headers-" $0}')
     
@@ -142,21 +147,21 @@ function CLEANUP_OLD_KERNELS {
     final_purge_list=""
     for pkg in $purge_list; do
         if dpkg-query -s "$pkg" >/dev/null 2>&1; then
-            final_purge_list="$final_purge_list $pkg"
+            final_purge_list="${final_purge_list} ${pkg}"
         fi
     done
     
-    if [ -z "$final_purge_list" ]; then
+    if [ -z "${final_purge_list}" ]; then
         echo -e "${YELLOW}No kernels are eligible for removal${ENDCOLOR}"
         return 0
     fi
     
     echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
-    echo "$final_purge_list"
+    echo "${final_purge_list}"
     echo
     
     # Remove the packages
-    sudo apt autoremove -y --purge $final_purge_list
+    sudo apt autoremove -y --purge "${final_purge_list}"
     
     echo -e "${YELLOW}Kernel cleanup completed${ENDCOLOR}"
 }
@@ -172,13 +177,13 @@ function MAINTENANCE {
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo ""
-	echo -e "${YELLOW}$df_output ${ENDCOLOR}"
+	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
 	echo
 	sleep 1
 
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
-	if command -v systemctl &> /dev/null  && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+	if command -v systemctl &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
 		echo -e "${YELLOW}Reloading systemd manager configuration ${ENDCOLOR}"
 		sudo systemctl daemon-reload
 		sleep 1
@@ -339,7 +344,7 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
 	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
-	echo -e "${YELLOW}$df_output ${ENDCOLOR}"
+	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
 	echo
 	sleep 1
 
