@@ -178,7 +178,7 @@ function MAINTENANCE {
 
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
-	if command -v systemctl &> /dev/null; then
+	if command -v systemctl &> /dev/null  && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
 		echo -e "${YELLOW}Reloading systemd manager configuration ${ENDCOLOR}"
 		sudo systemctl daemon-reload
 		sleep 1
@@ -215,8 +215,8 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Checking for Snap and Flatpak updates ${ENDCOLOR}"
 	echo
 	# Check if Snap is installed
-	if command -v snap &> /dev/null; then
-	# Stop all running Snap applications
+	if command -v snap &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+		# Stop all running Snap applications
 		echo -e "${YELLOW}Stopping all running Snap applications... ${ENDCOLOR}"
 		stopped_snaps=()
 		while IFS= read -r snapname; do
@@ -285,7 +285,11 @@ function MAINTENANCE {
 
 	# Call kernel cleanup with default value
 	echo -e "${GREEN}▸ Checking for old kernels...${ENDCOLOR}"
-	CLEANUP_OLD_KERNELS 2
+	if [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+		CLEANUP_OLD_KERNELS 2
+	else
+		echo -e "${YELLOW}Skipping kernel cleanup in WSL environment${ENDCOLOR}"
+	fi
 
 	## Removes unused config files of uninstalled packages
 	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
