@@ -8,6 +8,8 @@
  
 # uCareSystem
 
+	uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
+
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
@@ -49,6 +51,21 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 
 ![ucaresystem-color](https://github.com/user-attachments/assets/6f5171c2-5a64-465b-b794-920e225ce7f7)
 
+## Installation
+
+1. Download the latest .deb package from the [releases page](https://github.com/utappia/ucaresystem/releases)
+2. Install the package:
+   ```bash
+   sudo apt install ./ucaresystem-core_*.deb
+   ```
+The installer will:
+- Install the uCareSystem core package
+- Check if the Utappia repository exists in your system
+- If the repository is not found, it will automatically:
+  - Add the Utappia repository for future updates
+  - Add the repository signing key
+
+
 ## Usage
 
 uCareSystem creates a launcher icon in your Applications menu. Just search your applications menu for `ucare`. If you click the icon, it starts performing the default maintenance tasks. 
@@ -77,6 +94,27 @@ For information about all the available options / flags, start ucaresystem-core 
 ```
 ucaresystem-core -h
 ```
+## Uninstallation
+
+To completely remove uCareSystem and its repository:
+
+1. Remove the package:
+   ```bash
+   sudo apt autoremove ucaresystem-core
+   ```
+
+2. (Optional) Remove the repository and its signing key:
+   ```bash
+   sudo rm /etc/apt/sources.list.d/utappia*.list
+   sudo rm /etc/apt/keyrings/utappia*.gpg
+   ```
+   If you keep the repository and its signing key you can reinstall ucaresystem-core without downloading the *.deb package but instead by `apt install ucaresystem-core`.
+
+3. Update package lists:
+   ```bash
+   sudo apt update
+   ```
+
 ## Code contribution
 
 If you have an idea and want to contribute code:
