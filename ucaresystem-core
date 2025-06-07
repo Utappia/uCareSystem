@@ -43,7 +43,7 @@ fi
 
 # Function to check internet connectivity
 function CHECK_INTERNET {
-    if curl -4 -s --head http://www.google.com | head -n 1 | grep "200 OK" > /dev/null; then
+    if curl -4 -s --head https://ubuntu.com | head -n 1 | grep "HTTP/2 200" > /dev/null; then
         return 0  # Internet connection is available
     else
         return 1  # No internet connection
