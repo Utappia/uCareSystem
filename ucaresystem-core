@@ -18,7 +18,7 @@ set -e
 #This simple script will automatically refresh your package list, download and install
 #updates (if there are any),
 #remove any remaining packages and configuration files without interference.
-#
+SECONDS=0
 ## Script starts here
 
 # Variables
@@ -460,7 +460,7 @@ function GOODBYE {
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo ""
 	sleep 2
-	echo -e "     	${MAGENTA}All maintenance Complete... GOODBYE${ENDCOLOR}"
+	echo -e "     	${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
 	echo "___________________________________________________________"
 	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
