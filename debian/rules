@@ -8,4 +8,4 @@ override_dh_auto_install:
 	install -D -m 755 launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore
 	install -D -m 644 assets/ucaresystem.desktop debian/ucaresystem-core/usr/share/applications/ucaresystem.desktop
 	install -D -m 644 assets/ucaresystem.png debian/ucaresystem-core/usr/share/pixmaps/ucaresystemicon.png
-	install -D -m 644 assets/man/ucaresystem-core.1 debian/ucaresystem-core/usr/share/man/man1/ucaresystem-core.1
+	install -D -m 644 assets/ucaresystem-core.1 debian/ucaresystem-core/usr/share/man/man1/ucaresystem-core.1
