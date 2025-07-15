@@ -196,15 +196,13 @@ function MAINTENANCE {
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
 	# Print each line with padding to fit the terminal width
 	xargs -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
-	echo -e "${YELLOW}Here are the packages that can be upgraded if they are not kept back due to phased releases: ${ENDCOLOR}"
-	sleep 1
-	sudo apt list --upgradable;
 	echo
 	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Updates packages and libraries
+	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
 	sudo apt full-upgrade -V -y;
 	echo
 	echo -e "${GREEN}▸ Finished upgrading system packages and libraries ${ENDCOLOR}"
