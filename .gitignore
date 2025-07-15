@@ -17,6 +17,12 @@ debian/files
 debian/debhelper-build-stamp
 debian/tmp/
 
+# Debian package extraction files
+debian-binary
+control.tar.*
+data.tar.*
+*.deb
+
 # Build directories
 build/
 dist/
