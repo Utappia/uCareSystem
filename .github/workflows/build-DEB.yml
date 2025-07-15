@@ -93,19 +93,19 @@ jobs:
         EOF
         
         # Create debian/rules with proper tabs
-        cat > debian/rules << 'EOF'
-        #!/usr/bin/make -f
-
-        %:
-        	dh $@
-
-        override_dh_auto_install:
-        	install -D -m 755 src/ucaresystem-core debian/ucaresystem-core/usr/bin/ucaresystem-core
-        	install -D -m 755 src/launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore
-          install -D -m 644 assets/ucaresystem.desktop debian/ucaresystem-core/usr/share/applications/ucaresystem.desktop
-          install -D -m 644 assets/ucaresystem.png debian/ucaresystem-core/usr/share/pixmaps/ucaresystem.png
-          install -D -m 644 assets/ucaresystem-core.1 debian/ucaresystem-core/usr/share/man/man1/ucaresystem-core.1
-        EOF
+        {
+          echo '#!/usr/bin/make -f'
+          echo ''
+          echo '%:'
+          echo -e '\tdh $@'
+          echo ''
+          echo 'override_dh_auto_install:'
+          echo -e '\tinstall -D -m 755 src/ucaresystem-core debian/ucaresystem-core/usr/bin/ucaresystem-core'
+          echo -e '\tinstall -D -m 755 src/launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore'
+          echo -e '\tinstall -D -m 644 assets/ucaresystem.desktop debian/ucaresystem-core/usr/share/applications/ucaresystem.desktop'
+          echo -e '\tinstall -D -m 644 assets/ucaresystem.png debian/ucaresystem-core/usr/share/pixmaps/ucaresystem.png'
+          echo -e '\tinstall -D -m 644 assets/ucaresystem-core.1 debian/ucaresystem-core/usr/share/man/man1/ucaresystem-core.1'
+        } > debian/rules
         
         chmod +x debian/rules
         
