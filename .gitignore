@@ -1,0 +1,42 @@
+# Build artifacts
+*.deb
+*.buildinfo
+*.changes
+*.build
+*.dsc
+*.tar.gz
+*.tar.xz
+*.upload
+
+# Debian packaging artifacts
+debian/.debhelper/
+debian/*/
+debian/*.substvars
+debian/*.log
+debian/files
+debian/debhelper-build-stamp
+debian/tmp/
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
