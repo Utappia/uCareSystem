@@ -49,22 +49,21 @@ jobs:
           echo "debian_version=$VERSION+git$COMMIT_SHORT-1" >> $GITHUB_OUTPUT
         fi
     
-    - name: Create debian structure if missing
+    - name: Create debian structure
       run: |
-        if [ ! -d "debian" ]; then
-          mkdir -p debian/source
-          
-          # Create debian/changelog
-          cat > debian/changelog << EOF
+        mkdir -p debian/source
+        
+        # Create debian/changelog with correct version
+        cat > debian/changelog << EOF
         ucaresystem-core (${{ steps.version.outputs.debian_version }}) unstable; urgency=medium
 
           * Automated build from commit ${{ github.sha }}
 
          -- Salih Emin <salih-emin@ubuntu.com>  $(date -R)
         EOF
-          
-          # Create debian/control
-          cat > debian/control << EOF
+        
+        # Create debian/control
+        cat > debian/control << EOF
         Source: ucaresystem-core
         Section: admin
         Priority: optional
@@ -82,42 +81,34 @@ jobs:
          performs routine maintenance tasks including package updates, cache cleaning,
          and system optimization for Ubuntu and derivatives.
         EOF
-          
-          # Create debian/rules
-          cat > debian/rules << EOF
+        
+        # Create debian/rules with proper tabs
+        cat > debian/rules << 'EOF'
         #!/usr/bin/make -f
 
         %:
-            dh \$@
+            dh $@
 
         override_dh_auto_install:
             install -D -m 755 ucaresystem-core debian/ucaresystem-core/usr/bin/ucaresystem-core
             install -D -m 755 launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore
         EOF
-          
-          chmod +x debian/rules
-          
-          # Create other required files
-          echo "10" > debian/compat
-          echo "3.0 (native)" > debian/source/format
-          
-          # Copy postinst if it exists
-          if [ -f "assets/postinst" ]; then
-            cp assets/postinst debian/postinst
-          fi
+        
+        chmod +x debian/rules
+        
+        # Create other required files
+        echo "10" > debian/compat
+        echo "3.0 (native)" > debian/source/format
+        
+        # Copy postinst if it exists
+        if [ -f "assets/postinst" ]; then
+          cp assets/postinst debian/postinst
         fi
     
-    - name: Update debian/changelog
+    - name: Remove the changelog update step
       run: |
-        export DEBEMAIL="salih-emin@ubuntu.com"
-        export DEBFULLNAME="Salih Emin"
-        
-        if [ -f "debian/changelog" ]; then
-          dch --newversion "${{ steps.version.outputs.debian_version }}" \
-              --distribution "unstable" \
-              --urgency "medium" \
-              "Automated build from commit ${{ github.sha }}"
-        fi
+        echo "Debian structure created successfully"
+        ls -la debian/
     
     - name: Build package
       run: |
