@@ -1,11 +1,8 @@
 #!/usr/bin/make -f
-
 %:
 	dh $@
-
 override_dh_auto_clean:
 	echo clean
-
 override_dh_auto_install:
 	install -D -m 755 src/ucaresystem-core debian/ucaresystem-core/usr/bin/ucaresystem-core
 	install -D -m 755 src/launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore
