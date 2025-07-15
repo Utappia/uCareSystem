@@ -21,26 +21,49 @@ jobs:
     name: ShellCheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install ShellCheck
-        run: sudo apt-get install -y shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
       
       - name: Run ShellCheck on main scripts
         run: |
           # Main scripts
-          find . -type f -name "ucaresystem-core" -o -name "launch-ucaresystemcore" | xargs shellcheck -x
+          if [ -f "ucaresystem-core" ]; then
+            shellcheck -x ucaresystem-core
+          fi
+          if [ -f "launch-ucaresystemcore" ]; then
+            shellcheck -x launch-ucaresystemcore
+          fi
         
       - name: Run ShellCheck on shell scripts in assets
         run: |
           # Check shell scripts by examining file contents, not extension
-          find . -type f -not -path "*/\.*" -exec grep -l "^#!/bin/\(bash\|sh\)" {} \; | xargs shellcheck || true
+          find . -type f -not -path "*/\.*" -exec grep -l "^#!/bin/\(bash\|sh\)" {} \; | while read -r file; do
+            echo "Checking $file"
+            shellcheck "$file" || true
+          done
 
       - name: ShellCheck Report Summary
         if: always()
         run: |
           echo "### ShellCheck Results" >> $GITHUB_STEP_SUMMARY
-          shellcheck -f json ucaresystem-core launch-ucaresystemcore $(find . -type f -name "*.sh") 2>/dev/null | \
-          jq -r '.[] | "- File: \(.file), Line: \(.line), Col: \(.column), Level: \(.level), Message: \(.message)"' | \
-          tee -a $GITHUB_STEP_SUMMARY || echo "No issues found or jq not available" >> $GITHUB_STEP_SUMMARY
+          # Only process files that exist
+          files_to_check=""
+          [ -f "ucaresystem-core" ] && files_to_check="$files_to_check ucaresystem-core"
+          [ -f "launch-ucaresystemcore" ] && files_to_check="$files_to_check launch-ucaresystemcore"
+          shell_files=$(find . -name "*.sh" -type f 2>/dev/null || true)
+          
+          if [ -n "$files_to_check" ] || [ -n "$shell_files" ]; then
+            if command -v jq >/dev/null 2>&1; then
+              shellcheck -f json $files_to_check $shell_files 2>/dev/null | \
+              jq -r '.[] | "- File: \(.file), Line: \(.line), Col: \(.column), Level: \(.level), Message: \(.message)"' | \
+              tee -a $GITHUB_STEP_SUMMARY || echo "No issues found" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "jq not available, running basic shellcheck" >> $GITHUB_STEP_SUMMARY
+              shellcheck $files_to_check $shell_files 2>&1 | tee -a $GITHUB_STEP_SUMMARY || echo "No issues found" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "No shell files found to check" >> $GITHUB_STEP_SUMMARY
+          fi
         continue-on-error: true
