@@ -85,8 +85,7 @@ jobs:
 
         Package: ucaresystem-core
         Architecture: all
-        Depends: \${misc:Depends}, curl, apt-transport-https, software-properties-common
-        Recommends: flatpak, snapd
+        Depends: curl, apt-transport-https, software-properties-common
         Description: All-in-one system maintenance tool for Ubuntu
          uCareSystem is a comprehensive system maintenance tool that automatically
          performs routine maintenance tasks including package updates, cache cleaning,
