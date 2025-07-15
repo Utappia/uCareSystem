@@ -8,6 +8,7 @@ set -e
 # Repository configuration
 COMPATIBLE_DIST_NAME="jammy"
 KEYSERVER="hkp://keyserver.ubuntu.com"
+FALLBACK_KEYSERVER="hkp://keys.openpgp.org"
 KEY="EBC8F9FD"
 REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
 REPO_FILE="/etc/apt/sources.list.d/utappia.list"
@@ -38,8 +39,21 @@ else
     # Create GPG directory
     mkdir -p /root/.gnupg
     chmod 700 /root/.gnupg
-    # Download and install GPG key directly from keyserver
-    gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$KEYSERVER" --recv-keys "$KEY"
+    
+    # Download and install GPG key with fallback keyserver
+    if ! gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
+        echo "Primary keyserver failed, trying fallback keyserver..."
+        if ! gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$FALLBACK_KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
+            echo "Both keyservers failed, trying direct key import..."
+            # Try to import from Ubuntu keyserver directly
+            if ! gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "hkp://keyserver.ubuntu.com:80" --recv-keys "$KEY" 2>/dev/null; then
+                echo "Error: Unable to retrieve GPG key from any keyserver"
+                echo "Please check your internet connection and try again"
+                exit 1
+            fi
+        fi
+    fi
+    
     chmod 644 "$KEYRING_FILE"
     echo ""
     
