@@ -33,9 +33,12 @@ try_gpg_key_retrieval() {
     
     for keyserver in $keyservers; do
         echo "Attempting to retrieve GPG key from $keyserver..."
-        if gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$keyserver" --recv-keys "$KEY" 2>/dev/null; then
-            echo "Successfully retrieved GPG key from $keyserver"
-            return 0
+        if gpg --no-default-keyring --keyserver "$keyserver" --recv-keys "$KEY" 2>/dev/null; then
+            # Export the key in binary format to the keyring file
+            if gpg --armor --export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key from $keyserver"
+                return 0
+            fi
         fi
         echo "Failed to retrieve key from $keyserver"
     done
@@ -51,12 +54,12 @@ try_gpg_key_retrieval() {
     for url in $key_urls; do
         echo "Attempting to download key from $url..."
         if command -v curl >/dev/null 2>&1; then
-            if curl -fsSL "$url" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null; then
+            if curl -fsSL "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
                 echo "Successfully retrieved GPG key via HTTPS"
                 return 0
             fi
         elif command -v wget >/dev/null 2>&1; then
-            if wget -qO- "$url" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null; then
+            if wget -qO- "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
                 echo "Successfully retrieved GPG key via HTTPS"
                 return 0
             fi
@@ -68,8 +71,8 @@ try_gpg_key_retrieval() {
     if command -v apt-key >/dev/null 2>&1; then
         if apt-key adv --keyserver "$KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
             echo "Successfully retrieved GPG key using apt-key"
-            # Export the key to our keyring
-            apt-key export "$KEY" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null
+            # Export the key to our keyring in binary format
+            apt-key export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null
             return 0
         fi
     fi
@@ -132,7 +135,7 @@ EOF
         # Try one more time with a simplified approach
         echo "Attempting one final simplified key retrieval..."
         if gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$KEY" 2>/dev/null && \
-           gpg --armor --export "$KEY" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null; then
+           gpg --armor --export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
             echo "Successfully retrieved GPG key with simplified method"
         else
             echo "All key retrieval methods failed."
