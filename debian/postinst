@@ -40,6 +40,29 @@ try_gpg_key_retrieval() {
         echo "Failed to retrieve key from $keyserver"
     done
     
+    # Try HTTPS fallback for key retrieval
+    echo "Trying HTTPS fallback for key retrieval..."
+    local key_urls="
+        https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY
+        https://pgp.mit.edu/pks/lookup?op=get&search=0x$KEY
+        https://keys.openpgp.org/vks/v1/by-fingerprint/$KEY
+    "
+    
+    for url in $key_urls; do
+        echo "Attempting to download key from $url..."
+        if command -v curl >/dev/null 2>&1; then
+            if curl -fsSL "$url" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null; then
+                echo "Successfully retrieved GPG key via HTTPS"
+                return 0
+            fi
+        elif command -v wget >/dev/null 2>&1; then
+            if wget -qO- "$url" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null; then
+                echo "Successfully retrieved GPG key via HTTPS"
+                return 0
+            fi
+        fi
+    done
+    
     # Try alternative method using apt-key if gpg fails
     echo "Trying alternative method with apt-key..."
     if command -v apt-key >/dev/null 2>&1; then
@@ -73,7 +96,18 @@ else
 keyserver-options no-honor-keyserver-url
 keyserver-options no-honor-preferred-keyserver
 keyserver-options timeout=10
+keyserver-options http-proxy=
 standard-resolver
+disable-ipv6
+EOF
+
+    # Also create gpg.conf for better compatibility
+    cat > /root/.gnupg/gpg.conf << EOF
+keyserver-options no-honor-keyserver-url
+keyserver-options no-honor-preferred-keyserver
+keyserver-options timeout=10
+keyserver-options auto-key-retrieve
+keyserver-options no-auto-key-retrieve
 EOF
     
     # Download and install GPG key with multiple fallback options
@@ -84,12 +118,34 @@ EOF
         echo "  - Keyserver availability problems"
         echo "  - Firewall blocking keyserver access"
         echo ""
-        echo "Please check your internet connection and try again later"
+        echo "Manual workaround:"
+        echo "You can manually add the repository key by running:"
+        echo "  curl -fsSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY' | sudo gpg --dearmor -o '$KEYRING_FILE'"
+        echo "Or:"
+        echo "  wget -qO- 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY' | sudo gpg --dearmor -o '$KEYRING_FILE'"
+        echo ""
+        echo "After adding the key manually, you can continue with:"
+        echo "  sudo dpkg --configure -a"
+        echo ""
         echo "If the problem persists, contact support at the project repository"
-        exit 1
+        
+        # Try one more time with a simplified approach
+        echo "Attempting one final simplified key retrieval..."
+        if gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$KEY" 2>/dev/null && \
+           gpg --armor --export "$KEY" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null; then
+            echo "Successfully retrieved GPG key with simplified method"
+        else
+            echo "All key retrieval methods failed."
+            echo "The package installation will continue, but you may need to add the repository key manually."
+            echo "Repository functionality will be limited until the key is properly installed."
+            # Don't exit with error, just warn
+            touch "$KEYRING_FILE"
+            chmod 644 "$KEYRING_FILE"
+        fi
+    else
+        chmod 644 "$KEYRING_FILE"
     fi
     
-    chmod 644 "$KEYRING_FILE"
     echo ""
     
     echo "Adding Utappia repository"
