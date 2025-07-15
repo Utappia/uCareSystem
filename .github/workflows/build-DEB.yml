@@ -37,7 +37,7 @@ jobs:
         if [ -f VERSION ]; then
           VERSION=$(cat VERSION)
         else
-          VERSION=$(grep -o 'UCARE_VERSION="[^"]*"' src/ucaresystem-core | cut -d'"' -f2 || echo "1.0.0")
+          VERSION=$(grep -o 'UCARE_VERSION="[^"]*"' ucaresystem-core | cut -d'"' -f2 || echo "25.06.05")
         fi
         
         if [ "${{ github.event_name }}" = "release" ]; then
@@ -49,15 +49,75 @@ jobs:
           echo "debian_version=$VERSION+git$COMMIT_SHORT-1" >> $GITHUB_OUTPUT
         fi
     
+    - name: Create debian structure if missing
+      run: |
+        if [ ! -d "debian" ]; then
+          mkdir -p debian/source
+          
+          # Create debian/changelog
+          cat > debian/changelog << EOF
+        ucaresystem-core (${{ steps.version.outputs.debian_version }}) unstable; urgency=medium
+
+          * Automated build from commit ${{ github.sha }}
+
+         -- Salih Emin <salih-emin@ubuntu.com>  $(date -R)
+        EOF
+          
+          # Create debian/control
+          cat > debian/control << EOF
+        Source: ucaresystem-core
+        Section: admin
+        Priority: optional
+        Maintainer: Salih Emin <salih-emin@ubuntu.com>
+        Build-Depends: debhelper (>= 10)
+        Standards-Version: 4.5.0
+        Homepage: https://github.com/Utappia/uCareSystem
+
+        Package: ucaresystem-core
+        Architecture: all
+        Depends: \${misc:Depends}, curl, apt-transport-https, software-properties-common
+        Recommends: flatpak, snapd
+        Description: All-in-one system maintenance tool for Ubuntu
+         uCareSystem is a comprehensive system maintenance tool that automatically
+         performs routine maintenance tasks including package updates, cache cleaning,
+         and system optimization for Ubuntu and derivatives.
+        EOF
+          
+          # Create debian/rules
+          cat > debian/rules << EOF
+        #!/usr/bin/make -f
+
+        %:
+            dh \$@
+
+        override_dh_auto_install:
+            install -D -m 755 ucaresystem-core debian/ucaresystem-core/usr/bin/ucaresystem-core
+            install -D -m 755 launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore
+        EOF
+          
+          chmod +x debian/rules
+          
+          # Create other required files
+          echo "10" > debian/compat
+          echo "3.0 (native)" > debian/source/format
+          
+          # Copy postinst if it exists
+          if [ -f "assets/postinst" ]; then
+            cp assets/postinst debian/postinst
+          fi
+        fi
+    
     - name: Update debian/changelog
       run: |
         export DEBEMAIL="salih-emin@ubuntu.com"
         export DEBFULLNAME="Salih Emin"
         
-        dch --newversion "${{ steps.version.outputs.debian_version }}" \
-            --distribution "unstable" \
-            --urgency "medium" \
-            "Automated build from commit ${{ github.sha }}"
+        if [ -f "debian/changelog" ]; then
+          dch --newversion "${{ steps.version.outputs.debian_version }}" \
+              --distribution "unstable" \
+              --urgency "medium" \
+              "Automated build from commit ${{ github.sha }}"
+        fi
     
     - name: Build package
       run: |
@@ -82,11 +142,6 @@ jobs:
     
     - name: Upload to release (if release event)
       if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ../ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
-        asset_name: ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
-        asset_content_type: application/vnd.debian.binary-package
+        files: ../ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
