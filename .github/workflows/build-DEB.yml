@@ -133,20 +133,25 @@ jobs:
       run: |
         ls -la ../*.deb ../*.buildinfo ../*.changes || true
     
+    - name: Copy artifacts to workspace
+      run: |
+        mkdir -p artifacts
+        cp ../ucaresystem-core_*.deb artifacts/ || true
+        cp ../ucaresystem-core_*.buildinfo artifacts/ || true
+        cp ../ucaresystem-core_*.changes artifacts/ || true
+        ls -la artifacts/
+    
     - name: Upload DEB package
       uses: actions/upload-artifact@v4
       with:
         name: ucaresystem-deb-${{ steps.version.outputs.version }}
-        path: |
-          ../*.deb
-          ../*.buildinfo
-          ../*.changes
+        path: artifacts/*
     
     - name: Upload to release (if release event)
       if: github.event_name == 'release'
       uses: softprops/action-gh-release@v1
       with:
-        files: ../ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
+        files: artifacts/ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
     
     - name: Validate version format
       run: |
