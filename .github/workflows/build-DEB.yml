@@ -40,6 +40,13 @@ jobs:
           VERSION=$(grep -o 'UCARE_VERSION="[^"]*"' ucaresystem-core | cut -d'"' -f2 || echo "25.06.05")
         fi
         
+        # Ensure VERSION is not empty and starts with a digit
+        if [ -z "$VERSION" ] || [[ ! "$VERSION" =~ ^[0-9] ]]; then
+          VERSION="25.06.05"
+        fi
+        
+        echo "Detected base version: $VERSION"
+        
         if [ "${{ github.event_name }}" = "release" ]; then
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "debian_version=$VERSION-1" >> $GITHUB_OUTPUT
@@ -48,6 +55,10 @@ jobs:
           echo "version=$VERSION+git$COMMIT_SHORT" >> $GITHUB_OUTPUT
           echo "debian_version=$VERSION+git$COMMIT_SHORT-1" >> $GITHUB_OUTPUT
         fi
+        
+        # Debug output
+        echo "Final version: $VERSION"
+        echo "Final debian_version: $VERSION+git$COMMIT_SHORT-1"
     
     - name: Create debian structure
       run: |
@@ -136,3 +147,17 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: ../ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
+    
+    - name: Validate version format
+      run: |
+        echo "Validating version format..."
+        echo "Version: ${{ steps.version.outputs.version }}"
+        echo "Debian version: ${{ steps.version.outputs.debian_version }}"
+        
+        # Check if debian_version starts with a digit
+        if [[ ! "${{ steps.version.outputs.debian_version }}" =~ ^[0-9] ]]; then
+          echo "ERROR: Debian version does not start with a digit"
+          exit 1
+        fi
+        
+        echo "Version format is valid"
