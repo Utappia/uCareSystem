@@ -9,6 +9,7 @@ set -e
 COMPATIBLE_DIST_NAME="jammy"
 KEYSERVER="hkp://keyserver.ubuntu.com"
 FALLBACK_KEYSERVER="hkp://keys.openpgp.org"
+THIRD_KEYSERVER="hkp://pgp.mit.edu"
 KEY="EBC8F9FD"
 REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
 REPO_FILE="/etc/apt/sources.list.d/utappia.list"
@@ -26,6 +27,33 @@ else
     DIST_FAMILY=""
 fi
 
+# Function to try GPG key retrieval from multiple keyservers
+try_gpg_key_retrieval() {
+    local keyservers="$KEYSERVER $FALLBACK_KEYSERVER $THIRD_KEYSERVER hkp://keyserver.ubuntu.com:80"
+    
+    for keyserver in $keyservers; do
+        echo "Attempting to retrieve GPG key from $keyserver..."
+        if gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$keyserver" --recv-keys "$KEY" 2>/dev/null; then
+            echo "Successfully retrieved GPG key from $keyserver"
+            return 0
+        fi
+        echo "Failed to retrieve key from $keyserver"
+    done
+    
+    # Try alternative method using apt-key if gpg fails
+    echo "Trying alternative method with apt-key..."
+    if command -v apt-key >/dev/null 2>&1; then
+        if apt-key adv --keyserver "$KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
+            echo "Successfully retrieved GPG key using apt-key"
+            # Export the key to our keyring
+            apt-key export "$KEY" | gpg --no-default-keyring --keyring "$KEYRING_FILE" --import 2>/dev/null
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
 # Repository existence check
 echo "Checking if Utappia Repository exists in your system"
 sleep 2
@@ -36,22 +64,29 @@ else
     echo "Adding Utappia public key"
     # Create keyrings directory if it doesn't exist
     mkdir -p "$KEYRING_DIR"
-    # Create GPG directory
+    # Create GPG directory with proper permissions
     mkdir -p /root/.gnupg
     chmod 700 /root/.gnupg
     
-    # Download and install GPG key with fallback keyserver
-    if ! gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
-        echo "Primary keyserver failed, trying fallback keyserver..."
-        if ! gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "$FALLBACK_KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
-            echo "Both keyservers failed, trying direct key import..."
-            # Try to import from Ubuntu keyserver directly
-            if ! gpg --no-default-keyring --keyring "$KEYRING_FILE" --keyserver "hkp://keyserver.ubuntu.com:80" --recv-keys "$KEY" 2>/dev/null; then
-                echo "Error: Unable to retrieve GPG key from any keyserver"
-                echo "Please check your internet connection and try again"
-                exit 1
-            fi
-        fi
+    # Configure GPG to use IPv4 and be more lenient with keyservers
+    cat > /root/.gnupg/dirmngr.conf << EOF
+keyserver-options no-honor-keyserver-url
+keyserver-options no-honor-preferred-keyserver
+keyserver-options timeout=10
+standard-resolver
+EOF
+    
+    # Download and install GPG key with multiple fallback options
+    if ! try_gpg_key_retrieval; then
+        echo "Error: Unable to retrieve GPG key from any keyserver"
+        echo "This might be due to:"
+        echo "  - Network connectivity issues"
+        echo "  - Keyserver availability problems"
+        echo "  - Firewall blocking keyserver access"
+        echo ""
+        echo "Please check your internet connection and try again later"
+        echo "If the problem persists, contact support at the project repository"
+        exit 1
     fi
     
     chmod 644 "$KEYRING_FILE"
@@ -62,25 +97,40 @@ else
         echo "Temporarily disabling IPv6"
         sleep 1
         echo ""
-        sysctl -w net.ipv6.conf.all.disable_ipv6=1
-        sysctl -w net.ipv6.conf.default.disable_ipv6=1
-        sysctl -w net.ipv6.conf.lo.disable_ipv6=1
+        
+        # Check if sysctl commands are available and IPv6 is enabled
+        if command -v sysctl >/dev/null 2>&1; then
+            sysctl -w net.ipv6.conf.all.disable_ipv6=1 2>/dev/null || true
+            sysctl -w net.ipv6.conf.default.disable_ipv6=1 2>/dev/null || true
+            sysctl -w net.ipv6.conf.lo.disable_ipv6=1 2>/dev/null || true
+        fi
         
         echo ""
         echo "Adding Utappia repository"
-        add-apt-repository -y ppa:utappia/stable
+        if ! add-apt-repository -y ppa:utappia/stable; then
+            echo "Error: Failed to add repository"
+            echo "This might be due to network issues or repository unavailability"
+            exit 1
+        fi
 
         echo "Re-enabling IPv6"
         sleep 1
         echo ""
-        sysctl -w net.ipv6.conf.all.disable_ipv6=0
-        sysctl -w net.ipv6.conf.default.disable_ipv6=0
-        sysctl -w net.ipv6.conf.lo.disable_ipv6=0
+        
+        # Re-enable IPv6 if sysctl is available
+        if command -v sysctl >/dev/null 2>&1; then
+            sysctl -w net.ipv6.conf.all.disable_ipv6=0 2>/dev/null || true
+            sysctl -w net.ipv6.conf.default.disable_ipv6=0 2>/dev/null || true
+            sysctl -w net.ipv6.conf.lo.disable_ipv6=0 2>/dev/null || true
+        fi
 
         echo ""
         echo "Refreshing package list..."
         echo ""
-        apt-get update -o Acquire::ForceIPv4=true
+        if ! apt-get update -o Acquire::ForceIPv4=true; then
+            echo "Warning: Package list update failed"
+            echo "You may need to run 'apt-get update' manually later"
+        fi
     else
         cat <<EOT > "$REPO_FILE"
 # Debian compatible Utappia Repository
@@ -90,7 +140,10 @@ EOT
         echo ""
         echo "Refreshing package list..."
         echo ""
-        apt-get update -o Acquire::ForceIPv4=true
+        if ! apt-get update -o Acquire::ForceIPv4=true; then
+            echo "Warning: Package list update failed"
+            echo "You may need to run 'apt-get update' manually later"
+        fi
     fi
 fi
 
