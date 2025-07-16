@@ -34,6 +34,17 @@ VER_CODENAME="W. Schwartz"
 PREV_VER="25.04"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
+# List of supporters for the previous version development cycle
+SUPPORTERS=(
+	"P. Loughman"
+    "D. Emge"
+    "W. Schwartz"
+    "W. Schreinemachers"
+    "D. e Swarthout"
+    "D. Luchini"
+    "M. Stanley"
+    "N. Evangelista"
+)
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
     echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
@@ -469,14 +480,10 @@ function GOODBYE {
 	echo " Dear $USERNAME, the following names are the legends"
 	echo " of $PREV_VER development cycle, supporters:"
 	echo ""
-	echo " - P. Loughman"
-	echo " - D. Emge"
-	echo " - W. Schwartz"
-	echo " - W. Schreinemachers"
-	echo " - D. e Swarthout"
-	echo " - D. Luchini"
-	echo " - M. Stanley"
-	echo " - N. Evangelista"
+	# Loop through the supporters array
+	for supporter in "${SUPPORTERS[@]}"; do
+		echo " - $supporter"
+	done
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo ""
