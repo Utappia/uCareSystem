@@ -92,6 +92,16 @@ jobs:
         if [ -f debian/rules ]; then
           sed -i 's|install -D -m 755 ucaresystem-core|install -D -m 755 src/ucaresystem-core|g' debian/rules
           sed -i 's|install -D -m 755 launch-ucaresystemcore|install -D -m 755 src/launch-ucaresystemcore|g' debian/rules
+          
+          # Add copyright file installation if it doesn't exist
+          if ! grep -q "debian/copyright" debian/rules; then
+            sed -i '/install -D -m 644 assets\/ucaresystem-core.1/a\\tinstall -D -m 644 debian/copyright debian/ucaresystem-core/usr/share/doc/ucaresystem-core/copyright' debian/rules
+          fi
+          
+          # Add launch-ucaresystemcore man page installation if it doesn't exist
+          if ! grep -q "launch-ucaresystemcore.1" debian/rules; then
+            sed -i '/install -D -m 644 assets\/ucaresystem-core.1/a\\tinstall -D -m 644 assets/launch-ucaresystemcore.1 debian/ucaresystem-core/usr/share/man/man1/launch-ucaresystemcore.1' debian/rules
+          fi
         fi
         
         # Ensure debian/source/format exists
@@ -108,6 +118,10 @@ jobs:
         ls -la debian/
         echo "--- Changelog preview ---"
         head -10 debian/changelog
+        echo "--- Rules file preview ---"
+        cat debian/rules
+        echo "--- Verifying required files exist ---"
+        ls -la debian/copyright assets/launch-ucaresystemcore.1 || echo "Some files missing"
     
     - name: Build package
       run: |
