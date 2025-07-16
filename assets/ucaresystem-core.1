@@ -15,14 +15,22 @@ configurations of uninstalled packages.
 \fB\-h\fR, \fB\-\-help\fR
 Display this help and exit
 .TP
+\fB\-v\fR, \fB\-\-version\fR
+Display version information and exit
+.TP
 \fB\-u\fR, \fB\-\-upgrade\fR
-Upgrade to the next release. Note: If you use a
+Upgrade to the next Ubuntu release. Note: If you use a
 regular release it will upgrade to the next one. If
-you are on a LTS version, it will upgrade only to
-the next LTS.
+you are on a LTS version, it will upgrade ONLY to
+the next LTS if it is available for upgrade.
 .TP
 \fB\-d\fR, \fB\-\-development\fR
-Upgrade to the next development release
+Upgrade to the next development release of Ubuntu.
+Note: This is only for testing purposes and it is not
+recommended for production systems.
+It will upgrade to the next development release, even
+if you are on a regular release or LTS version.
+Use with caution!
 .TP
 \fB\-eol\fR, \fB\-\-end\-of\-life\-upgrade\fR
 CAUTION: Do not use this if your Ubuntu has not
@@ -42,8 +50,13 @@ Shutdown the system, after completing all the tasks.
 \fBucaresystem-core\fR
 Perform regular system maintenance
 .TP
+\fBucaresystem-core --version\fR
+Display version information
+.TP
 \fBucaresystem-core --upgrade\fR
 Perform maintenance and upgrade to the next release
+.SH SUPPORT
+Support this project: <https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG>
 .SH REPORTING BUGS
 Report bugs to <https://github.com/Utappia/uCareSystem/issues>
 .SH AUTHOR
