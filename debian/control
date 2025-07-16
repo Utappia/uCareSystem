@@ -10,7 +10,7 @@ Vcs-Git: https://github.com/Utappia/uCareSystem.git
 
 Package: ucaresystem-core
 Architecture: all
-Depends: apt, lsb-release, curl, software-properties-common, ${misc:Depends}
+Depends: apt, lsb-release, curl, ${misc:Depends}
 Description: All-in-one System Update and maintenance app
  This simple script will automatically refresh your packagelist, 
  download and install software updates (if there are any), remove old

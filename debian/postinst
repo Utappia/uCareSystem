@@ -86,10 +86,69 @@ try_gpg_key_retrieval() {
 echo "Checking if Utappia Repository exists in your system"
 sleep 2
 
-if ls /etc/apt/sources.list.d/utappia* 1> /dev/null 2>&1; then
-    echo "Utappia Repository exists... skipping"
+if [ -f "$REPO_FILE" ]; then
+    if grep -q "signed-by=" "$REPO_FILE" 2>/dev/null; then
+        echo "Modern repository configuration exists... skipping"
+        # Optionally verify key exists (but don't recreate repository)
+        if [ ! -f "$KEYRING_FILE" ]; then
+            echo "GPG key missing, adding key only..."
+            mkdir -p "$KEYRING_DIR"
+            if try_gpg_key_retrieval; then
+                echo "GPG key added successfully"
+                chmod 644 "$KEYRING_FILE"
+            else
+                echo "Warning: Could not retrieve GPG key"
+            fi
+        fi
+    else
+        echo "Found legacy repository configuration, upgrading to modern format..."
+        # Backup existing configuration
+        cp "$REPO_FILE" "$REPO_FILE.backup.$(date +%Y%m%d_%H%M%S)"
+        echo "Legacy configuration backed up to $REPO_FILE.backup.$(date +%Y%m%d_%H%M%S)"
+        
+        # Remove old configuration and install new one
+        rm -f "$REPO_FILE"
+        echo "Installing modern repository configuration..."
+        
+        # Continue with full installation
+        echo "Adding Utappia public key"
+    fi
+elif ls /etc/apt/sources.list.d/utappia* 1> /dev/null 2>&1; then
+    echo "Found other Utappia repository files, checking format..."
+    found_modern=false
+    
+    for repo_file in /etc/apt/sources.list.d/utappia*; do
+        if [ -f "$repo_file" ] && grep -q "signed-by=" "$repo_file" 2>/dev/null; then
+            echo "Modern repository configuration found in $repo_file... skipping"
+            found_modern=true
+            break
+        fi
+    done
+    
+    if [ "$found_modern" = "false" ]; then
+        echo "Found legacy repository files, upgrading to modern format..."
+        # Backup all existing utappia files
+        for repo_file in /etc/apt/sources.list.d/utappia*; do
+            if [ -f "$repo_file" ]; then
+                cp "$repo_file" "$repo_file.backup.$(date +%Y%m%d_%H%M%S)"
+                echo "Backed up $repo_file"
+            fi
+        done
+        
+        # Remove old configurations
+        rm -f /etc/apt/sources.list.d/utappia*
+        echo "Installing modern repository configuration..."
+        
+        # Continue with full installation
+        echo "Adding Utappia public key"
+    fi
 else
+    echo "No existing repository found, installing fresh..."
     echo "Adding Utappia public key"
+fi
+
+# Only proceed with installation if we need to install or upgrade
+if [ "$found_modern" = "false" ] || [ ! -f "$REPO_FILE" ] || ! grep -q "signed-by=" "$REPO_FILE" 2>/dev/null; then
     
     # Test basic connectivity first
     echo "Testing network connectivity..."
@@ -192,58 +251,31 @@ EOF
     
     echo ""
     
+    # **UNIFIED APPROACH** - Use direct sources.list method for all distributions
     echo "Adding Utappia repository"
-    if [ "$DIST_ID" = "ubuntu" ] || echo "$DIST_FAMILY" | grep -q "ubuntu"; then
-        echo "Temporarily disabling IPv6"
-        sleep 1
-        echo ""
-        
-        # Check if sysctl commands are available and IPv6 is enabled
-        if command -v sysctl >/dev/null 2>&1; then
-            sysctl -w net.ipv6.conf.all.disable_ipv6=1 2>/dev/null || true
-            sysctl -w net.ipv6.conf.default.disable_ipv6=1 2>/dev/null || true
-            sysctl -w net.ipv6.conf.lo.disable_ipv6=1 2>/dev/null || true
-        fi
-        
-        echo ""
-        echo "Adding Utappia repository"
-        if ! add-apt-repository -y ppa:utappia/stable; then
-            echo "Error: Failed to add repository"
-            echo "This might be due to network issues or repository unavailability"
-            exit 1
-        fi
-
-        echo "Re-enabling IPv6"
-        sleep 1
-        echo ""
-        
-        # Re-enable IPv6 if sysctl is available
-        if command -v sysctl >/dev/null 2>&1; then
-            sysctl -w net.ipv6.conf.all.disable_ipv6=0 2>/dev/null || true
-            sysctl -w net.ipv6.conf.default.disable_ipv6=0 2>/dev/null || true
-            sysctl -w net.ipv6.conf.lo.disable_ipv6=0 2>/dev/null || true
-        fi
-
-        echo ""
-        echo "Refreshing package list..."
-        echo ""
-        if ! apt-get update -o Acquire::ForceIPv4=true; then
-            echo "Warning: Package list update failed"
-            echo "You may need to run 'apt-get update' manually later"
-        fi
-    else
-        cat <<EOT > "$REPO_FILE"
-# Debian compatible Utappia Repository
+    echo "Configuring repository for all Debian-based distributions ($DIST_ID)..."
+    
+    # Create the repository configuration file
+    cat > "$REPO_FILE" << EOF
+# Utappia Repository - Compatible with Ubuntu and Debian-based distributions
 deb [signed-by=$KEYRING_FILE] $REPO_URL $COMPATIBLE_DIST_NAME main
 deb-src [signed-by=$KEYRING_FILE] $REPO_URL $COMPATIBLE_DIST_NAME main
-EOT
-        echo ""
-        echo "Refreshing package list..."
-        echo ""
-        if ! apt-get update -o Acquire::ForceIPv4=true; then
-            echo "Warning: Package list update failed"
-            echo "You may need to run 'apt-get update' manually later"
-        fi
+EOF
+    
+    echo "Repository configuration created at $REPO_FILE"
+    
+    # Display what we added for transparency
+    echo ""
+    echo "Added repository configuration:"
+    cat "$REPO_FILE"
+    echo ""
+    
+    echo "Refreshing package list..."
+    echo ""
+    if ! apt update; then
+        echo "Warning: Package list update failed"
+        echo "You may need to run 'apt update' manually later"
+        echo "This might be due to network issues or repository unavailability"
     fi
 fi
 
