@@ -1,12 +1,27 @@
-.TH LAUNCH-UCARESYSTEMCORE 1 "April 2025" "uCareSystem" "uCareSystem Launcher"
+.TH LAUNCH-UCARESYSTEMCORE 1 "July 2025" "uCareSystem" "uCareSystem Launcher"
 .SH NAME
 launch-ucaresystemcore \- launcher for uCareSystem Core
 .SH SYNOPSIS
 .B launch-ucaresystemcore
 .SH DESCRIPTION
-This is a launcher script for uCareSystem Core. It is not intended to be run directly.
+This is a launcher script for uCareSystem Core that provides a graphical way to start the application.
 .PP
-This script launches \fBucaresystem-core\fR in a terminal window.
+The launcher automatically detects the default terminal emulator on the system using the update-alternatives system.
+It then opens the terminal and executes \fBucaresystem-core\fR with proper error handling and user interaction.
+.PP
+The script includes fallback mechanisms to ensure compatibility across different Linux distributions and desktop environments.
+After \fBucaresystem-core\fR completes, it prompts the user to press Enter before closing the terminal window.
+.PP
+This launcher is typically used by desktop environments through the .desktop file or GUI applications.
+.SH EXIT STATUS
+The launcher exits with status 0 on success, or 1 if no suitable terminal emulator is found.
+.SH ENVIRONMENT
+The launcher uses the system's update-alternatives to determine the default terminal emulator.
+If no default is found, it falls back to x-terminal-emulator.
+.SH FILES
+.TP
+.I /usr/bin/ucaresystem-core
+The main uCareSystem application that this launcher executes
 .SH SEE ALSO
 .BR ucaresystem-core (1)
 .SH AUTHOR
