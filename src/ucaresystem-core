@@ -424,12 +424,17 @@ function SHOW_HELP {
 		 
 		 -v --version      Display version information and exit
 		 
-		 -u --upgrade      Upgrade to the next release. Note: If you use a
+		 -u --upgrade      Upgrade to the next Ubuntu release. Note: If you use a
 		                   regular release it will upgrade to the next one. If
-		                   you are on a LTS version, it will upgrade only to 
-		                   the next LTS.
+		                   you are on a LTS version, it will upgrade ONLY to 
+		                   the next LTS if it is available for upgrade.
 		             
-		 -d --development  Upgrade to the next development release
+		 -d --development  Upgrade to the next development release of Ubuntu.
+		                   Note: This is only for testing purposes and it is not
+		                   recommended for production systems.
+		                   It will upgrade to the next development release, even
+		                   if you are on a regular release or LTS version.
+		                   Use with caution!
 
 		 -eol --end-of-life-upgrade      
 				   CAUTION: Do not use this if your Ubuntu has not
@@ -444,7 +449,7 @@ function SHOW_HELP {
 		 -s --shutdown     Shutdown the system, after completing all the tasks, 
 
 	Support this project: $DONATE
-	
+
 EOF
 }
 
