@@ -2,7 +2,7 @@ Source: ucaresystem-core
 Section: utils
 Priority: optional
 Maintainer: Salih Emin <salih-emin@ubuntu.com>
-Build-Depends: debhelper (>= 10), help2man
+Build-Depends: debhelper (>= 10), help2man, desktop-file-utils
 Standards-Version: 4.6.0
 Homepage: http://utappia.org
 Vcs-Browser: https://github.com/Utappia/uCareSystem
