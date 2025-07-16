@@ -1,0 +1,20 @@
+uCareSystem for Debian
+======================
+
+This package provides the uCareSystem maintenance tool for Debian-based systems.
+
+Installation Notes:
+- The package automatically configures the Utappia repository
+- GPG keys are retrieved automatically during installation
+- The tool supports Ubuntu, Debian, and derivatives
+
+Usage:
+- Run `sudo ucaresystem-core` for full maintenance
+- Use `ucaresystem-core --help` for available options
+- Desktop launcher available in Applications menu
+
+Configuration:
+- Repository: ppa:utappia/stable
+- GPG keyring: /etc/apt/keyrings/utappia-archive-keyring.gpg
+
+For support, visit: https://github.com/Utappia/uCareSystem
