@@ -29,7 +29,8 @@ jobs:
           lintian \
           fakeroot \
           dpkg-dev \
-          git-buildpackage
+          git-buildpackage \
+          help2man
     
     - name: Get version information
       id: version
@@ -37,7 +38,7 @@ jobs:
         if [ -f VERSION ]; then
           VERSION=$(cat VERSION)
         else
-          VERSION=$(grep -o 'UCARE_VERSION="[^"]*"' ucaresystem-core | cut -d'"' -f2 || echo "25.06.05")
+          VERSION=$(grep -o 'UCARE_VERSION="[^"]*"' src/ucaresystem-core | cut -d'"' -f2 || echo "25.06.05")
         fi
         
         # Ensure VERSION is not empty and starts with a digit
@@ -60,68 +61,53 @@ jobs:
         echo "Final version: $VERSION"
         echo "Final debian_version: $VERSION+git$COMMIT_SHORT-1"
     
-    - name: Create debian structure
+    - name: Update debian files with version info
       run: |
+        # Create debian/source directory if it doesn't exist
         mkdir -p debian/source
         
-        # Create debian/changelog with correct version
+        # Update debian/changelog with new version entry at the top
+        # First, backup the original changelog
+        if [ -f debian/changelog ]; then
+          cp debian/changelog debian/changelog.bak
+        fi
+        
+        # Create new changelog entry at the top
         cat > debian/changelog << EOF
         ucaresystem-core (${{ steps.version.outputs.debian_version }}) unstable; urgency=medium
 
           * Automated build from commit ${{ github.sha }}
 
          -- Salih Emin <salih-emin@ubuntu.com>  $(date -R)
-        EOF
-        
-        # Create debian/control
-        cat > debian/control << EOF
-        Source: ucaresystem-core
-        Section: admin
-        Priority: optional
-        Maintainer: Salih Emin <salih-emin@ubuntu.com>
-        Build-Depends: debhelper (>= 10)
-        Standards-Version: 4.5.0
-        Homepage: https://github.com/Utappia/uCareSystem
 
-        Package: ucaresystem-core
-        Architecture: all
-        Depends: curl, apt-transport-https, software-properties-common
-        Description: All-in-one system maintenance tool for Ubuntu
-         uCareSystem is a comprehensive system maintenance tool that automatically
-         performs routine maintenance tasks including package updates, cache cleaning,
-         and system optimization for Ubuntu and derivatives.
         EOF
         
-        # Create debian/rules with proper tabs
-        {
-          echo '#!/usr/bin/make -f'
-          echo ''
-          echo '%:'
-          echo -e '\tdh $@'
-          echo ''
-          echo 'override_dh_auto_install:'
-          echo -e '\tinstall -D -m 755 src/ucaresystem-core debian/ucaresystem-core/usr/bin/ucaresystem-core'
-          echo -e '\tinstall -D -m 755 src/launch-ucaresystemcore debian/ucaresystem-core/usr/bin/launch-ucaresystemcore'
-          echo -e '\tinstall -D -m 644 assets/ucaresystem.desktop debian/ucaresystem-core/usr/share/applications/ucaresystem.desktop'
-          echo -e '\tinstall -D -m 644 assets/ucaresystem.png debian/ucaresystem-core/usr/share/pixmaps/ucaresystemicon.png'
-          echo -e '\tinstall -D -m 644 assets/ucaresystem-core.1 debian/ucaresystem-core/usr/share/man/man1/ucaresystem-core.1'
-        } > debian/rules
+        # Append original changelog if it exists
+        if [ -f debian/changelog.bak ]; then
+          cat debian/changelog.bak >> debian/changelog
+          rm debian/changelog.bak
+        fi
         
-        chmod +x debian/rules
+        # Fix the rules file to use correct source paths (src/ prefix)
+        if [ -f debian/rules ]; then
+          sed -i 's|install -D -m 755 ucaresystem-core|install -D -m 755 src/ucaresystem-core|g' debian/rules
+          sed -i 's|install -D -m 755 launch-ucaresystemcore|install -D -m 755 src/launch-ucaresystemcore|g' debian/rules
+        fi
         
-        # Create other required files
-        echo "10" > debian/compat
+        # Ensure debian/source/format exists
         echo "3.0 (native)" > debian/source/format
         
-        # Copy postinst if it exists
-        if [ -f "assets/postinst" ]; then
+        # Copy postinst from assets if it exists and debian/postinst doesn't exist
+        if [ -f "assets/postinst" ] && [ ! -f "debian/postinst" ]; then
           cp assets/postinst debian/postinst
         fi
     
-    - name: Remove the changelog update step
+    - name: Verify debian structure
       run: |
-        echo "Debian structure created successfully"
+        echo "Debian structure updated successfully"
         ls -la debian/
+        echo "--- Changelog preview ---"
+        head -10 debian/changelog
     
     - name: Build package
       run: |
