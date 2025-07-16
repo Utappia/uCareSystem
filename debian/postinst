@@ -29,7 +29,7 @@ fi
 
 # Function to try GPG key retrieval from multiple keyservers
 try_gpg_key_retrieval() {
-    local keyservers="$KEYSERVER $FALLBACK_KEYSERVER $THIRD_KEYSERVER hkp://keyserver.ubuntu.com:80"
+    keyservers="$KEYSERVER $FALLBACK_KEYSERVER $THIRD_KEYSERVER hkp://keyserver.ubuntu.com:80"
     
     for keyserver in $keyservers; do
         echo "Attempting to retrieve GPG key from $keyserver..."
@@ -45,7 +45,7 @@ try_gpg_key_retrieval() {
     
     # Try HTTPS fallback for key retrieval
     echo "Trying HTTPS fallback for key retrieval..."
-    local key_urls="
+    key_urls="
         https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY
         https://pgp.mit.edu/pks/lookup?op=get&search=0x$KEY
         https://keys.openpgp.org/vks/v1/by-fingerprint/$KEY
