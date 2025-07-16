@@ -8,7 +8,7 @@
  
 # uCareSystem
 
-	uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
+uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
 
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
