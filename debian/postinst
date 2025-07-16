@@ -27,9 +27,34 @@ else
     DIST_FAMILY=""
 fi
 
-# Function to try GPG key retrieval from multiple keyservers
+# Function to try GPG key retrieval from multiple sources
 try_gpg_key_retrieval() {
-    keyservers="$KEYSERVER $FALLBACK_KEYSERVER $THIRD_KEYSERVER hkp://keyserver.ubuntu.com:80"
+    # Try HTTPS methods first (most reliable in restricted environments)
+    echo "Attempting GPG key retrieval via HTTPS (most reliable)..."
+    key_urls="
+        https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY
+        https://keys.openpgp.org/vks/v1/by-fingerprint/$KEY
+        https://pgp.mit.edu/pks/lookup?op=get&search=0x$KEY
+    "
+    
+    for url in $key_urls; do
+        echo "Attempting to download key from $url..."
+        if command -v curl >/dev/null 2>&1; then
+            if curl -fsSL --connect-timeout 10 --max-time 30 "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key via HTTPS"
+                return 0
+            fi
+        elif command -v wget >/dev/null 2>&1; then
+            if wget --timeout=10 --tries=2 -qO- "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key via HTTPS"
+                return 0
+            fi
+        fi
+    done
+    
+    # Fallback to traditional keyservers if HTTPS fails
+    echo "HTTPS methods failed, trying traditional keyservers..."
+    keyservers="hkp://keyserver.ubuntu.com:80 $KEYSERVER $FALLBACK_KEYSERVER $THIRD_KEYSERVER"
     
     for keyserver in $keyservers; do
         echo "Attempting to retrieve GPG key from $keyserver..."
@@ -41,29 +66,6 @@ try_gpg_key_retrieval() {
             fi
         fi
         echo "Failed to retrieve key from $keyserver"
-    done
-    
-    # Try HTTPS fallback for key retrieval
-    echo "Trying HTTPS fallback for key retrieval..."
-    key_urls="
-        https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY
-        https://pgp.mit.edu/pks/lookup?op=get&search=0x$KEY
-        https://keys.openpgp.org/vks/v1/by-fingerprint/$KEY
-    "
-    
-    for url in $key_urls; do
-        echo "Attempting to download key from $url..."
-        if command -v curl >/dev/null 2>&1; then
-            if curl -fsSL "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
-                echo "Successfully retrieved GPG key via HTTPS"
-                return 0
-            fi
-        elif command -v wget >/dev/null 2>&1; then
-            if wget -qO- "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
-                echo "Successfully retrieved GPG key via HTTPS"
-                return 0
-            fi
-        fi
     done
     
     # Try alternative method using apt-key if gpg fails
@@ -88,18 +90,34 @@ if ls /etc/apt/sources.list.d/utappia* 1> /dev/null 2>&1; then
     echo "Utappia Repository exists... skipping"
 else
     echo "Adding Utappia public key"
+    
+    # Test basic connectivity first
+    echo "Testing network connectivity..."
+    if command -v curl >/dev/null 2>&1; then
+        if ! curl -fsSL --connect-timeout 5 --max-time 10 "https://keyserver.ubuntu.com" >/dev/null 2>&1; then
+            echo "Warning: Network connectivity to keyservers may be limited"
+            sleep 1
+        fi
+    elif command -v wget >/dev/null 2>&1; then
+        if ! wget --timeout=5 --tries=1 -qO- "https://keyserver.ubuntu.com" >/dev/null 2>&1; then
+            echo "Warning: Network connectivity to keyservers may be limited"
+            sleep 1
+        fi
+    fi
+    
     # Create keyrings directory if it doesn't exist
     mkdir -p "$KEYRING_DIR"
     # Create GPG directory with proper permissions
     mkdir -p /root/.gnupg
     chmod 700 /root/.gnupg
     
-    # Configure GPG to use IPv4 and be more lenient with keyservers
+    # Configure GPG with improved timeout and connection handling
     cat > /root/.gnupg/dirmngr.conf << EOF
 keyserver-options no-honor-keyserver-url
 keyserver-options no-honor-preferred-keyserver
-keyserver-options timeout=10
+keyserver-options timeout=15
 keyserver-options http-proxy=
+keyserver-options auto-key-retrieve
 standard-resolver
 disable-ipv6
 EOF
@@ -108,9 +126,11 @@ EOF
     cat > /root/.gnupg/gpg.conf << EOF
 keyserver-options no-honor-keyserver-url
 keyserver-options no-honor-preferred-keyserver
-keyserver-options timeout=10
+keyserver-options timeout=15
 keyserver-options auto-key-retrieve
 keyserver-options no-auto-key-retrieve
+no-greeting
+batch
 EOF
     
     # Download and install GPG key with multiple fallback options
@@ -132,19 +152,40 @@ EOF
         echo ""
         echo "If the problem persists, contact support at the project repository"
         
-        # Try one more time with a simplified approach
-        echo "Attempting one final simplified key retrieval..."
+        # Try one more time with a simplified approach using multiple methods
+        echo "Attempting final key retrieval with simplified methods..."
+        
+        # Try direct curl/wget first
+        if command -v curl >/dev/null 2>&1; then
+            if curl -fsSL --connect-timeout 15 --max-time 60 "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key with simplified curl method"
+                chmod 644 "$KEYRING_FILE"
+                return 0
+            fi
+        fi
+        
+        if command -v wget >/dev/null 2>&1; then
+            if wget --timeout=15 --tries=3 -qO- "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key with simplified wget method"
+                chmod 644 "$KEYRING_FILE"
+                return 0
+            fi
+        fi
+        
+        # Try simplified GPG keyserver approach
         if gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$KEY" 2>/dev/null && \
            gpg --armor --export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
-            echo "Successfully retrieved GPG key with simplified method"
-        else
-            echo "All key retrieval methods failed."
-            echo "The package installation will continue, but you may need to add the repository key manually."
-            echo "Repository functionality will be limited until the key is properly installed."
-            # Don't exit with error, just warn
-            touch "$KEYRING_FILE"
+            echo "Successfully retrieved GPG key with simplified GPG method"
             chmod 644 "$KEYRING_FILE"
+            return 0
         fi
+        
+        echo "All key retrieval methods failed."
+        echo "The package installation will continue, but you may need to add the repository key manually."
+        echo "Repository functionality will be limited until the key is properly installed."
+        # Don't exit with error, just warn
+        touch "$KEYRING_FILE"
+        chmod 644 "$KEYRING_FILE"
     else
         chmod 644 "$KEYRING_FILE"
     fi
