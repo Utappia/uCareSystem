@@ -389,6 +389,19 @@ function UPGRADE_TO_DEVEL_RELEASE {
 	sleep 2
 }
 
+function SHOW_VERSION {
+	echo -e "${CYAN}uCareSystem${ENDCOLOR} ${YELLOW}$UCARE_VERSION${ENDCOLOR}"
+	echo -e "${MAGENTA}Release honored to: $VER_CODENAME${ENDCOLOR}"
+	echo ""
+	echo -e "${GREEN}Copyright (c) 2025 Salih Emin. All rights reserved.${ENDCOLOR}"
+	echo -e "${GREEN}Licensed under GPL3 (http://www.gnu.org/licenses/gpl.html)${ENDCOLOR}"
+	echo -e "${CYAN}WebSite: http://utappia.org${ENDCOLOR}"
+	echo -e "${CYAN}Email: salih-emin@ubuntu.com${ENDCOLOR}"
+	echo ""
+	echo -e "${YELLOW}This is free software; you are free to change and redistribute it.${ENDCOLOR}"
+	echo -e "${YELLOW}There is NO WARRANTY, to the extent permitted by law.${ENDCOLOR}"
+}
+
 function SHOW_HELP {
 	cat << EOF
 	
@@ -409,6 +422,8 @@ function SHOW_HELP {
 
 		 -h --help         Display this help and exit
 		 
+		 -v --version      Display version information and exit
+		 
 		 -u --upgrade      Upgrade to the next release. Note: If you use a
 		                   regular release it will upgrade to the next one. If
 		                   you are on a LTS version, it will upgrade only to 
@@ -427,6 +442,9 @@ function SHOW_HELP {
 		 -r --reboot       Reboot the system, after completing all the tasks, 
 
 		 -s --shutdown     Shutdown the system, after completing all the tasks, 
+
+	Support this project: $DONATE
+	
 EOF
 }
 
@@ -505,6 +523,9 @@ while [ "$1" != "" ]; do
                              exit
                                 ;;
         -h | --help )        SHOW_HELP
+                             exit
+                                ;;
+        -v | --version )     SHOW_VERSION
                              exit
                                 ;;
         -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
