@@ -201,7 +201,7 @@ function MAINTENANCE {
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
 	# Print each line with padding to fit the terminal width
-	xargs -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
+	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
 	echo
 	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
@@ -301,7 +301,7 @@ function MAINTENANCE {
 	fi
 
 	## Removes unused config files of uninstalled packages
-	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
+	dpkg --get-selections | grep deinstall | cut -f1 | xargs --no-run-if-empty sudo apt autoremove -y --purge;
 	echo
 	echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	sleep 1
