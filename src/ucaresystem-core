@@ -32,7 +32,7 @@ DATE=$(date +%F_%T)
 UCARE_VERSION="25.07.17"
 # See HONORED_RELEASES.md for historical record of honored releases
 VER_CODENAME="W. Schreinemachers"
-PREV_VER="25.04"
+PREV_VER="25.06"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 # List of supporters for the previous version development cycle

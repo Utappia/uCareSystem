@@ -19,7 +19,7 @@ uCareSystem is an all-in-one system update and maintenance application for Ubunt
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
 	WebSite: http://utappia.org
 
-## Sponsors of the previous development cycle (v25.04)
+## Sponsors of the previous development cycle (v25.06)
 
 With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous development cycle:
 
