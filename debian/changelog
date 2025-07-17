@@ -1,3 +1,12 @@
+ucaresystem-core (25.07.17) jammy; urgency=high
+
+  * Improved GPG key handling in postinst with multiple HTTPS and keyserver fallbacks.
+  * Unified repository addition for all Debian/Ubuntu-based systems (modern signed-by method)
+  * Updated documentation and manpages for clarity and accuracy.
+  * Modernized CI/CD pipeline with automated push to package for better Debian policy compliance and future-proofing
+
+ -- Salih Emin <salih-emin@ubuntu.com>  Thu, 17 Jul 2025 16:00:29 +0300
+
 ucaresystem-core (25.06.05) jammy; urgency=medium
 
   * gpg based keyring
