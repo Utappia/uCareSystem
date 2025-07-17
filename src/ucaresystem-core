@@ -29,21 +29,16 @@ YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="25.06.05"
-VER_CODENAME="W. Schwartz"
+UCARE_VERSION="25.07.17"
+# See HONORED_RELEASES.md for historical record of honored releases
+VER_CODENAME="W. Schreinemachers"
 PREV_VER="25.04"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
-	"P. Loughman"
-    "D. Emge"
-    "W. Schwartz"
-    "W. Schreinemachers"
-    "D. e Swarthout"
-    "D. Luchini"
-    "M. Stanley"
-    "N. Evangelista"
+	"W. Schreinemachers"
+    "K. A. Gkountras (Jemadux)"
 )
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
