@@ -1,5 +1,10 @@
 name: Build DEB Package
 
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
 on:
   push:
     branches: [ develop, main ]
