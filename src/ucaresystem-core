@@ -11,8 +11,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-emin(at)ubuntu.com
-# Date   : 11-12-2024 (first release 19-02-2009)
-# Version: 25.06.05
+# Date   : 17-07-2025 (first release 19-02-2009)
+# Version: 25.07.17
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
