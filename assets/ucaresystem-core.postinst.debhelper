@@ -1,7 +1,0 @@
-# Automatically added by dh_icons/13.6ubuntu1
-if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
-	if command -v update-icon-caches >/dev/null; then
-		update-icon-caches /usr/share/icons/ucaresystemicon.png
-	fi
-fi
-# End automatically added section

@@ -1,0 +1,176 @@
+name: Build DEB Package
+
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+  release:
+    types: [published]
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          desktop-file-utils \
+          devscripts \
+          debhelper \
+          dh-make \
+          build-essential \
+          lintian \
+          fakeroot \
+          dpkg-dev \
+          git-buildpackage \
+          help2man
+    
+    - name: Get version information
+      id: version
+      run: |
+        if [ -f VERSION ]; then
+          VERSION=$(cat VERSION)
+        else
+          VERSION=$(grep -o 'UCARE_VERSION="[^"]*"' src/ucaresystem-core | cut -d'"' -f2 || echo "25.06.05")
+        fi
+        
+        # Ensure VERSION is not empty and starts with a digit
+        if [ -z "$VERSION" ] || [[ ! "$VERSION" =~ ^[0-9] ]]; then
+          VERSION="25.06.05"
+        fi
+        
+        echo "Detected base version: $VERSION"
+        
+        if [ "${{ github.event_name }}" = "release" ]; then
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "debian_version=$VERSION-1" >> $GITHUB_OUTPUT
+        else
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          echo "version=$VERSION+git$COMMIT_SHORT" >> $GITHUB_OUTPUT
+          echo "debian_version=$VERSION+git$COMMIT_SHORT-1" >> $GITHUB_OUTPUT
+        fi
+        
+        # Debug output
+        echo "Final version: $VERSION"
+        echo "Final debian_version: $VERSION+git$COMMIT_SHORT-1"
+    
+    - name: Update debian files with version info
+      run: |
+        # Create debian/source directory if it doesn't exist
+        mkdir -p debian/source
+        
+        # Update debian/changelog with new version entry at the top
+        # First, backup the original changelog
+        if [ -f debian/changelog ]; then
+          cp debian/changelog debian/changelog.bak
+        fi
+        
+        # Create new changelog entry at the top
+        cat > debian/changelog << EOF
+        ucaresystem-core (${{ steps.version.outputs.debian_version }}) unstable; urgency=medium
+
+          * Automated build from commit ${{ github.sha }}
+
+         -- Salih Emin <salih-emin@ubuntu.com>  $(date -R)
+
+        EOF
+        
+        # Append original changelog if it exists
+        if [ -f debian/changelog.bak ]; then
+          cat debian/changelog.bak >> debian/changelog
+          rm debian/changelog.bak
+        fi
+        
+        # Fix the rules file to use correct source paths (src/ prefix)
+        if [ -f debian/rules ]; then
+          sed -i 's|install -D -m 755 ucaresystem-core|install -D -m 755 src/ucaresystem-core|g' debian/rules
+          sed -i 's|install -D -m 755 launch-ucaresystemcore|install -D -m 755 src/launch-ucaresystemcore|g' debian/rules
+          
+          # Add copyright file installation if it doesn't exist
+          if ! grep -q "debian/copyright" debian/rules; then
+            sed -i '/install -D -m 644 assets\/ucaresystem-core.1/a\\tinstall -D -m 644 debian/copyright debian/ucaresystem-core/usr/share/doc/ucaresystem-core/copyright' debian/rules
+          fi
+          
+          # Add launch-ucaresystemcore man page installation if it doesn't exist
+          if ! grep -q "launch-ucaresystemcore.1" debian/rules; then
+            sed -i '/install -D -m 644 assets\/ucaresystem-core.1/a\\tinstall -D -m 644 assets/launch-ucaresystemcore.1 debian/ucaresystem-core/usr/share/man/man1/launch-ucaresystemcore.1' debian/rules
+          fi
+        fi
+        
+        # Ensure debian/source/format exists
+        echo "3.0 (native)" > debian/source/format
+        
+        # Copy postinst from assets if it exists and debian/postinst doesn't exist
+        if [ -f "assets/postinst" ] && [ ! -f "debian/postinst" ]; then
+          cp assets/postinst debian/postinst
+        fi
+    
+    - name: Verify debian structure
+      run: |
+        echo "Debian structure updated successfully"
+        ls -la debian/
+        echo "--- Changelog preview ---"
+        head -10 debian/changelog
+        echo "--- Rules file preview ---"
+        cat debian/rules
+        echo "--- Verifying required files exist ---"
+        ls -la debian/copyright assets/launch-ucaresystemcore.1 || echo "Some files missing"
+    
+    - name: Build package
+      run: |
+        dpkg-buildpackage -us -uc -b
+    
+    - name: Run lintian
+      run: |
+        lintian --info --display-info --display-experimental --pedantic ../ucaresystem-core_*.deb || true
+    
+    - name: List generated files
+      run: |
+        ls -la ../*.deb ../*.buildinfo ../*.changes || true
+    
+    - name: Copy artifacts to workspace
+      run: |
+        mkdir -p artifacts
+        cp ../ucaresystem-core_*.deb artifacts/ || true
+        cp ../ucaresystem-core_*.buildinfo artifacts/ || true
+        cp ../ucaresystem-core_*.changes artifacts/ || true
+        ls -la artifacts/
+    
+    - name: Upload DEB package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ucaresystem-deb-${{ steps.version.outputs.version }}
+        path: artifacts/*
+    
+    - name: Upload to release (if release event)
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: artifacts/ucaresystem-core_${{ steps.version.outputs.debian_version }}_all.deb
+    
+    - name: Validate version format
+      run: |
+        echo "Validating version format..."
+        echo "Version: ${{ steps.version.outputs.version }}"
+        echo "Debian version: ${{ steps.version.outputs.debian_version }}"
+        
+        # Check if debian_version starts with a digit
+        if [[ ! "${{ steps.version.outputs.debian_version }}" =~ ^[0-9] ]]; then
+          echo "ERROR: Debian version does not start with a digit"
+          exit 1
+        fi
+        
+        echo "Version format is valid"

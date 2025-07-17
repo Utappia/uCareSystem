@@ -11,14 +11,14 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-emin(at)ubuntu.com
-# Date   : 11-12-2024 (first release 19-02-2009)
-# Version: 25.06.05
+# Date   : 17-07-2025 (first release 19-02-2009)
+# Version: 25.07.17
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
 #updates (if there are any),
 #remove any remaining packages and configuration files without interference.
-#
+SECONDS=0
 ## Script starts here
 
 # Variables
@@ -29,11 +29,17 @@ YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
 DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="25.06.05"
-VER_CODENAME="W. Schwartz"
-PREV_VER="25.04"
+UCARE_VERSION="25.07.17"
+# See HONORED_RELEASES.md for historical record of honored releases
+VER_CODENAME="W. Schreinemachers"
+PREV_VER="25.06"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
 DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
+# List of supporters for the previous version development cycle
+SUPPORTERS=(
+	"W. Schreinemachers"
+    "K. A. Gkountras (Jemadux)"
+)
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
     echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
@@ -195,16 +201,14 @@ function MAINTENANCE {
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(sed 's/^WARNING.*//') |
 	# Print each line with padding to fit the terminal width
-	xargs -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
-	echo -e "${YELLOW}Here are the packages that can be upgraded if they are not kept back due to phased releases: ${ENDCOLOR}"
-	sleep 1
-	sudo apt list --upgradable;
+	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
 	echo
 	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Updates packages and libraries
+	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
 	sudo apt full-upgrade -V -y;
 	echo
 	echo -e "${GREEN}▸ Finished upgrading system packages and libraries ${ENDCOLOR}"
@@ -297,7 +301,7 @@ function MAINTENANCE {
 	fi
 
 	## Removes unused config files of uninstalled packages
-	dpkg --get-selections | grep deinstall | cut -f1 | xargs sudo apt autoremove -y --purge;
+	dpkg --get-selections | grep deinstall | cut -f1 | xargs --no-run-if-empty sudo apt autoremove -y --purge;
 	echo
 	echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	sleep 1
@@ -391,6 +395,19 @@ function UPGRADE_TO_DEVEL_RELEASE {
 	sleep 2
 }
 
+function SHOW_VERSION {
+	echo -e "${CYAN}uCareSystem${ENDCOLOR} ${YELLOW}$UCARE_VERSION${ENDCOLOR}"
+	echo -e "${MAGENTA}Release honored to: $VER_CODENAME${ENDCOLOR}"
+	echo ""
+	echo -e "${GREEN}Copyright (c) 2025 Salih Emin. All rights reserved.${ENDCOLOR}"
+	echo -e "${GREEN}Licensed under GPL3 (http://www.gnu.org/licenses/gpl.html)${ENDCOLOR}"
+	echo -e "${CYAN}WebSite: http://utappia.org${ENDCOLOR}"
+	echo -e "${CYAN}Email: salih-emin@ubuntu.com${ENDCOLOR}"
+	echo ""
+	echo -e "${YELLOW}This is free software; you are free to change and redistribute it.${ENDCOLOR}"
+	echo -e "${YELLOW}There is NO WARRANTY, to the extent permitted by law.${ENDCOLOR}"
+}
+
 function SHOW_HELP {
 	cat << EOF
 	
@@ -411,12 +428,19 @@ function SHOW_HELP {
 
 		 -h --help         Display this help and exit
 		 
-		 -u --upgrade      Upgrade to the next release. Note: If you use a
+		 -v --version      Display version information and exit
+		 
+		 -u --upgrade      Upgrade to the next Ubuntu release. Note: If you use a
 		                   regular release it will upgrade to the next one. If
-		                   you are on a LTS version, it will upgrade only to 
-		                   the next LTS.
+		                   you are on a LTS version, it will upgrade ONLY to 
+		                   the next LTS if it is available for upgrade.
 		             
-		 -d --development  Upgrade to the next development release
+		 -d --development  Upgrade to the next development release of Ubuntu.
+		                   Note: This is only for testing purposes and it is not
+		                   recommended for production systems.
+		                   It will upgrade to the next development release, even
+		                   if you are on a regular release or LTS version.
+		                   Use with caution!
 
 		 -eol --end-of-life-upgrade      
 				   CAUTION: Do not use this if your Ubuntu has not
@@ -429,6 +453,9 @@ function SHOW_HELP {
 		 -r --reboot       Reboot the system, after completing all the tasks, 
 
 		 -s --shutdown     Shutdown the system, after completing all the tasks, 
+
+	Support this project: $DONATE
+
 EOF
 }
 
@@ -448,19 +475,15 @@ function GOODBYE {
 	echo " Dear $USERNAME, the following names are the legends"
 	echo " of $PREV_VER development cycle, supporters:"
 	echo ""
-	echo " - P. Loughman"
-	echo " - D. Emge"
-	echo " - W. Schwartz"
-	echo " - W. Schreinemachers"
-	echo " - D. e Swarthout"
-	echo " - D. Luchini"
-	echo " - M. Stanley"
-	echo " - N. Evangelista"
+	# Loop through the supporters array
+	for supporter in "${SUPPORTERS[@]}"; do
+		echo " - $supporter"
+	done
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo ""
 	sleep 2
-	echo -e "     	${MAGENTA}All maintenance Complete... GOODBYE${ENDCOLOR}"
+	echo -e "     	${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
 	echo "___________________________________________________________"
 	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
@@ -507,6 +530,9 @@ while [ "$1" != "" ]; do
                              exit
                                 ;;
         -h | --help )        SHOW_HELP
+                             exit
+                                ;;
+        -v | --version )     SHOW_VERSION
                              exit
                                 ;;
         -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT

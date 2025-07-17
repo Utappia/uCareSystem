@@ -1,0 +1,285 @@
+#!/bin/sh
+# Utappia repository installer
+# Copyright (c) 2025 Salih Emin. All rights reserved.
+# Use of this source code is governed by GPLv3 license that can be
+# found in the LICENSE file.
+set -e
+
+# Repository configuration
+COMPATIBLE_DIST_NAME="jammy"
+KEYSERVER="hkp://keyserver.ubuntu.com"
+FALLBACK_KEYSERVER="hkp://keys.openpgp.org"
+THIRD_KEYSERVER="hkp://pgp.mit.edu"
+KEY="EBC8F9FD"
+REPO_URL="http://ppa.launchpad.net/utappia/stable/ubuntu"
+REPO_FILE="/etc/apt/sources.list.d/utappia.list"
+KEYRING_DIR="/etc/apt/keyrings"
+KEYRING_FILE="$KEYRING_DIR/utappia-archive-keyring.gpg"
+
+# Distribution detection
+if [ -f /etc/os-release ]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+    DIST_ID="$ID"
+    DIST_FAMILY="$ID_LIKE"
+else
+    DIST_ID=$(lsb_release -si 2>/dev/null || echo "Unknown")
+    DIST_FAMILY=""
+fi
+
+# Function to try GPG key retrieval from multiple sources
+try_gpg_key_retrieval() {
+    # Try HTTPS methods first (most reliable in restricted environments)
+    echo "Attempting GPG key retrieval via HTTPS (most reliable)..."
+    key_urls="
+        https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY
+        https://keys.openpgp.org/vks/v1/by-fingerprint/$KEY
+        https://pgp.mit.edu/pks/lookup?op=get&search=0x$KEY
+    "
+    
+    for url in $key_urls; do
+        echo "Attempting to download key from $url..."
+        if command -v curl >/dev/null 2>&1; then
+            if curl -fsSL --connect-timeout 10 --max-time 30 "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key via HTTPS"
+                return 0
+            fi
+        elif command -v wget >/dev/null 2>&1; then
+            if wget --timeout=10 --tries=2 -qO- "$url" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key via HTTPS"
+                return 0
+            fi
+        fi
+    done
+    
+    # Fallback to traditional keyservers if HTTPS fails
+    echo "HTTPS methods failed, trying traditional keyservers..."
+    keyservers="hkp://keyserver.ubuntu.com:80 $KEYSERVER $FALLBACK_KEYSERVER $THIRD_KEYSERVER"
+    
+    for keyserver in $keyservers; do
+        echo "Attempting to retrieve GPG key from $keyserver..."
+        if gpg --no-default-keyring --keyserver "$keyserver" --recv-keys "$KEY" 2>/dev/null; then
+            # Export the key in binary format to the keyring file
+            if gpg --armor --export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key from $keyserver"
+                return 0
+            fi
+        fi
+        echo "Failed to retrieve key from $keyserver"
+    done
+    
+    # Try alternative method using apt-key if gpg fails
+    echo "Trying alternative method with apt-key..."
+    if command -v apt-key >/dev/null 2>&1; then
+        if apt-key adv --keyserver "$KEYSERVER" --recv-keys "$KEY" 2>/dev/null; then
+            echo "Successfully retrieved GPG key using apt-key"
+            # Export the key to our keyring in binary format
+            apt-key export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
+# Repository existence check
+echo "Checking if Utappia Repository exists in your system"
+sleep 2
+
+if [ -f "$REPO_FILE" ]; then
+    if grep -q "signed-by=" "$REPO_FILE" 2>/dev/null; then
+        echo "Modern repository configuration exists... skipping"
+        # Optionally verify key exists (but don't recreate repository)
+        if [ ! -f "$KEYRING_FILE" ]; then
+            echo "GPG key missing, adding key only..."
+            mkdir -p "$KEYRING_DIR"
+            if try_gpg_key_retrieval; then
+                echo "GPG key added successfully"
+                chmod 644 "$KEYRING_FILE"
+            else
+                echo "Warning: Could not retrieve GPG key"
+            fi
+        fi
+    else
+        echo "Found legacy repository configuration, upgrading to modern format..."
+        # Backup existing configuration
+        cp "$REPO_FILE" "$REPO_FILE.backup.$(date +%Y%m%d_%H%M%S)"
+        echo "Legacy configuration backed up to $REPO_FILE.backup.$(date +%Y%m%d_%H%M%S)"
+        
+        # Remove old configuration and install new one
+        rm -f "$REPO_FILE"
+        echo "Installing modern repository configuration..."
+        
+        # Continue with full installation
+        echo "Adding Utappia public key"
+    fi
+elif ls /etc/apt/sources.list.d/utappia* 1> /dev/null 2>&1; then
+    echo "Found other Utappia repository files, checking format..."
+    found_modern=false
+    
+    for repo_file in /etc/apt/sources.list.d/utappia*; do
+        if [ -f "$repo_file" ] && grep -q "signed-by=" "$repo_file" 2>/dev/null; then
+            echo "Modern repository configuration found in $repo_file... skipping"
+            found_modern=true
+            break
+        fi
+    done
+    
+    if [ "$found_modern" = "false" ]; then
+        echo "Found legacy repository files, upgrading to modern format..."
+        # Backup all existing utappia files
+        for repo_file in /etc/apt/sources.list.d/utappia*; do
+            if [ -f "$repo_file" ]; then
+                cp "$repo_file" "$repo_file.backup.$(date +%Y%m%d_%H%M%S)"
+                echo "Backed up $repo_file"
+            fi
+        done
+        
+        # Remove old configurations
+        rm -f /etc/apt/sources.list.d/utappia*
+        echo "Installing modern repository configuration..."
+        
+        # Continue with full installation
+        echo "Adding Utappia public key"
+    fi
+else
+    echo "No existing repository found, installing fresh..."
+    echo "Adding Utappia public key"
+fi
+
+# Only proceed with installation if we need to install or upgrade
+if [ "$found_modern" = "false" ] || [ ! -f "$REPO_FILE" ] || ! grep -q "signed-by=" "$REPO_FILE" 2>/dev/null; then
+    
+    # Test basic connectivity first
+    echo "Testing network connectivity..."
+    if command -v curl >/dev/null 2>&1; then
+        if ! curl -fsSL --connect-timeout 5 --max-time 10 "https://keyserver.ubuntu.com" >/dev/null 2>&1; then
+            echo "Warning: Network connectivity to keyservers may be limited"
+            sleep 1
+        fi
+    elif command -v wget >/dev/null 2>&1; then
+        if ! wget --timeout=5 --tries=1 -qO- "https://keyserver.ubuntu.com" >/dev/null 2>&1; then
+            echo "Warning: Network connectivity to keyservers may be limited"
+            sleep 1
+        fi
+    fi
+    
+    # Create keyrings directory if it doesn't exist
+    mkdir -p "$KEYRING_DIR"
+    # Create GPG directory with proper permissions
+    mkdir -p /root/.gnupg
+    chmod 700 /root/.gnupg
+    
+    # Configure GPG with improved timeout and connection handling
+    cat > /root/.gnupg/dirmngr.conf << EOF
+keyserver-options no-honor-keyserver-url
+keyserver-options no-honor-preferred-keyserver
+keyserver-options timeout=15
+keyserver-options http-proxy=
+keyserver-options auto-key-retrieve
+standard-resolver
+disable-ipv6
+EOF
+
+    # Also create gpg.conf for better compatibility
+    cat > /root/.gnupg/gpg.conf << EOF
+keyserver-options no-honor-keyserver-url
+keyserver-options no-honor-preferred-keyserver
+keyserver-options timeout=15
+keyserver-options auto-key-retrieve
+keyserver-options no-auto-key-retrieve
+no-greeting
+batch
+EOF
+    
+    # Download and install GPG key with multiple fallback options
+    if ! try_gpg_key_retrieval; then
+        echo "Error: Unable to retrieve GPG key from any keyserver"
+        echo "This might be due to:"
+        echo "  - Network connectivity issues"
+        echo "  - Keyserver availability problems"
+        echo "  - Firewall blocking keyserver access"
+        echo ""
+        echo "Manual workaround:"
+        echo "You can manually add the repository key by running:"
+        echo "  curl -fsSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY' | sudo gpg --dearmor -o '$KEYRING_FILE'"
+        echo "Or:"
+        echo "  wget -qO- 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY' | sudo gpg --dearmor -o '$KEYRING_FILE'"
+        echo ""
+        echo "After adding the key manually, you can continue with:"
+        echo "  sudo dpkg --configure -a"
+        echo ""
+        echo "If the problem persists, contact support at the project repository"
+        
+        # Try one more time with a simplified approach using multiple methods
+        echo "Attempting final key retrieval with simplified methods..."
+        
+        # Try direct curl/wget first
+        if command -v curl >/dev/null 2>&1; then
+            if curl -fsSL --connect-timeout 15 --max-time 60 "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key with simplified curl method"
+                chmod 644 "$KEYRING_FILE"
+                return 0
+            fi
+        fi
+        
+        if command -v wget >/dev/null 2>&1; then
+            if wget --timeout=15 --tries=3 -qO- "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+                echo "Successfully retrieved GPG key with simplified wget method"
+                chmod 644 "$KEYRING_FILE"
+                return 0
+            fi
+        fi
+        
+        # Try simplified GPG keyserver approach
+        if gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$KEY" 2>/dev/null && \
+           gpg --armor --export "$KEY" | gpg --dearmor > "$KEYRING_FILE" 2>/dev/null; then
+            echo "Successfully retrieved GPG key with simplified GPG method"
+            chmod 644 "$KEYRING_FILE"
+            return 0
+        fi
+        
+        echo "All key retrieval methods failed."
+        echo "The package installation will continue, but you may need to add the repository key manually."
+        echo "Repository functionality will be limited until the key is properly installed."
+        # Don't exit with error, just warn
+        touch "$KEYRING_FILE"
+        chmod 644 "$KEYRING_FILE"
+    else
+        chmod 644 "$KEYRING_FILE"
+    fi
+    
+    echo ""
+    
+    # **UNIFIED APPROACH** - Use direct sources.list method for all distributions
+    echo "Adding Utappia repository"
+    echo "Configuring repository for all Debian-based distributions ($DIST_ID)..."
+    
+    # Create the repository configuration file
+    cat > "$REPO_FILE" << EOF
+# Utappia Repository - Compatible with Ubuntu and Debian-based distributions
+deb [signed-by=$KEYRING_FILE] $REPO_URL $COMPATIBLE_DIST_NAME main
+deb-src [signed-by=$KEYRING_FILE] $REPO_URL $COMPATIBLE_DIST_NAME main
+EOF
+    
+    echo "Repository configuration created at $REPO_FILE"
+    
+    # Display what we added for transparency
+    echo ""
+    echo "Added repository configuration:"
+    cat "$REPO_FILE"
+    echo ""
+    
+    echo "Refreshing package list..."
+    echo ""
+    if ! apt update; then
+        echo "Warning: Package list update failed"
+        echo "You may need to run 'apt update' manually later"
+        echo "This might be due to network issues or repository unavailability"
+    fi
+fi
+
+# This is the debhelper token required by lintian
+#DEBHELPER#
+
+exit 0

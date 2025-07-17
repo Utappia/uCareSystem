@@ -1,0 +1,23 @@
+Source Package Information
+=========================
+
+This package is built from the uCareSystem source code.
+
+Source Structure:
+- src/ucaresystem-core          - Main application script
+- src/launch-ucaresystemcore    - Desktop launcher script
+- assets/                       - Desktop files, icons, man pages
+- debian/                       - Package control files
+
+Building:
+The package uses debhelper and follows Debian policy.
+
+Build dependencies:
+- debhelper-compat (= 13)
+- desktop-file-utils
+
+The package is built using standard Debian tools:
+  dpkg-buildpackage -us -uc -b
+
+Repository: https://github.com/Utappia/uCareSystem
+Maintainer: Salih Emin <salih-emin@ubuntu.com>

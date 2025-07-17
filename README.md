@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/assets/ucaresystem-image-banner.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-image-banner.png"></p>
 
 <p align="center">
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
@@ -8,29 +8,25 @@
  
 # uCareSystem
 
-	uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
+uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
 
 	Name   : uCareSystem
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-emin(a)ubuntu.com
-	Date   : 05-06-2025 (first release 19-02-2009)
-	Version: 25.06.05
+	Date   : 17-07-2025 (first release 19-02-2009)
+	Version: 25.07.17
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
 	WebSite: http://utappia.org
 
-## Sponsors of the previous development cycle (v25.04)
+## Sponsors of the previous development cycle (v25.06)
 
-With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated during the previous development cycle:
+With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated or contributed code, during the previous development cycle:
 
-- P. Loughman (Thanks for your continued support)
-- D. Emge (Thanks for your continued support)
 - W. Schreinemachers (Thanks for your continued support)
-- W. Schwartz
-- D. e Swarthout
-- D. Luchini
-- M. Stanley
-- N. Evangelista
+- K. A. Gkountras (Jemadux)
+
+Every version, has also a code name dedicated as a release honored to one of the contributors. For historical reference, you can check all [previous honored releases](https://github.com/Utappia/uCareSystem/blob/master/HONORED_RELEASES.md).
 
 ## Description:
 
@@ -74,6 +70,14 @@ Alternatively, you can invoke it through terminal with various options/flags. Th
 ```
 ucaresystem-core
 ```
+To check just the version run:
+```
+ucaresystem-core -v
+```
+if you want to read through the manual, you can run:
+```
+man ucaresystem-core
+```
 If you want to shutdown your system after using the uCareSystem you can use the `-s` option :
 ```
 ucaresystem-core -s
@@ -105,7 +109,7 @@ To completely remove uCareSystem and its repository:
 
 2. (Optional) Remove the repository and its signing key:
    ```bash
-   sudo rm /etc/apt/sources.list.d/utappia*.list
+   sudo rm /etc/apt/sources.list.d/utappia*
    sudo rm /etc/apt/keyrings/utappia*.gpg
    ```
    If you keep the repository and its signing key you can reinstall ucaresystem-core without downloading the *.deb package but instead by `apt install ucaresystem-core`.
