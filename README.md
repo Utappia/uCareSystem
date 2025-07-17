@@ -72,7 +72,7 @@ ucaresystem-core
 ```
 To check just the version run:
 ```
-ucareystem-core -v
+ucaresystem-core -v
 ```
 if you want to read through the manual, you can run:
 ```
