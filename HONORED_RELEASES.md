@@ -18,6 +18,11 @@ Each entry follows this format:
 - **Release Date**: July 17, 2025
 - **Notes**: Current release
 
+### Version 25.06.05
+- **Honored To**: W. Schwartz
+- **Release Date**: June 5, 2025
+- **Notes**: Second release to introduce the "Release honored to" concept
+
 ### Version 25.04.08
 - **Honored To**: P. Loughman
 - **Release Date**: April 8, 2025
@@ -30,21 +35,10 @@ Each entry follows this format:
 
 ---
 
-## Instructions for Maintainers
-
-When creating a new release:
-
-1. Update the `UCARE_VERSION` in `src/ucaresystem-core`
-2. Update the `VER_CODENAME` to honor a new supporter/contributor
-3. Update the `PREV_VER` to the previous version number
-4. Add a new entry to this file with the release details
-5. Update the `SUPPORTERS` array in the script if needed
-
 ## Guidelines for Honoring Contributors
 
 - Each release should honor a different person when possible
 - Priority should be given to financial supporters and significant contributors
-- Names should be used with permission from the individuals
 - Try to avoid repeating names across releases to honor more people over time
 
 ---
