@@ -4,7 +4,7 @@
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
     <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
 <p align="center">
-    <a href="https://donate.utappia.org/" target="_blank"><img src="https://img.shields.io/badge/Donate_to_project-blue.svg" alt="Donate to project"></a>
+    <a href="https://donate.utappia.org/" target="_blank"><img src="https://img.shields.io/badge/Donate_to-uCareSystem-blue.svg" alt="Donate to project"></a>
  
 # uCareSystem
 
