@@ -14,8 +14,8 @@ uCareSystem is an all-in-one system update and maintenance application for Ubunt
 	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 	Author : Salih Emin
 	Email  : salih-emin(a)ubuntu.com
-	Date   : 17-07-2025 (first release 19-02-2009)
-	Version: 25.07.17
+	Date   : 22-07-2025 (first release 19-02-2009)
+	Version: 25.07.22
 	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
 	WebSite: http://utappia.org
 
