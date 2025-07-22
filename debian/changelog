@@ -1,3 +1,9 @@
+ucaresystem-core (25.07.22) jammy; urgency=medium
+
+  * improve internet connectivity check even if VPN is enabled
+
+ -- Salih Emin <salih-emin@ubuntu.com>  Tue, 22 Jul 2025 15:15:31 +0300
+
 ucaresystem-core (25.07.17) jammy; urgency=high
 
   * Improved GPG key handling in postinst with multiple HTTPS and keyserver fallbacks.
