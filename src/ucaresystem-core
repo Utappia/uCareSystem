@@ -34,7 +34,7 @@ UCARE_VERSION="25.07.22"
 VER_CODENAME="W. Schreinemachers"
 PREV_VER="25.06"
 USERNAME=$(logname 2>/dev/null || echo "$USER")
-DONATE="https://www.paypal.com/donate/?hosted_button_id=SATQ6Y9S3UCSG"
+DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
 	"W. Schreinemachers"
