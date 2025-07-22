@@ -38,7 +38,7 @@ DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
 	"W. Schreinemachers"
-    "K. A. Gkountras (Jemadux)"
+	"K. A. Gkountras (Jemadux)"
 )
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
@@ -49,11 +49,11 @@ fi
 
 # Function to check internet connectivity
 function CHECK_INTERNET {
-    if curl -4 -s --head http://www.google.com | head -n 1 | grep "200 OK" > /dev/null; then
-        return 0  # Internet connection is available
-    else
-        return 1  # No internet connection
-    fi
+	if curl -4 -s --max-time 10 --connect-timeout 5 --head https://ubuntu.com | grep -q "HTTP/2 200"; then
+		return 0  # Internet connection is available
+	else
+		return 1  # No internet connection
+	fi
 }
 
 # Check internet connectivity
