@@ -49,11 +49,22 @@ fi
 
 # Function to check internet connectivity
 function CHECK_INTERNET {
-	if curl -4 -s --max-time 10 --connect-timeout 5 --head https://ubuntu.com | grep -q "HTTP/2 200"; then
-		return 0  # Internet connection is available
-	else
-		return 1  # No internet connection
-	fi
+    local SITES=("https://ubuntu.com" "https://google.com" "https://github.com" "https://cloudflare.com")
+
+    # Try several websites
+    for site in "${SITES[@]}"; do
+        if curl -4 -s --max-time 5 --connect-timeout 3 --head "$site" | grep -q "HTTP/"; then
+            return 0  # Internet seems to work
+        fi
+    done
+
+    # If all HTTP checks failed, try a simple ping to a DNS server
+    if ping -c 1 -W 2 1.1.1.1 &>/dev/null || ping -c 1 -W 2 8.8.8.8 &>/dev/null; then
+        return 0  # Internet available (raw connectivity)
+    fi
+
+    # If everything failed, assume no internet
+    return 1
 }
 
 # Check internet connectivity
