@@ -53,7 +53,7 @@ function CHECK_INTERNET {
 
     # Try several websites
     for site in "${SITES[@]}"; do
-        if curl -4 -s --max-time 5 --connect-timeout 3 --head "$site" | grep -q "HTTP/"; then
+        if curl -4 -s --max-time 5 --connect-timeout 3 --head --fail "$site" >/dev/null; then
             return 0  # Internet seems to work
         fi
     done
