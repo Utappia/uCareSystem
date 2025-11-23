@@ -92,6 +92,7 @@ function COUNTDOWN {
             echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
         fi
         sleep 1
+        # Use || true to prevent arithmetic operation from causing script exit in set -e mode
         ((secs--)) || true
     done
 }
@@ -269,11 +270,12 @@ function MAINTENANCE {
 			echo
 			disabled_snaps=$(LANG=C sudo snap list --all 2>/dev/null | awk '/disabled/{print $1, $3}') || disabled_snaps=""
 			if [ -n "$disabled_snaps" ]; then
-				echo "$disabled_snaps" | while read -r snapname revision; do
+				# Use process substitution to avoid subshell issues
+				while IFS=' ' read -r snapname revision; do
 					if [ -n "$snapname" ] && [ -n "$revision" ]; then
 						sudo snap remove --purge "$snapname" --revision="$revision"
 					fi
-				done
+				done < <(echo "$disabled_snaps")
 			else
 				echo -e "${YELLOW}No disabled Snap revisions found${ENDCOLOR}"
 			fi
@@ -533,7 +535,7 @@ function SHUT_DOWN {
 	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
 	if command -v systemctl &> /dev/null; then
-		sudo systemctl poweroff || sudo poweroff
+		sudo systemctl poweroff 2>/dev/null || sudo poweroff
 	else
 		sudo poweroff
 	fi
@@ -548,7 +550,7 @@ function RE_BOOT {
 	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
 	if command -v systemctl &> /dev/null; then
-		sudo systemctl reboot || sudo reboot
+		sudo systemctl reboot 2>/dev/null || sudo reboot
 	else
 		sudo reboot
 	fi
