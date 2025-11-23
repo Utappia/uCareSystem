@@ -27,7 +27,9 @@ CYAN="\e[36m"
 MAGENTA="\e[35m"
 YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
-DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2) || DIST_CODENAME="unknown"
+if ! DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
+	DIST_CODENAME="unknown"
+fi
 DATE=$(date +%F_%T)
 UCARE_VERSION="25.07.22"
 # See HONORED_RELEASES.md for historical record of honored releases
@@ -70,6 +72,13 @@ if ! CHECK_INTERNET; then
    sleep 2
    exit 1
 fi
+
+# Function to get disk usage information
+function GET_DISK_USAGE {
+	local df_output
+	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}') || df_output="Unable to determine disk usage"
+	echo "$df_output"
+}
 
 # Simple countdown function
 function COUNTDOWN {
@@ -119,7 +128,6 @@ function CLEANUP_OLD_KERNELS {
     local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
     local current_kernel
     local purge_list=""
-    local final_purge_list=""
     local min_kernels=2  # Minimum required: current + one backup
     
     echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
@@ -158,25 +166,24 @@ function CLEANUP_OLD_KERNELS {
         awk '{print "linux-image-" $0 " linux-headers-" $0}') || true
     
     # Verify each package exists before adding to purge list
-    final_purge_list=""
+    local final_purge_array=()
     for pkg in $purge_list; do
         if dpkg-query -s "$pkg" >/dev/null 2>&1; then
-            final_purge_list="${final_purge_list} ${pkg}"
+            final_purge_array+=("$pkg")
         fi
     done
     
-    if [ -z "${final_purge_list}" ]; then
+    if [ ${#final_purge_array[@]} -eq 0 ]; then
         echo -e "${YELLOW}No kernels are eligible for removal${ENDCOLOR}"
         return 0
     fi
     
     echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
-    echo "${final_purge_list}"
+    printf '%s\n' "${final_purge_array[@]}"
     echo
     
-    # Remove the packages (use word splitting intentionally here)
-    # shellcheck disable=SC2086
-    sudo apt autoremove -y --purge ${final_purge_list}
+    # Remove the packages using array expansion
+    sudo apt autoremove -y --purge "${final_purge_array[@]}"
     
     echo -e "${YELLOW}Kernel cleanup completed${ENDCOLOR}"
 }
@@ -190,9 +197,8 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Checking Disk usage before System Maintenance ${ENDCOLOR}"
 	sleep 1	
 	echo
-	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}') || df_output="Unable to determine disk usage"
 	echo ""
-	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
 	echo
 	sleep 1
 
@@ -320,8 +326,7 @@ function MAINTENANCE {
 
 	## Removes unused config files of uninstalled packages
 	echo -e "${GREEN}▸ Checking for config files of uninstalled packages...${ENDCOLOR}"
-	deinstall_pkgs=$(dpkg --get-selections | grep deinstall | cut -f1) || true
-	if [ -n "$deinstall_pkgs" ]; then
+	if deinstall_pkgs=$(dpkg --get-selections 2>/dev/null | grep deinstall | cut -f1) && [ -n "$deinstall_pkgs" ]; then
 		echo "$deinstall_pkgs" | xargs --no-run-if-empty sudo apt autoremove -y --purge
 		echo
 		echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
@@ -355,7 +360,7 @@ function MAINTENANCE {
         	uniq < /var/run/reboot-required.pkgs
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
-        	echo -e "${YELLOW}Cannot find or read the list of packages... Skipping ${ENDCOLOR}"
+        	echo -e "${YELLOW}Cannot find or read reboot-required package list... Skipping package display ${ENDCOLOR}"
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	fi
 		sleep 1
@@ -372,8 +377,7 @@ function MAINTENANCE {
 	echo
 	echo -e "${GREEN}▸ Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
-	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}') || df_output="Unable to determine disk usage"
-	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
 	echo
 	sleep 1
 
