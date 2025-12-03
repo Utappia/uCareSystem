@@ -133,6 +133,7 @@ function PREUPDATE_PREFLIGHT {
 	local issues=0
 
 	# 1) dpkg audit: half-installed/broken packages
+	# shellcheck disable=SC2024
 	if ! sudo dpkg --audit >/tmp/ucare_dpkg_audit 2>&1; then
 		: # dpkg --audit returns 0 even with findings; we read file
 	fi
@@ -163,6 +164,7 @@ function PREUPDATE_PREFLIGHT {
 	fi
 
 	# 3) apt dependency check (non-invasive)
+	# shellcheck disable=SC2024
 	if ! sudo apt-get -y -o Debug::pkgProblemResolver=no -s dist-upgrade >/tmp/ucare_apt_sim 2>&1; then
 		echo -e "${RED}✗ apt simulation reported errors${ENDCOLOR}"
 		issues=$((issues+1))
@@ -190,13 +192,16 @@ function PREUPDATE_PREFLIGHT {
 	fi
 
 	# 5) lock files
+	# shellcheck disable=SC2024
 	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/tmp/ucare_locks 2>&1; then
 		if [ -s /tmp/ucare_locks ]; then
 			echo -e "${YELLOW}▸ Package manager locks detected${ENDCOLOR}"
 			cat /tmp/ucare_locks
 			echo -e "${CYAN}▸ Auto-action${ENDCOLOR}: attempting to wait for locks (up to 60s)"
+			# shellcheck disable=SC2034
 			for i in 1 2 3 4 5 6; do
 				sleep 10
+				# shellcheck disable=SC2024
 				if ! sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/tmp/ucare_locks 2>&1 || [ ! -s /tmp/ucare_locks ]; then
 					echo -e "${CYAN}✓ Locks cleared${ENDCOLOR}"
 					break
@@ -713,6 +718,7 @@ function UPGRADE_TO_NEXT_RELEASE {
 	sleep 1
 	# Only supported on Ubuntu
 	if [ -f /etc/os-release ]; then
+		# shellcheck disable=SC1091
 		. /etc/os-release
 		if [ "$ID" != "ubuntu" ]; then
 			echo -e "${YELLOW}This upgrade option is only available on Ubuntu.${ENDCOLOR}"
@@ -735,6 +741,7 @@ function UPGRADE_TO_DEVEL_RELEASE {
 	sleep 1
 	# Only supported on Ubuntu
 	if [ -f /etc/os-release ]; then
+		# shellcheck disable=SC1091
 		. /etc/os-release
 		if [ "$ID" != "ubuntu" ]; then
 			echo -e "${YELLOW}Development release upgrade is only available on Ubuntu.${ENDCOLOR}"
