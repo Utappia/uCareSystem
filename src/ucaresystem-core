@@ -373,7 +373,22 @@ function MAINTENANCE {
 
 	## Updates packages and libraries
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
-	sudo apt full-upgrade -V -y;
+	if ! sudo apt full-upgrade -V -y; then
+		# Check for dpkg interruption error
+		if grep -q "dpkg was interrupted, you must manually run 'sudo dpkg --configure -a'" /var/log/apt/term.log 2>/dev/null; then
+			echo -e "${YELLOW}⚠ Detected dpkg interruption. Attempting automatic recovery with 'sudo dpkg --configure -a'...${ENDCOLOR}"
+			if sudo dpkg --configure -a; then
+				echo -e "${CYAN}✓ dpkg configuration completed automatically.${ENDCOLOR}"
+				# Retry upgrade
+				sudo apt full-upgrade -V -y
+			else
+				echo -e "${RED}✗ Automatic dpkg recovery failed. Please run 'sudo dpkg --configure -a' manually.${ENDCOLOR}"
+				echo -e "${RED}✗ Aborting maintenance to avoid breaking the system.${ENDCOLOR}"
+				sleep 2
+				return 1
+			fi
+		fi
+	fi
 	echo
 	echo -e "${CYAN}✓ Finished upgrading system packages and libraries ${ENDCOLOR}"
 	sleep 1
@@ -898,31 +913,32 @@ function RE_BOOT {
 
 # The main process starts
 while [ "$1" != "" ]; do
-    case $1 in
+	 case $1 in
 		  -u | --upgrade )     WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
-                             exit
-                                ;;
+									  exit
+									  ;;
 		  -d | --development ) WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
-                             exit
-                                ;;
-        -h | --help )        SHOW_HELP
-                             exit
-                                ;;
-        -v | --version )     SHOW_VERSION
-                             exit
-                                ;;
+									  exit
+									  ;;
+		  -h | --help )        SHOW_HELP
+									  exit
+									  ;;
+		  -v | --version )     SHOW_VERSION
+									  exit
+									  ;;
 		  -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
-                             exit
-                                ;;
-	-s | --shutdown )	 WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
-							 exit
-							    ;;
-	-r | --reboot )		 WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
-							 exit
-							    ;;
-        * )                  SHOW_HELP
-                             exit 1
-    esac
+									  exit
+									  ;;
+		  -s | --shutdown )    WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
+									  exit
+									  ;;
+		  -r | --reboot )      WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
+									  exit
+									  ;;
+		  * )                  SHOW_HELP
+									  exit 1
+									  ;;
+	 esac
 done
 ## If no parameter is given just do the regular maintenance
 WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE
