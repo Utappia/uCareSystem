@@ -27,13 +27,15 @@ CYAN="\e[36m"
 MAGENTA="\e[35m"
 YELLOW="\e[33m"
 ENDCOLOR="\e[0m"
-DIST_CODENAME=$(lsb_release --codename | cut -f2)
+if ! DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
+	DIST_CODENAME="unknown"
+fi
 DATE=$(date +%F_%T)
 UCARE_VERSION="25.07.22"
 # See HONORED_RELEASES.md for historical record of honored releases
 VER_CODENAME="W. Schreinemachers"
 PREV_VER="25.06"
-USERNAME=$(logname 2>/dev/null || echo "$USER")
+USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
@@ -79,6 +81,13 @@ if ! CHECK_INTERNET; then
    exit 1
 fi
 
+# Function to get disk usage information
+function GET_DISK_USAGE {
+	local df_output
+	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}') || df_output="Unable to determine disk usage"
+	echo "$df_output"
+}
+
 # Simple countdown function
 function COUNTDOWN {
     local secs=$1
@@ -91,7 +100,8 @@ function COUNTDOWN {
             echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
         fi
         sleep 1
-        : $((secs--))
+        # Use || true to prevent arithmetic operation from causing script exit in set -e mode
+        ((secs--)) || true
     done
 }
 duration=5 # countdown duration in seconds
@@ -127,7 +137,6 @@ function CLEANUP_OLD_KERNELS {
     local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
     local current_kernel
     local purge_list=""
-    local final_purge_list=""
     local min_kernels=2  # Minimum required: current + one backup
     
     echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
@@ -152,33 +161,38 @@ function CLEANUP_OLD_KERNELS {
     
     # Build list of kernel packages to purge
     # This uses the actual kernel files in /boot to determine which kernels to keep
-    purge_list=$(find /boot -maxdepth 1 -name "vmlinuz-*" -printf "%T@ %p\n" | \
+    if [ ! -d /boot ]; then
+        echo -e "${YELLOW}Warning: /boot directory not found${ENDCOLOR}"
+        return 1
+    fi
+    
+    purge_list=$(find /boot -maxdepth 1 -name "vmlinuz-*" -printf "%T@ %p\n" 2>/dev/null | \
         sort -n | \
         cut -d' ' -f2- | \
         head -n -"${keep_count}" | \
         grep -v "${current_kernel}$" | \
         cut -d- -f2- | \
-        awk '{print "linux-image-" $0 " linux-headers-" $0}')
+        awk '{print "linux-image-" $0 " linux-headers-" $0}') || true
     
     # Verify each package exists before adding to purge list
-    final_purge_list=""
+    local final_purge_array=()
     for pkg in $purge_list; do
         if dpkg-query -s "$pkg" >/dev/null 2>&1; then
-            final_purge_list="${final_purge_list} ${pkg}"
+            final_purge_array+=("$pkg")
         fi
     done
     
-    if [ -z "${final_purge_list}" ]; then
+    if [ ${#final_purge_array[@]} -eq 0 ]; then
         echo -e "${YELLOW}No kernels are eligible for removal${ENDCOLOR}"
         return 0
     fi
     
     echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
-    echo "${final_purge_list}"
+    printf '%s\n' "${final_purge_array[@]}"
     echo
     
-    # Remove the packages
-    sudo apt autoremove -y --purge "${final_purge_list}"
+    # Remove the packages using array expansion
+    sudo apt autoremove -y --purge "${final_purge_array[@]}"
     
     echo -e "${YELLOW}Kernel cleanup completed${ENDCOLOR}"
 }
@@ -192,9 +206,8 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Checking Disk usage before System Maintenance ${ENDCOLOR}"
 	sleep 1	
 	echo
-	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
 	echo ""
-	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
 	echo
 	sleep 1
 
@@ -240,8 +253,11 @@ function MAINTENANCE {
 		echo -e "${YELLOW}Stopping all running Snap applications... ${ENDCOLOR}"
 		stopped_snaps=()
 		while IFS= read -r snapname; do
-			if sudo snap stop "$snapname" &>/dev/null; then
-				stopped_snaps+=("$snapname")
+			# Check if snap is actually running before trying to stop
+			if sudo snap services "$snapname" 2>/dev/null | grep -q "active"; then
+				if sudo snap stop "$snapname" &>/dev/null; then
+					stopped_snaps+=("$snapname")
+				fi
 			fi
 		done < <(sudo snap list | awk '/^name/ {next} {print $1}')
 
@@ -260,10 +276,17 @@ function MAINTENANCE {
 			echo
 			echo -e "${YELLOW}Removing old revisions of Snap packages ${ENDCOLOR}"
 			echo
-			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
-				while read -r snapname revision; do
-					sudo snap remove --purge "$snapname" --revision="$revision"
-				done
+			disabled_snaps=$(LANG=C sudo snap list --all 2>/dev/null | awk '/disabled/{print $1, $3}') || disabled_snaps=""
+			if [ -n "$disabled_snaps" ]; then
+				# Use process substitution to avoid subshell issues
+				while IFS=' ' read -r snapname revision; do
+					if [ -n "$snapname" ] && [ -n "$revision" ]; then
+						sudo snap remove --purge "$snapname" --revision="$revision"
+					fi
+				done < <(echo "$disabled_snaps")
+			else
+				echo -e "${YELLOW}No disabled Snap revisions found${ENDCOLOR}"
+			fi
 
 			echo -e "${YELLOW}Old revisions of Snap packages removed successfully. ${ENDCOLOR}"
 			sleep 1
@@ -312,9 +335,14 @@ function MAINTENANCE {
 	fi
 
 	## Removes unused config files of uninstalled packages
-	dpkg --get-selections | grep deinstall | cut -f1 | xargs --no-run-if-empty sudo apt autoremove -y --purge;
-	echo
-	echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking for config files of uninstalled packages...${ENDCOLOR}"
+	if deinstall_pkgs=$(dpkg --get-selections 2>/dev/null | grep deinstall | cut -f1) && [ -n "$deinstall_pkgs" ]; then
+		echo "$deinstall_pkgs" | xargs --no-run-if-empty sudo apt autoremove -y --purge
+		echo
+		echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+	else
+		echo -e "${YELLOW}No config files of uninstalled packages found${ENDCOLOR}"
+	fi
 	sleep 1
 	echo
 
@@ -338,11 +366,12 @@ function MAINTENANCE {
   		echo -e "${MAGENTA}*${ENDCOLOR}  requested by the following"      
 		echo -e "${MAGENTA}*${ENDCOLOR}  packages:"						
   		echo -e "${MAGENTA}*${ENDCOLOR} "
-		if [ -f /var/run/reboot-required.pkgs ]; then
+		if [ -f /var/run/reboot-required.pkgs ] && [ -r /var/run/reboot-required.pkgs ]; then
         	uniq < /var/run/reboot-required.pkgs
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
-        	echo -e "${YELLOW}Cannot find the list of packages... Skipping ${ENDCOLOR}"
+        	echo -e "${YELLOW}Cannot find or read reboot-required package list... Skipping package display ${ENDCOLOR}"
+			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	fi
 		sleep 1
 	else 
@@ -358,26 +387,202 @@ function MAINTENANCE {
 	echo
 	echo -e "${GREEN}▸ Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
-	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
-	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
 	echo
 	sleep 1
 
 }
 
 function UPGRADE_EOL_TO_NEXT {
-
-	cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
+	# Distribution check - Only works for Ubuntu
+	if [ ! -f /etc/os-release ]; then
+		echo -e "${YELLOW}Error: Cannot detect distribution${ENDCOLOR}"
+		return 1
+	fi
+	
+	# shellcheck disable=SC1091
+	. /etc/os-release
+	
+	if [ "$ID" != "ubuntu" ]; then
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo -e "${YELLOW}  ERROR: End-of-Life upgrade is only supported for Ubuntu${ENDCOLOR}"
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo ""
+		echo -e "${CYAN}Your distribution: ${YELLOW}$NAME${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo "This feature uses Ubuntu's old-releases archive which is"
+		echo "specifically designed for Ubuntu releases that have reached"
+		echo "their End of Life (EOL)."
+		echo ""
+		sleep 2
+		echo "For other distributions, please use their official upgrade methods:"
+		echo ""
+		echo -e "${CYAN}• Debian:${ENDCOLOR}      Edit /etc/apt/sources.list and use apt dist-upgrade"
+		echo -e "${CYAN}• Linux Mint:${ENDCOLOR}  Use the Update Manager's 'Edit > Upgrade to...' option"
+		echo -e "${CYAN}• Pop!_OS:${ENDCOLOR}     Use pop-upgrade or the built-in upgrade tool"
+		echo -e "${CYAN}• Other:${ENDCOLOR}       Consult your distribution's documentation"
+		echo ""
+		sleep 2
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		return 1
+	fi
+	
+	# Validate DIST_CODENAME
+	if [ -z "$DIST_CODENAME" ] || [ "$DIST_CODENAME" = "unknown" ]; then
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo -e "${YELLOW}  ERROR: Cannot detect Ubuntu version codename${ENDCOLOR}"
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo ""
+		echo "Unable to determine your Ubuntu release codename."
+		echo "This is required for the EOL upgrade process."
+		echo ""
+		sleep 1
+		echo "Possible causes:"
+		echo "• lsb_release command not available"
+		echo "• Corrupted /etc/lsb-release file"
+		echo "• Non-standard Ubuntu installation"
+		echo ""
+		sleep 2
+		echo "Please verify your Ubuntu version manually:"
+		echo -e "${CYAN}  cat /etc/lsb-release${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		return 1
+	fi
+	
+	# Check if sources.list exists before backing up
+	if [ ! -f /etc/apt/sources.list ]; then
+		echo -e "${YELLOW}Warning: /etc/apt/sources.list not found${ENDCOLOR}"
+		echo "Creating minimal sources.list for EOL upgrade..."
+		touch /etc/apt/sources.list
+	fi
+	
+	# Inform user about backup
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "${YELLOW}  Ubuntu End-of-Life (EOL) Upgrade Process${ENDCOLOR}"
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	echo -e "${CYAN}Detected Ubuntu version:${ENDCOLOR} ${YELLOW}$DIST_CODENAME${ENDCOLOR}"
+	echo ""
+	sleep 2
+	echo "This will perform the following actions:"
+	echo ""
+	echo "1. Backup your current repository configuration"
+	echo "2. Configure repositories to use old-releases.ubuntu.com"
+	echo "3. Update package lists from EOL archive"
+	echo "4. Install update-manager-core if needed"
+	echo "5. Perform distribution upgrade to next supported version"
+	echo ""
+	sleep 3
+	
+	BACKUP_FILE="/etc/apt/sources.eol_${DATE}"
+	
+	echo -e "${GREEN}▸ Creating backup of sources.list${ENDCOLOR}"
+	if cp "/etc/apt/sources.list" "$BACKUP_FILE"; then
+		echo -e "${CYAN}✓ Backup created:${ENDCOLOR} ${YELLOW}$BACKUP_FILE${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo "If anything goes wrong, you can restore your repositories with:"
+		echo -e "${CYAN}  sudo cp $BACKUP_FILE /etc/apt/sources.list${ENDCOLOR}"
+		echo ""
+		sleep 2
+	else
+		echo -e "${YELLOW}Warning: Failed to create backup${ENDCOLOR}"
+		echo "Continuing anyway..."
+		echo ""
+		sleep 2
+	fi
+	
+	sleep 1
+	
+	echo -e "${GREEN}▸ Configuring EOL repositories for $DIST_CODENAME${ENDCOLOR}"
 	cat <<EOT > /etc/apt/sources.list
+# Ubuntu $DIST_CODENAME (End of Life) - Archived Repositories
+# Backup available at: $BACKUP_FILE
+# Configured by uCareSystem on $(date)
+
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-updates main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restricted universe multiverse
 
 EOT
-
-sudo apt install update-manager-core
-sudo apt dist-upgrade -y
-sudo do-release-upgrade
+	
+	echo -e "${CYAN}✓ EOL repositories configured${ENDCOLOR}"
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Updating package lists from EOL archive${ENDCOLOR}"
+	if ! sudo apt update; then
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}Warning: Package list update failed${ENDCOLOR}"
+		echo "This might indicate that:"
+		echo "• The EOL archive doesn't have packages for $DIST_CODENAME"
+		echo "• Network connectivity issues"
+		echo "• The release is too old to be in old-releases archive"
+		echo ""
+		sleep 2
+		echo "You can restore your original configuration with:"
+		echo -e "${CYAN}  sudo cp $BACKUP_FILE /etc/apt/sources.list${ENDCOLOR}"
+		echo ""
+		sleep 2
+		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			echo "Aborting EOL upgrade..."
+			sleep 1
+			return 1
+		fi
+	fi
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Installing update-manager-core${ENDCOLOR}"
+	if ! sudo apt install -y update-manager-core; then
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}Warning: Failed to install update-manager-core${ENDCOLOR}"
+		echo "The upgrade process may not work without it."
+		echo ""
+		sleep 2
+		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			echo "Aborting EOL upgrade..."
+			sleep 1
+			return 1
+		fi
+	fi
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Performing distribution upgrade${ENDCOLOR}"
+	sudo apt dist-upgrade -y
+	echo ""
+	
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "${YELLOW}  Starting Ubuntu Release Upgrade${ENDCOLOR}"
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	sleep 1
+	echo "The do-release-upgrade tool will now guide you through"
+	echo "upgrading to the next supported Ubuntu version."
+	echo ""
+	sleep 2
+	echo "Important notes:"
+	echo "• Follow all prompts carefully"
+	echo "• The process may take significant time"
+	echo "• Your system will likely need a reboot afterwards"
+	echo "• Keep a backup of important data"
+	echo ""
+	sleep 2
+	echo -e "${CYAN}Repository backup:${ENDCOLOR} ${YELLOW}$BACKUP_FILE${ENDCOLOR}"
+	echo ""
+	sleep 5
+	
+	sudo do-release-upgrade
 }
 
 function UPGRADE_TO_NEXT_RELEASE {
@@ -510,7 +715,7 @@ function SHUT_DOWN {
 	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
 	if command -v systemctl &> /dev/null; then
-		sudo systemctl poweroff
+		sudo systemctl poweroff 2>/dev/null || sudo poweroff
 	else
 		sudo poweroff
 	fi
@@ -525,7 +730,7 @@ function RE_BOOT {
 	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
 	if command -v systemctl &> /dev/null; then
-		sudo systemctl reboot
+		sudo systemctl reboot 2>/dev/null || sudo reboot
 	else
 		sudo reboot
 	fi
