@@ -26,6 +26,7 @@ GREEN="\e[32m"
 CYAN="\e[36m"
 MAGENTA="\e[35m"
 YELLOW="\e[33m"
+RED="\e[31m"
 ENDCOLOR="\e[0m"
 # Detect distro codename with robust fallbacks
 if DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
@@ -139,7 +140,7 @@ function PREUPDATE_PREFLIGHT {
 		if sudo dpkg --configure -a; then
 			echo -e "${CYAN}✓ dpkg configuration completed${ENDCOLOR}"
 		else
-			echo -e "${YELLOW}x dpkg configuration encountered errors. Please review output.${ENDCOLOR}"
+			echo -e "${RED}✗ dpkg configuration encountered errors. Please review output.${ENDCOLOR}"
 			issues=$((issues+1))
 		fi
 		echo
@@ -152,7 +153,7 @@ function PREUPDATE_PREFLIGHT {
 		if sudo dpkg --configure -a; then
 			echo -e "${CYAN}✓ Unconfigured packages processed${ENDCOLOR}"
 		else
-			echo -e "${YELLOW}x dpkg configure failed. Manual intervention may be required.${ENDCOLOR}"
+			echo -e "${RED}✗ dpkg configure failed. Manual intervention may be required.${ENDCOLOR}"
 			issues=$((issues+1))
 		fi
 		echo
@@ -160,7 +161,7 @@ function PREUPDATE_PREFLIGHT {
 
 	# 3) apt dependency check (non-invasive)
 	if ! sudo apt-get -y -o Debug::pkgProblemResolver=no -s dist-upgrade >/tmp/ucare_apt_sim 2>&1; then
-		echo -e "${YELLOW}x apt simulation reported errors${ENDCOLOR}"
+		echo -e "${RED}✗ apt simulation reported errors${ENDCOLOR}"
 		issues=$((issues+1))
 	fi
 	if grep -Ei "unmet|held broken|conflicts|depends" /tmp/ucare_apt_sim >/dev/null 2>&1; then
@@ -169,7 +170,7 @@ function PREUPDATE_PREFLIGHT {
 		if sudo apt -f install -y; then
 			echo -e "${CYAN}✓ Broken dependencies fixed${ENDCOLOR}"
 		else
-			echo -e "${YELLOW}x apt -f install failed. Please review and fix manually.${ENDCOLOR}"
+			echo -e "${RED}✗ apt -f install failed. Please review and fix manually.${ENDCOLOR}"
 			issues=$((issues+1))
 		fi
 		echo
@@ -199,7 +200,7 @@ function PREUPDATE_PREFLIGHT {
 				fi
 			done
 			if [ -s /tmp/ucare_locks ]; then
-				echo -e "${YELLOW}x Locks still present. Please close other package tools and retry.${ENDCOLOR}"
+				echo -e "${RED}✗ Locks still present. Please close other package tools and retry.${ENDCOLOR}"
 				issues=$((issues+1))
 			fi
 			echo
@@ -212,8 +213,8 @@ function PREUPDATE_PREFLIGHT {
 	echo
 
 	if [ "$issues" -gt 0 ]; then
-		echo -e "${YELLOW}x Pre-update checks encountered ${issues} unresolved issue(s)${ENDCOLOR}"
-		echo -e "${YELLOW}x Aborting maintenance to avoid breaking the system${ENDCOLOR}"
+		echo -e "${RED}✗ Pre-update checks encountered ${issues} unresolved issue(s)${ENDCOLOR}"
+		echo -e "${RED}✗ Aborting maintenance to avoid breaking the system${ENDCOLOR}"
 		sleep 2
 		return 1
 	fi
@@ -259,15 +260,15 @@ function CLEANUP_OLD_KERNELS {
     echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
     
     # Validate keep_count
-    if ! [[ "$keep_count" =~ ^[0-9]+$ ]]; then
-        echo -e "${YELLOW}Error: Invalid number specified for kernels to keep${ENDCOLOR}"
+	if ! [[ "$keep_count" =~ ^[0-9]+$ ]]; then
+		echo -e "${RED}✗ Invalid number specified for kernels to keep${ENDCOLOR}"
         echo -e "${YELLOW}Usage: Must be a positive number greater than or equal to $min_kernels${ENDCOLOR}"
         return 1
     fi
     
     # Safety check - ensure we keep at least current + one backup
-    if [ "$keep_count" -lt "$min_kernels" ]; then
-        echo -e "${YELLOW}Warning: Cannot keep fewer than $min_kernels kernels for safety${ENDCOLOR}"
+	if [ "$keep_count" -lt "$min_kernels" ]; then
+		echo -e "${YELLOW}⚠ Cannot keep fewer than $min_kernels kernels for safety${ENDCOLOR}"
         echo -e "${YELLOW}Setting keep count to minimum safe value: $min_kernels${ENDCOLOR}"
         keep_count=$min_kernels
     fi
@@ -278,8 +279,8 @@ function CLEANUP_OLD_KERNELS {
     
     # Build list of kernel packages to purge
     # This uses the actual kernel files in /boot to determine which kernels to keep
-    if [ ! -d /boot ]; then
-        echo -e "${YELLOW}Warning: /boot directory not found${ENDCOLOR}"
+	if [ ! -d /boot ]; then
+		echo -e "${YELLOW}⚠ /boot directory not found${ENDCOLOR}"
         return 1
     fi
     
@@ -331,7 +332,7 @@ function MAINTENANCE {
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
 	if command -v systemctl &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-		echo -e "${YELLOW}Reloading systemd manager configuration ${ENDCOLOR}"
+		echo -e "${YELLOW}⚠ Reloading systemd manager configuration ${ENDCOLOR}"
 		sudo systemctl daemon-reload
 		sleep 1
 		echo 
@@ -344,7 +345,7 @@ function MAINTENANCE {
 	# Print each line with padding to fit the terminal width
 	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
 	echo
-	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -352,14 +353,14 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
 	sudo apt full-upgrade -V -y;
 	echo
-	echo -e "${GREEN}▸ Finished upgrading system packages and libraries ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished upgrading system packages and libraries ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Removes unneeded packages
 	sudo apt autoremove -y --purge;
 	echo					
-	echo -e "${GREEN}▸ Finished removing unneeded packages ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished removing unneeded packages ${ENDCOLOR}"
 	sleep 1
 	echo
 	echo -e "${GREEN}▸ Checking for Snap and Flatpak updates ${ENDCOLOR}"
@@ -439,7 +440,7 @@ function MAINTENANCE {
 		sleep 1
 	fi
 	echo					
-	echo -e "${GREEN}▸ Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -456,7 +457,7 @@ function MAINTENANCE {
 	if deinstall_pkgs=$(dpkg --get-selections 2>/dev/null | grep deinstall | cut -f1) && [ -n "$deinstall_pkgs" ]; then
 		echo "$deinstall_pkgs" | xargs --no-run-if-empty sudo apt autoremove -y --purge
 		echo
-		echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+		echo -e "${CYAN}✓ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	else
 		echo -e "${YELLOW}No config files of uninstalled packages found${ENDCOLOR}"
 	fi
@@ -467,7 +468,7 @@ function MAINTENANCE {
 	# the lock file in /var/cache/apt/archives, including directories.
 	sudo apt autoclean -y; sudo apt clean -y;
 	echo
-	echo -e "${GREEN}▸ Finished cleaning up downloaded packages ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
 
 	echo
@@ -487,7 +488,7 @@ function MAINTENANCE {
         	uniq < /var/run/reboot-required.pkgs
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
-        	echo -e "${YELLOW}Cannot find or read reboot-required package list... Skipping package display ${ENDCOLOR}"
+			echo -e "${YELLOW}⚠ Cannot find or read reboot-required package list... Skipping package display ${ENDCOLOR}"
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	fi
 		sleep 1
@@ -513,7 +514,7 @@ function MAINTENANCE {
 function UPGRADE_EOL_TO_NEXT {
 	# Distribution check - Only works for Ubuntu
 	if [ ! -f /etc/os-release ]; then
-		echo -e "${YELLOW}Error: Cannot detect distribution${ENDCOLOR}"
+		echo -e "${RED}✗ Cannot detect distribution${ENDCOLOR}"
 		return 1
 	fi
 	
@@ -522,7 +523,7 @@ function UPGRADE_EOL_TO_NEXT {
 	
 	if [ "$ID" != "ubuntu" ]; then
 		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
-		echo -e "${YELLOW}  ERROR: End-of-Life upgrade is only supported for Ubuntu${ENDCOLOR}"
+		echo -e "${RED}  ✗ End-of-Life upgrade is only supported for Ubuntu${ENDCOLOR}"
 		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 		echo ""
 		echo -e "${CYAN}Your distribution: ${YELLOW}$NAME${ENDCOLOR}"
@@ -548,7 +549,7 @@ function UPGRADE_EOL_TO_NEXT {
 	# Validate DIST_CODENAME
 	if [ -z "$DIST_CODENAME" ] || [ "$DIST_CODENAME" = "unknown" ]; then
 		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
-		echo -e "${YELLOW}  ERROR: Cannot detect Ubuntu version codename${ENDCOLOR}"
+		echo -e "${RED}  ✗ Cannot detect Ubuntu version codename${ENDCOLOR}"
 		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 		echo ""
 		echo "Unable to determine your Ubuntu release codename."
@@ -571,7 +572,7 @@ function UPGRADE_EOL_TO_NEXT {
 	
 	# Check if sources.list exists before backing up
 	if [ ! -f /etc/apt/sources.list ]; then
-		echo -e "${YELLOW}Warning: /etc/apt/sources.list not found${ENDCOLOR}"
+		echo -e "${YELLOW}⚠ /etc/apt/sources.list not found${ENDCOLOR}"
 		echo "Creating minimal sources.list for EOL upgrade..."
 		touch /etc/apt/sources.list
 	fi
@@ -606,7 +607,7 @@ function UPGRADE_EOL_TO_NEXT {
 		echo ""
 		sleep 2
 	else
-		echo -e "${YELLOW}Warning: Failed to create backup${ENDCOLOR}"
+		echo -e "${YELLOW}⚠ Failed to create backup${ENDCOLOR}"
 		echo "Continuing anyway..."
 		echo ""
 		sleep 2
@@ -634,7 +635,7 @@ EOT
 	if ! sudo apt update; then
 		echo ""
 		sleep 1
-		echo -e "${YELLOW}Warning: Package list update failed${ENDCOLOR}"
+		echo -e "${YELLOW}⚠ Package list update failed${ENDCOLOR}"
 		echo "This might indicate that:"
 		echo "• The EOL archive doesn't have packages for $DIST_CODENAME"
 		echo "• Network connectivity issues"
@@ -648,7 +649,7 @@ EOT
 		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			echo "Aborting EOL upgrade..."
+			echo -e "${RED}✗ Aborting EOL upgrade...${ENDCOLOR}"
 			sleep 1
 			return 1
 		fi
@@ -660,14 +661,14 @@ EOT
 	if ! sudo apt install -y update-manager-core; then
 		echo ""
 		sleep 1
-		echo -e "${YELLOW}Warning: Failed to install update-manager-core${ENDCOLOR}"
+		echo -e "${YELLOW}⚠ Failed to install update-manager-core${ENDCOLOR}"
 		echo "The upgrade process may not work without it."
 		echo ""
 		sleep 2
 		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			echo "Aborting EOL upgrade..."
+			echo -e "${RED}✗ Aborting EOL upgrade...${ENDCOLOR}"
 			sleep 1
 			return 1
 		fi
