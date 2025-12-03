@@ -394,22 +394,194 @@ function MAINTENANCE {
 }
 
 function UPGRADE_EOL_TO_NEXT {
+	# Distribution check - Only works for Ubuntu
+	if [ ! -f /etc/os-release ]; then
+		echo -e "${YELLOW}Error: Cannot detect distribution${ENDCOLOR}"
+		return 1
+	fi
+	
+	# shellcheck disable=SC1091
+	. /etc/os-release
+	
+	if [ "$ID" != "ubuntu" ]; then
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo -e "${YELLOW}  ERROR: End-of-Life upgrade is only supported for Ubuntu${ENDCOLOR}"
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo ""
+		echo -e "${CYAN}Your distribution: ${YELLOW}$NAME${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo "This feature uses Ubuntu's old-releases archive which is"
+		echo "specifically designed for Ubuntu releases that have reached"
+		echo "their End of Life (EOL)."
+		echo ""
+		sleep 2
+		echo "For other distributions, please use their official upgrade methods:"
+		echo ""
+		echo -e "${CYAN}• Debian:${ENDCOLOR}      Edit /etc/apt/sources.list and use apt dist-upgrade"
+		echo -e "${CYAN}• Linux Mint:${ENDCOLOR}  Use the Update Manager's 'Edit > Upgrade to...' option"
+		echo -e "${CYAN}• Pop!_OS:${ENDCOLOR}     Use pop-upgrade or the built-in upgrade tool"
+		echo -e "${CYAN}• Other:${ENDCOLOR}       Consult your distribution's documentation"
+		echo ""
+		sleep 2
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		return 1
+	fi
+	
+	# Validate DIST_CODENAME
+	if [ -z "$DIST_CODENAME" ] || [ "$DIST_CODENAME" = "unknown" ]; then
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo -e "${YELLOW}  ERROR: Cannot detect Ubuntu version codename${ENDCOLOR}"
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo ""
+		echo "Unable to determine your Ubuntu release codename."
+		echo "This is required for the EOL upgrade process."
+		echo ""
+		sleep 1
+		echo "Possible causes:"
+		echo "• lsb_release command not available"
+		echo "• Corrupted /etc/lsb-release file"
+		echo "• Non-standard Ubuntu installation"
+		echo ""
+		sleep 2
+		echo "Please verify your Ubuntu version manually:"
+		echo -e "${CYAN}  cat /etc/lsb-release${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		return 1
+	fi
+	
 	# Check if sources.list exists before backing up
 	if [ ! -f /etc/apt/sources.list ]; then
 		echo -e "${YELLOW}Warning: /etc/apt/sources.list not found${ENDCOLOR}"
-		return 1
+		echo "Creating minimal sources.list for EOL upgrade..."
+		touch /etc/apt/sources.list
 	fi
-
-	cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
+	
+	# Inform user about backup
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "${YELLOW}  Ubuntu End-of-Life (EOL) Upgrade Process${ENDCOLOR}"
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	echo -e "${CYAN}Detected Ubuntu version:${ENDCOLOR} ${YELLOW}$DIST_CODENAME${ENDCOLOR}"
+	echo ""
+	sleep 2
+	echo "This will perform the following actions:"
+	echo ""
+	echo "1. Backup your current repository configuration"
+	echo "2. Configure repositories to use old-releases.ubuntu.com"
+	echo "3. Update package lists from EOL archive"
+	echo "4. Install update-manager-core if needed"
+	echo "5. Perform distribution upgrade to next supported version"
+	echo ""
+	sleep 3
+	
+	BACKUP_FILE="/etc/apt/sources.eol_${DATE}"
+	
+	echo -e "${GREEN}▸ Creating backup of sources.list${ENDCOLOR}"
+	if cp "/etc/apt/sources.list" "$BACKUP_FILE"; then
+		echo -e "${CYAN}✓ Backup created:${ENDCOLOR} ${YELLOW}$BACKUP_FILE${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo "If anything goes wrong, you can restore your repositories with:"
+		echo -e "${CYAN}  sudo cp $BACKUP_FILE /etc/apt/sources.list${ENDCOLOR}"
+		echo ""
+		sleep 2
+	else
+		echo -e "${YELLOW}Warning: Failed to create backup${ENDCOLOR}"
+		echo "Continuing anyway..."
+		echo ""
+		sleep 2
+	fi
+	
+	sleep 1
+	
+	echo -e "${GREEN}▸ Configuring EOL repositories for $DIST_CODENAME${ENDCOLOR}"
 	cat <<EOT > /etc/apt/sources.list
+# Ubuntu $DIST_CODENAME (End of Life) - Archived Repositories
+# Backup available at: $BACKUP_FILE
+# Configured by uCareSystem on $(date)
+
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-updates main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restricted universe multiverse
 
 EOT
-
-	sudo apt install -y update-manager-core
+	
+	echo -e "${CYAN}✓ EOL repositories configured${ENDCOLOR}"
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Updating package lists from EOL archive${ENDCOLOR}"
+	if ! sudo apt update; then
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}Warning: Package list update failed${ENDCOLOR}"
+		echo "This might indicate that:"
+		echo "• The EOL archive doesn't have packages for $DIST_CODENAME"
+		echo "• Network connectivity issues"
+		echo "• The release is too old to be in old-releases archive"
+		echo ""
+		sleep 2
+		echo "You can restore your original configuration with:"
+		echo -e "${CYAN}  sudo cp $BACKUP_FILE /etc/apt/sources.list${ENDCOLOR}"
+		echo ""
+		sleep 2
+		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			echo "Aborting EOL upgrade..."
+			sleep 1
+			return 1
+		fi
+	fi
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Installing update-manager-core${ENDCOLOR}"
+	if ! sudo apt install -y update-manager-core; then
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}Warning: Failed to install update-manager-core${ENDCOLOR}"
+		echo "The upgrade process may not work without it."
+		echo ""
+		sleep 2
+		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			echo "Aborting EOL upgrade..."
+			sleep 1
+			return 1
+		fi
+	fi
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Performing distribution upgrade${ENDCOLOR}"
 	sudo apt dist-upgrade -y
+	echo ""
+	
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "${YELLOW}  Starting Ubuntu Release Upgrade${ENDCOLOR}"
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	sleep 1
+	echo "The do-release-upgrade tool will now guide you through"
+	echo "upgrading to the next supported Ubuntu version."
+	echo ""
+	sleep 2
+	echo "Important notes:"
+	echo "• Follow all prompts carefully"
+	echo "• The process may take significant time"
+	echo "• Your system will likely need a reboot afterwards"
+	echo "• Keep a backup of important data"
+	echo ""
+	sleep 2
+	echo -e "${CYAN}Repository backup:${ENDCOLOR} ${YELLOW}$BACKUP_FILE${ENDCOLOR}"
+	echo ""
+	sleep 5
+	
 	sudo do-release-upgrade
 }
 
