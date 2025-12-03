@@ -225,7 +225,7 @@ function PREUPDATE_PREFLIGHT {
 }
 
 function WELCOME_SCREEN {
-	echo "________________________________________________________"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~"
@@ -242,7 +242,7 @@ function WELCOME_SCREEN {
 	echo "               put into the project:"
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
-	echo "________________________________________________________"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo ""
 	# start the countdown
@@ -331,11 +331,14 @@ function MAINTENANCE {
 
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
+	# Only reload if systemd is actually running (not in containers without systemd)
 	if command -v systemctl &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-		echo -e "${YELLOW}⚠ Reloading systemd manager configuration ${ENDCOLOR}"
-		sudo systemctl daemon-reload
-		sleep 1
-		echo 
+		if systemctl is-system-running &>/dev/null || [ -d /run/systemd/system ]; then
+			echo -e "${CYAN}▸ Reloading systemd manager configuration${ENDCOLOR}"
+			sudo systemctl daemon-reload 2>/dev/null
+			sleep 1
+			echo 
+		fi
 	fi
 	## Updates package lists
 	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
@@ -714,11 +717,11 @@ function UPGRADE_TO_NEXT_RELEASE {
 			return 1
 		fi
 	fi
-	echo "##########################################"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo "uCareSystem will now check for the"
 	echo "availability of the next version"
 	echo "and it will start the upgrade"
-	echo "##########################################"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	sleep 1
 	do-release-upgrade
@@ -736,11 +739,11 @@ function UPGRADE_TO_DEVEL_RELEASE {
 			return 1
 		fi
 	fi
-	echo "##########################################"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo "uCareSystem will now check for the"
 	echo "availability of the next development"
 	echo "version and it will start the upgrade"
-	echo "##########################################"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	sleep 1
 	do-release-upgrade -d
@@ -813,7 +816,7 @@ EOF
 
 function GOODBYE {
 	sleep 1
-	echo "___________________________________________________________"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	echo -e "            ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~~"
@@ -836,7 +839,7 @@ function GOODBYE {
 	echo ""
 	sleep 2
 	echo -e "     	${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
-	echo "___________________________________________________________"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
 	sleep 1
