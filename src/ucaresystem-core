@@ -132,6 +132,29 @@ function PREUPDATE_PREFLIGHT {
 
 	local issues=0
 
+	# 0) Check for dpkg interruption and auto-recover if safe
+	if [ -f /var/lib/dpkg/lock ] || [ -f /var/lib/dpkg/lock-frontend ]; then
+		if sudo lsof /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend | grep -q .; then
+			echo -e "${RED}✗ dpkg lock file is held by another process.${ENDCOLOR}"
+			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
+			sleep 2
+			return 1
+		fi
+	fi
+	if [ -f /var/lib/dpkg/status ]; then
+		if grep -q "^Status: half-installed" /var/lib/dpkg/status; then
+			echo -e "${YELLOW}⚠ dpkg was interrupted. Attempting automatic recovery with 'sudo dpkg --configure -a'...${ENDCOLOR}"
+			if sudo dpkg --configure -a; then
+				echo -e "${CYAN}✓ dpkg configuration completed automatically.${ENDCOLOR}"
+			else
+				echo -e "${RED}✗ Automatic dpkg recovery failed. Please run 'sudo dpkg --configure -a' manually.${ENDCOLOR}"
+				echo -e "${RED}✗ Aborting maintenance to avoid breaking the system.${ENDCOLOR}"
+				sleep 2
+				return 1
+			fi
+		fi
+	fi
+
 	# 1) dpkg audit: half-installed/broken packages
 	# shellcheck disable=SC2024
 	if ! sudo dpkg --audit >/tmp/ucare_dpkg_audit 2>&1; then
@@ -197,21 +220,9 @@ function PREUPDATE_PREFLIGHT {
 		if [ -s /tmp/ucare_locks ]; then
 			echo -e "${YELLOW}▸ Package manager locks detected${ENDCOLOR}"
 			cat /tmp/ucare_locks
-			echo -e "${CYAN}▸ Auto-action${ENDCOLOR}: attempting to wait for locks (up to 60s)"
-			# shellcheck disable=SC2034
-			for i in 1 2 3 4 5 6; do
-				sleep 10
-				# shellcheck disable=SC2024
-				if ! sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/tmp/ucare_locks 2>&1 || [ ! -s /tmp/ucare_locks ]; then
-					echo -e "${CYAN}✓ Locks cleared${ENDCOLOR}"
-					break
-				fi
-			done
-			if [ -s /tmp/ucare_locks ]; then
-				echo -e "${RED}✗ Locks still present. Please close other package tools and retry.${ENDCOLOR}"
-				issues=$((issues+1))
-			fi
-			echo
+			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
+			sleep 2
+			return 1
 		fi
 	fi
 
