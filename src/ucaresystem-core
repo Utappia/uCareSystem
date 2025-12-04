@@ -365,8 +365,12 @@ function MAINTENANCE {
 
 	## Updates packages and libraries
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
-	upgrade_output=$( { sudo apt full-upgrade -V -y 2>&1; } )
-	upgrade_exit=$?
+	# Use a temporary file to capture output while displaying it to the user
+	upgrade_log_file=$(mktemp)
+	sudo apt full-upgrade -V -y 2>&1 | tee "$upgrade_log_file"
+	upgrade_exit=${PIPESTATUS[0]}
+	upgrade_output=$(cat "$upgrade_log_file")
+	rm -f "$upgrade_log_file"
 	
 	if [ $upgrade_exit -ne 0 ]; then
 		# Check for dpkg interruption error in the output
