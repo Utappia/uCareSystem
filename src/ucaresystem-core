@@ -378,7 +378,7 @@ function MAINTENANCE {
 	upgrade_output=$(cat "$upgrade_log_file")
 	rm -f "$upgrade_log_file"
 	
-	if [ $upgrade_exit -ne 0 ]; then
+	if [ "$upgrade_exit" -ne 0 ]; then
 		# Check for dpkg interruption error in the output
 		if echo "$upgrade_output" | grep -q "dpkg was interrupted"; then
 			echo -e "${YELLOW}⚠ Detected dpkg interruption. Attempting automatic recovery with 'sudo dpkg --configure -a'...${ENDCOLOR}"
