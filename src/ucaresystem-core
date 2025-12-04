@@ -266,7 +266,7 @@ function WELCOME_SCREEN {
 	echo " your appreciation for the time and effort that I have"
 	echo " put into the project:"
 	echo ""
-	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
+	echo -e "	${CYAN}$DONATE ${ENDCOLOR}"
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo ""
@@ -873,10 +873,10 @@ function GOODBYE {
 		echo " - $supporter"
 	done
 	echo ""
-	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
+	echo -e "${CYAN}	$DONATE ${ENDCOLOR}"
 	echo ""
 	sleep 2
-	echo -e "     	${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
+	echo -e " ${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
