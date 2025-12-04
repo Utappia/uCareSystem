@@ -51,7 +51,7 @@ DATE=$(date +%F_%T)
 UCARE_VERSION="25.12.04"
 # See HONORED_RELEASES.md for historical record of honored releases
 VER_CODENAME="M. Van Hoof"
-PREV_VER="25.07.03"
+PREV_VER="25.07"
 USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
