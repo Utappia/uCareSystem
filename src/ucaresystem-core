@@ -878,7 +878,7 @@ function GOODBYE {
 	sleep 2
 	echo -e " ${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
-	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
 	sleep 1
 }
