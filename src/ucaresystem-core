@@ -260,7 +260,7 @@ function WELCOME_SCREEN {
 	echo " continuous improvement but also inspires and"
 	echo " motivates me to keep pushing forward while also shows" 
 	echo " your appreciation for the time and effort that I have"
-	echo "               put into the project:"
+	echo " put into the project:"
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
