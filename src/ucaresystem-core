@@ -129,6 +129,10 @@ function COUNTDOWN {
 duration=5 # countdown duration in seconds
 # Pre-update health check
 function PREUPDATE_PREFLIGHT {
+	echo
+	echo
+	echo -e "${MAGENTA} Started ${ENDCOLOR} "
+	sleep 1
 	echo -e "${GREEN}▸ Running pre-update health checks${ENDCOLOR}"
 	sleep 1
 
@@ -230,7 +234,7 @@ function PREUPDATE_PREFLIGHT {
 
 	# 6) disk space sanity
 	echo -e "${GREEN}▸ Disk space summary${ENDCOLOR}"
-	df -h / /var /tmp 2>/dev/null || df -h /
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
 	echo
 
 	if [ "$issues" -gt 0 ]; then
@@ -338,17 +342,6 @@ function CLEANUP_OLD_KERNELS {
 
 function MAINTENANCE {
 	echo
-	echo
-	echo -e "${MAGENTA} Started ${ENDCOLOR} "
-	sleep 1
-	echo
-	echo -e "${GREEN}▸ Checking Disk usage before System Maintenance ${ENDCOLOR}"
-	sleep 1	
-	echo
-	echo ""
-	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
-	echo
-	sleep 1
 
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
