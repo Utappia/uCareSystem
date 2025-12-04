@@ -134,7 +134,7 @@ function PREUPDATE_PREFLIGHT {
 
 	# 0) Check for dpkg interruption and auto-recover if safe
 	if [ -f /var/lib/dpkg/lock ] || [ -f /var/lib/dpkg/lock-frontend ]; then
-		if sudo lsof /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend | grep -q .; then
+		if sudo lsof /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend 2>/dev/null | grep -q .; then
 			echo -e "${RED}✗ dpkg lock file is held by another process.${ENDCOLOR}"
 			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
 			sleep 2
@@ -216,7 +216,7 @@ function PREUPDATE_PREFLIGHT {
 
 	# 5) lock files
 	# shellcheck disable=SC2024
-	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/tmp/ucare_locks 2>&1; then
+	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock 2>/dev/null >/tmp/ucare_locks 2>&1; then
 		if [ -s /tmp/ucare_locks ]; then
 			echo -e "${YELLOW}▸ Package manager locks detected${ENDCOLOR}"
 			cat /tmp/ucare_locks
@@ -373,13 +373,17 @@ function MAINTENANCE {
 
 	## Updates packages and libraries
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
-	if ! sudo apt full-upgrade -V -y; then
-		# Check for dpkg interruption error
-		if grep -q "dpkg was interrupted, you must manually run 'sudo dpkg --configure -a'" /var/log/apt/term.log 2>/dev/null; then
+	upgrade_output=$( { sudo apt full-upgrade -V -y 2>&1; } )
+	upgrade_exit=$?
+	
+	if [ $upgrade_exit -ne 0 ]; then
+		# Check for dpkg interruption error in the output
+		if echo "$upgrade_output" | grep -q "dpkg was interrupted"; then
 			echo -e "${YELLOW}⚠ Detected dpkg interruption. Attempting automatic recovery with 'sudo dpkg --configure -a'...${ENDCOLOR}"
 			if sudo dpkg --configure -a; then
 				echo -e "${CYAN}✓ dpkg configuration completed automatically.${ENDCOLOR}"
 				# Retry upgrade
+				echo -e "${GREEN}▸ Retrying system package upgrades...${ENDCOLOR}"
 				sudo apt full-upgrade -V -y
 			else
 				echo -e "${RED}✗ Automatic dpkg recovery failed. Please run 'sudo dpkg --configure -a' manually.${ENDCOLOR}"
@@ -387,6 +391,9 @@ function MAINTENANCE {
 				sleep 2
 				return 1
 			fi
+		else
+			echo -e "${RED}✗ apt full-upgrade failed with unknown error${ENDCOLOR}"
+			echo "$upgrade_output"
 		fi
 	fi
 	echo
