@@ -106,7 +106,7 @@ fi
 # Function to get disk usage information
 function GET_DISK_USAGE {
 	local df_output
-	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}') || df_output="Unable to determine disk usage"
+	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "  Percentage of disk space used:", $5, "\n  Free space available:", $4}') || df_output="Unable to determine disk usage"
 	echo "$df_output"
 }
 
@@ -138,6 +138,7 @@ function PREUPDATE_PREFLIGHT {
 
 	local issues=0
 
+	echo -e "${YELLOW}  • Checking for interrupted package installations...${ENDCOLOR}"
 	# 0) Check for dpkg interruption and auto-recover if safe
 	if [ -f /var/lib/dpkg/lock ] || [ -f /var/lib/dpkg/lock-frontend ]; then
 		if sudo lsof /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend 2>/dev/null | grep -q .; then
@@ -161,6 +162,7 @@ function PREUPDATE_PREFLIGHT {
 		fi
 	fi
 
+	echo -e "${YELLOW}  • Checking for broken or unconfigured packages...${ENDCOLOR}"
 	# 1) dpkg audit: half-installed/broken packages
 	# shellcheck disable=SC2024
 	if ! sudo dpkg --audit >/tmp/ucare_dpkg_audit 2>&1; then
@@ -192,6 +194,7 @@ function PREUPDATE_PREFLIGHT {
 		echo
 	fi
 
+	echo -e "${YELLOW}  • Verifying package dependencies...${ENDCOLOR}"
 	# 3) apt dependency check (non-invasive)
 	# shellcheck disable=SC2024
 	if ! sudo apt-get -y -o Debug::pkgProblemResolver=no -s dist-upgrade >/tmp/ucare_apt_sim 2>&1; then
@@ -201,7 +204,7 @@ function PREUPDATE_PREFLIGHT {
 	if grep -Ei "unmet|held broken|conflicts|depends" /tmp/ucare_apt_sim >/dev/null 2>&1; then
 		echo -e "${YELLOW}▸ Dependency problems detected during apt simulation${ENDCOLOR}"
 		echo -e "${CYAN}▸ Auto-fix${ENDCOLOR}: running 'sudo apt -f install -y'"
-		if sudo apt -f install -y; then
+		if sudo apt -f install -y 2> >(grep -v "apt does not have a stable CLI interface" >&2); then
 			echo -e "${CYAN}✓ Broken dependencies fixed${ENDCOLOR}"
 		else
 			echo -e "${RED}✗ apt -f install failed. Please review and fix manually.${ENDCOLOR}"
@@ -210,6 +213,7 @@ function PREUPDATE_PREFLIGHT {
 		echo
 	fi
 
+	echo -e "${YELLOW}  • Checking for held packages...${ENDCOLOR}"
 	# 4) held packages
 	local held
 	held=$(apt-mark showhold 2>/dev/null || true)
@@ -219,7 +223,8 @@ function PREUPDATE_PREFLIGHT {
 		echo -e "${CYAN}Unhold example:${ENDCOLOR} sudo apt-mark unhold <pkg>"
 		echo
 	fi
-
+	echo -e "${YELLOW}  • Checking for active package manager locks...${ENDCOLOR}"
+	# 5) lock files
 	# 5) lock files
 	# shellcheck disable=SC2024
 	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock 2>/dev/null >/tmp/ucare_locks 2>&1; then
@@ -235,6 +240,7 @@ function PREUPDATE_PREFLIGHT {
 	# 6) disk space sanity
 	echo -e "${GREEN}▸ Disk space summary${ENDCOLOR}"
 	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
+	sleep 1
 	echo
 
 	if [ "$issues" -gt 0 ]; then
@@ -332,7 +338,7 @@ function CLEANUP_OLD_KERNELS {
     echo
     
     # Remove the packages using array expansion
-    sudo apt autoremove -y --purge "${final_purge_array[@]}"
+    sudo apt autoremove -y --purge "${final_purge_array[@]}" 2> >(grep -v "apt does not have a stable CLI interface" >&2)
     
     echo -e "${YELLOW}Kernel cleanup completed${ENDCOLOR}"
 }
@@ -345,7 +351,7 @@ function MAINTENANCE {
 	# Only reload if systemd is actually running (not in containers without systemd)
 	if command -v systemctl &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
 		if systemctl is-system-running &>/dev/null || [ -d /run/systemd/system ]; then
-			echo -e "${CYAN}▸ Reloading systemd manager configuration${ENDCOLOR}"
+			echo -e "${GREEN}▸ Reloading systemd manager configuration${ENDCOLOR}"
 			sudo systemctl daemon-reload 2>/dev/null
 			sleep 1
 			echo 
@@ -367,7 +373,7 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
 	# Use a temporary file to capture output while displaying it to the user
 	upgrade_log_file=$(mktemp)
-	sudo apt full-upgrade -V -y 2>&1 | tee "$upgrade_log_file"
+	sudo apt full-upgrade -V -y 2>&1 | grep --line-buffered -v "apt does not have a stable CLI interface" | tee "$upgrade_log_file"
 	upgrade_exit=${PIPESTATUS[0]}
 	upgrade_output=$(cat "$upgrade_log_file")
 	rm -f "$upgrade_log_file"
@@ -398,7 +404,7 @@ function MAINTENANCE {
 	echo
 
 	## Removes unneeded packages
-	sudo apt autoremove -y --purge;
+	sudo apt autoremove -y --purge 2> >(grep -v "apt does not have a stable CLI interface" >&2);
 	echo					
 	echo -e "${CYAN}✓ Finished removing unneeded packages ${ENDCOLOR}"
 	sleep 1
@@ -495,7 +501,7 @@ function MAINTENANCE {
 	## Removes unused config files of uninstalled packages
 	echo -e "${GREEN}▸ Checking for config files of uninstalled packages...${ENDCOLOR}"
 	if deinstall_pkgs=$(dpkg --get-selections 2>/dev/null | grep deinstall | cut -f1) && [ -n "$deinstall_pkgs" ]; then
-		echo "$deinstall_pkgs" | xargs --no-run-if-empty sudo apt autoremove -y --purge
+		echo "$deinstall_pkgs" | xargs --no-run-if-empty sudo apt autoremove -y --purge 2> >(grep -v "apt does not have a stable CLI interface" >&2)
 		echo
 		echo -e "${CYAN}✓ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
 	else
@@ -506,7 +512,7 @@ function MAINTENANCE {
 
 	## Removes package files that can no longer be downloaded and everything except
 	# the lock file in /var/cache/apt/archives, including directories.
-	sudo apt autoclean -y; sudo apt clean -y;
+	sudo apt autoclean -y 2> >(grep -v "apt does not have a stable CLI interface" >&2); sudo apt clean -y 2> >(grep -v "apt does not have a stable CLI interface" >&2);
 	echo
 	echo -e "${CYAN}✓ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
@@ -672,7 +678,7 @@ EOT
 	sleep 1
 	
 	echo -e "${GREEN}▸ Updating package lists from EOL archive${ENDCOLOR}"
-	if ! sudo apt update; then
+	if ! sudo apt update 2> >(grep -v "apt does not have a stable CLI interface" >&2); then
 		echo ""
 		sleep 1
 		echo -e "${YELLOW}⚠ Package list update failed${ENDCOLOR}"
@@ -698,7 +704,7 @@ EOT
 	sleep 1
 	
 	echo -e "${GREEN}▸ Installing update-manager-core${ENDCOLOR}"
-	if ! sudo apt install -y update-manager-core; then
+	if ! sudo apt install -y update-manager-core 2> >(grep -v "apt does not have a stable CLI interface" >&2); then
 		echo ""
 		sleep 1
 		echo -e "${YELLOW}⚠ Failed to install update-manager-core${ENDCOLOR}"
@@ -717,7 +723,7 @@ EOT
 	sleep 1
 	
 	echo -e "${GREEN}▸ Performing distribution upgrade${ENDCOLOR}"
-	sudo apt dist-upgrade -y
+	sudo apt dist-upgrade -y 2> >(grep -v "apt does not have a stable CLI interface" >&2)
 	echo ""
 	
 	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
