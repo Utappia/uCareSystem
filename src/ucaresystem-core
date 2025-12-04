@@ -264,7 +264,7 @@ function WELCOME_SCREEN {
 	echo ""
 	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
-	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo ""
 	# start the countdown
 	MESSAGE="uCareSystem will start"
