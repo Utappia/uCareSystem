@@ -249,7 +249,6 @@ function PREUPDATE_PREFLIGHT {
 	fi
 	echo -e "${YELLOW}  • Checking for active package manager locks...${ENDCOLOR}"
 	# 5) lock files
-	# 5) lock files
 	# shellcheck disable=SC2024
 	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock 2>/dev/null >/tmp/ucare_locks 2>&1; then
 		if [ -s /tmp/ucare_locks ]; then
@@ -363,7 +362,7 @@ function MAINTENANCE {
 	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
 	echo
 	# Update package lists and filter out warnings
-	sudo apt update 2> >(sed 's/^WARNING.*//') |
+	sudo apt update 2> >(grep -v "^WARNING" >&2) |
 	# Print each line with padding to fit the terminal width
 	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
 	echo
@@ -823,7 +822,7 @@ function SHOW_HELP {
 	
 		If no option is specified, it performs the regular maintenance tasks.
 		It updates system, snap, and flatpak packages, removes old kernels, old 
-		Snap and flatpack revisions and unneeded packages, and cleans up 
+		Snap and flatpak revisions and unneeded packages, and cleans up 
 		configurations of uninstalled packages.
 	
 	Options:
