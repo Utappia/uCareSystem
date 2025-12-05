@@ -1,11 +1,18 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-image-banner.png"></p>
 
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/utappia/ucaresystem/total)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/utappia/ucaresystem)
+![GitHub contributors](https://img.shields.io/github/contributors/utappia/ucaresystem)
+![Alt](https://repobeats.axiom.co/api/embed/c29e0ed26bae4874010d6f5de18039cd74de0252.svg "Repobeats analytics image")
+
 <p align="center">
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
     <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
 <p align="center">
     <a href="https://donate.utappia.org/" target="_blank"><img src="https://img.shields.io/badge/Donate_to-uCareSystem-blue.svg" alt="Donate to project"></a>
- 
+
+
+
 # uCareSystem
 
 uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
