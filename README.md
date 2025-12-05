@@ -68,6 +68,10 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
    sudo apt install ./ucaresystem-core_*.deb
    ```
 
+    > **Note:**
+    > If you install the package from your home or Downloads directory, you may see a warning about “Download is performed unsandboxed as root... Permission denied for user '_apt'.”
+    > This is normal and does not affect the installation. To avoid the warning, you can move the `.deb` file to `/tmp` or another directory readable by all users before installing.
+
 The installer will:
 
 - Install the uCareSystem core package
