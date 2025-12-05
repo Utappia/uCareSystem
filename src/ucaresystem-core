@@ -20,7 +20,12 @@ set -e
 #remove any remaining packages and configuration files without interference.
 SECONDS=0
 ## Script starts here
-
+# Check for root/sudo privileges
+if [[ $EUID -ne 0 ]] ; then
+    echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
+    exec sudo "$0" "$@" 
+    exit 1
+fi
 # Variables
 GREEN="\e[32m"
 CYAN="\e[36m"
@@ -66,13 +71,6 @@ SUPPORTERS=(
 	"M. Stade"
 	"K. J. Rasmussen"
 )
-# Check for root/sudo privileges
-if [[ $EUID -ne 0 ]] ; then
-    echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
-    exec sudo "$0" "$@" 
-    exit 1
-fi
-
 # Function to check internet connectivity
 function CHECK_INTERNET {
     local SITES=("https://ubuntu.com" "https://google.com" "https://github.com" "https://cloudflare.com")
