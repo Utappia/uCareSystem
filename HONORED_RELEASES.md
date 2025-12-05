@@ -14,7 +14,7 @@ Each entry follows this format:
 ## Release History
 
 ### Version 25.12.04 (Current)
-- **Honored To**: M. Van Hoof
+- **Honored To**: D. Luchini
 - **Release Date**: December 4, 2025
 - **Notes**: Added automated preflight health checks with auto-fix, unified visual symbols (▸✓✗⚠), standardized color scheme, improved container support, and cross-distro safety guards
 

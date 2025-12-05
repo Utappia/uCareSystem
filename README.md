@@ -11,31 +11,36 @@
 <p align="center">
     <a href="https://donate.utappia.org/" target="_blank"><img src="https://img.shields.io/badge/Donate_to-uCareSystem-blue.svg" alt="Donate to project"></a>
 
-
-
 # uCareSystem
 
 uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
 
-	Name   : uCareSystem
-	License: GPL3 (http://www.gnu.org/licenses/gpl.html)
-	Author : Salih Emin
-	Email  : salih-emin(a)ubuntu.com
-	Date   : 22-07-2025 (first release 19-02-2009)
-	Version: 25.07.22
-	System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
-	WebSite: http://utappia.org
+ Name   : uCareSystem
+ License: GPL3 (http://www.gnu.org/licenses/gpl.html)
+ Author : Salih Emin
+ Email  : salih-emin(a)ubuntu.com
+ Date   : 04-12-2025 (first release 19-02-2009)
+ Version: 25.12.04
+ System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
+ WebSite: http://utappia.org
 
-## Sponsors of the previous development cycle (v25.06)
+## Sponsors of the previous development cycle (v25.07)
 
-With version 24.06 of uCareSystem, I added a section to acknowledge the people who supported the development of the previous cycle. This addition was warmly received by the community, and I can't express enough gratitude to those who donated or contributed code, during the previous development cycle:
+I am deeply grateful to the community members who supported the previous development cycle through donations or code contributions:
 
+- P. Laoughman (Thanks for your continued support)
 - W. Schreinemachers (Thanks for your continued support)
-- K. A. Gkountras (Jemadux)
+- D. Luchini (Thanks for your continued support)
+- M. Van Hoof
+- Frankie P.
+- M. Ryser
+- Th. Ploumis
+- M. Stade
+- K. J. Rasmussen
 
 Every version, has also a code name dedicated as a release honored to one of the contributors. For historical reference, you can check all [previous honored releases](https://github.com/Utappia/uCareSystem/blob/master/HONORED_RELEASES.md).
 
-## Description:
+## Description
 
 In summary, uCareSystem performs the following list of maintenance tasks automatically and without the need for user interference. :
 
@@ -58,70 +63,92 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 
 1. Download the latest .deb package from the [releases page](https://github.com/utappia/ucaresystem/releases)
 2. Install the package:
+
    ```bash
    sudo apt install ./ucaresystem-core_*.deb
    ```
+
 The installer will:
+
 - Install the uCareSystem core package
 - Check if the Utappia repository exists in your system
 - If the repository is not found, it will automatically:
   - Add the Utappia repository for future updates
   - Add the repository signing key
 
-
 ## Usage
 
-uCareSystem creates a launcher icon in your Applications menu. Just search your applications menu for `ucare`. If you click the icon, it starts performing the default maintenance tasks. 
+uCareSystem creates a launcher icon in your Applications menu. Just search your applications menu for `ucare`. If you click the icon, it starts performing the default maintenance tasks.
 
 Alternatively, you can invoke it through terminal with various options/flags. The default system updates and maintenance for Ubuntu / Debian / Linux Mint (and derivatives) :
+
 ```
 ucaresystem-core
 ```
+
 To check just the version run:
+
 ```
 ucaresystem-core -v
 ```
+
 if you want to read through the manual, you can run:
+
 ```
 man ucaresystem-core
 ```
+
 If you want to shutdown your system after using the uCareSystem you can use the `-s` option :
+
 ```
 ucaresystem-core -s
 ```
+
 When the next available release is available for Ubuntu (and official flavors) you can upgrade with `-u`:
-```	
+
+``` 
 ucaresystem-core -u
 ```
+
 If you are a tester, developer, or simply an enthusiast, you can upgrade to the next development cycle of Ubuntu (and official flavors) with `-d` which actually turns your Ubuntu into a rolling release distribution:
+
 ```
 ucaresystem-core -d
 ```
+
 If your Ubuntu (and official flavors) has reached the EOL support you can upgrade to the next supported release with `-eol`:
+
 ```
 ucaresystem-core -eol
 ```
+
 For information about all the available options / flags, start ucaresystem-core with `-h` option :
+
 ```
 ucaresystem-core -h
 ```
+
 ## Uninstallation
 
 To completely remove uCareSystem and its repository:
 
 1. Remove the package:
+
    ```bash
    sudo apt autoremove ucaresystem-core
    ```
 
 2. (Optional) Remove the repository and its signing key:
+
    ```bash
    sudo rm /etc/apt/sources.list.d/utappia*
    sudo rm /etc/apt/keyrings/utappia*.gpg
    ```
+
    If you keep the repository and its signing key you can reinstall ucaresystem-core without downloading the *.deb package but instead by `apt install ucaresystem-core`.
 
 3. Update package lists:
+
    ```bash
    sudo apt update
    ```
