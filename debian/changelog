@@ -1,3 +1,9 @@
+ucaresystem-core (25.12.04) jammy; urgency=medium
+
+  * Added pre-maintenace checks for broken packages, dependencies and locked apt
+
+ -- Salih Emin <salih-emin@ubuntu.com>  Sat, 06 Dec 2025 01:05:38 +0200
+
 ucaresystem-core (25.07.22) jammy; urgency=medium
 
   * improve internet connectivity check even if VPN is enabled
