@@ -33,25 +33,6 @@ MAGENTA="\e[35m"
 YELLOW="\e[33m"
 RED="\e[31m"
 ENDCOLOR="\e[0m"
-# Detect distro codename with robust fallbacks
-if DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
-	: # got via lsb_release
-else
-	if [ -f /etc/os-release ]; then
-		# shellcheck disable=SC1091
-		. /etc/os-release
-		# Prefer Ubuntu codename when present (Ubuntu/Mint derivatives)
-		if [ -n "${UBUNTU_CODENAME:-}" ]; then
-			DIST_CODENAME="$UBUNTU_CODENAME"
-		elif [ -n "${VERSION_CODENAME:-}" ]; then
-			DIST_CODENAME="$VERSION_CODENAME"
-		else
-			DIST_CODENAME="unknown"
-		fi
-	else
-		DIST_CODENAME="unknown"
-	fi
-fi
 DATE=$(date +%F_%T)
 UCARE_VERSION="25.12.04"
 # See HONORED_RELEASES.md for historical record of honored releases
@@ -71,6 +52,25 @@ SUPPORTERS=(
 	"M. Stade"
 	"K. J. Rasmussen"
 )
+# Detect distro codename with robust fallbacks
+if DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
+	: # got via lsb_release
+else
+	if [ -f /etc/os-release ]; then
+		# shellcheck disable=SC1091
+		. /etc/os-release
+		# Prefer Ubuntu codename when present (Ubuntu/Mint derivatives)
+		if [ -n "${UBUNTU_CODENAME:-}" ]; then
+			DIST_CODENAME="$UBUNTU_CODENAME"
+		elif [ -n "${VERSION_CODENAME:-}" ]; then
+			DIST_CODENAME="$VERSION_CODENAME"
+		else
+			DIST_CODENAME="unknown"
+		fi
+	else
+		DIST_CODENAME="unknown"
+	fi
+fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
     local SITES=("https://ubuntu.com" "https://google.com" "https://github.com" "https://cloudflare.com")
