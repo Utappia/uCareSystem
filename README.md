@@ -61,18 +61,36 @@ In summary, uCareSystem performs the following list of maintenance tasks automat
 
 ## Installation
 
-1. Download the latest .deb package from the [releases page](https://github.com/utappia/ucaresystem/releases)
+
+You can install uCareSystem in two ways:
+
+### 1. Automatic installation (recommended)
+
+This one-liner will update your package list, install `jq` if needed, download the latest `.deb` to `/tmp`, and install it:
+
+```bash
+sudo apt update && sudo apt install -y jq && cd /tmp && \
+curl -s https://api.github.com/repos/utappia/ucaresystem/releases/latest \
+  | jq -r '.assets[] | select(.name | test("ucaresystem-core_.*\\.deb")) | .browser_download_url' \
+  | xargs wget -O ucaresystem-core_latest.deb && \
+sudo apt install ./ucaresystem-core_latest.deb
+```
+
+> **Note:**
+> Installing from `/tmp` as shown above avoids the unsandboxed download warning.
+
+### 2. Manual download and installation
+
+1. Download the latest `.deb` package from the [releases page](https://github.com/utappia/ucaresystem/releases)
 2. Install the package:
 
    ```bash
    sudo apt install ./ucaresystem-core_*.deb
    ```
 
-    > **Note:**
-    > If you install the package from your home or Downloads directory, you may see a warning about “Download is performed unsandboxed as root... Permission denied for user '_apt'.”
-    > This is normal and does not affect the installation. To avoid the warning, you can move the `.deb` file to `/tmp` or another directory readable by all users before installing.
+> If you install the package from your home or Downloads directory, you may see a warning about “Download is performed unsandboxed as root... Permission denied for user '_apt'.” This is normal and does not affect the installation. To avoid the warning, move the `.deb` file to `/tmp` or another directory readable by all users before installing.
 
-The installer will:
+Both of the installation methonds will:
 
 - Install the uCareSystem core package
 - Check if the Utappia repository exists in your system
