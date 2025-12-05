@@ -20,12 +20,7 @@ set -e
 #remove any remaining packages and configuration files without interference.
 SECONDS=0
 ## Script starts here
-# Check for root/sudo privileges
-if [[ $EUID -ne 0 ]] ; then
-    echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
-    exec sudo "$0" "$@" 
-    exit 1
-fi
+
 # Color Variables
 GREEN="\e[32m"
 CYAN="\e[36m"
@@ -52,6 +47,12 @@ SUPPORTERS=(
 	"M. Stade"
 	"K. J. Rasmussen"
 )
+# Check for root/sudo privileges
+if [[ $EUID -ne 0 ]] ; then
+    echo -e "\n${CYAN}▸ Restarting with administrator privileges...${ENDCOLOR}\n"
+    exec sudo "$0" "$@" 
+    exit 1
+fi
 # Detect distro codename with robust fallbacks
 if DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
 	: # got via lsb_release
@@ -90,7 +91,6 @@ function CHECK_INTERNET {
     # If everything failed, assume no internet
     return 1
 }
-
 # Check internet connectivity
 if ! CHECK_INTERNET; then
    echo -e "${RED}✗ No internet connection detected... ${ENDCOLOR}"
@@ -104,14 +104,6 @@ if ! CHECK_INTERNET; then
    sleep 2
    exit 1
 fi
-
-# Function to get disk usage information
-function GET_DISK_USAGE {
-	local df_output
-	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "  Percentage of disk space used:", $5, "\n  Free space available:", $4}') || df_output="Unable to determine disk usage"
-	echo "$df_output"
-}
-
 # Simple countdown function
 function COUNTDOWN {
     local secs=$1
@@ -129,6 +121,36 @@ function COUNTDOWN {
     done
 }
 duration=5 # countdown duration in seconds
+
+function WELCOME_SCREEN {
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
+	echo "            ~~~~~~~~~~~~~~~~~~~~"
+	echo " Welcome to all-in-one System Update and maintenance app"
+	echo ""
+	echo " 		Dear $USERNAME"
+	echo ""
+	echo " If uCareSystem has saved you time, please consider"
+	echo " supporting its development. Your donation fuels"
+	echo " continuous improvement and shows your appreciation"
+	echo " for the effort put into this project."
+	echo ""
+	echo -e "	${CYAN}$DONATE ${ENDCOLOR}"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo ""
+	# start the countdown
+	MESSAGE="uCareSystem will start"
+	COUNTDOWN "$duration"
+}
+# Function to get disk usage information
+function GET_DISK_USAGE {
+	local df_output
+	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "  Percentage of disk space used:", $5, "\n  Free space available:", $4}') || df_output="Unable to determine disk usage"
+	echo "$df_output"
+}
+
 # Pre-update health check
 function PREUPDATE_PREFLIGHT {
 	echo
@@ -255,29 +277,6 @@ function PREUPDATE_PREFLIGHT {
 	echo -e "${CYAN}✓ Pre-update health checks passed.${ENDCOLOR}"
 	sleep 1
 	return 0
-}
-
-function WELCOME_SCREEN {
-	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
-	echo ""
-	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
-	echo "            ~~~~~~~~~~~~~~~~~~~~"
-	echo " Welcome to all-in-one System Update and maintenance app"
-	echo ""
-	echo " 		Dear $USERNAME"
-	echo ""
-	echo " If uCareSystem has saved you time, please consider"
-	echo " supporting its development. Your donation fuels"
-	echo " continuous improvement and shows your appreciation"
-	echo " for the effort put into this project."
-	echo ""
-	echo -e "	${CYAN}$DONATE ${ENDCOLOR}"
-	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
-	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
-	echo ""
-	# start the countdown
-	MESSAGE="uCareSystem will start"
-	COUNTDOWN "$duration"
 }
 
 # Function to handle kernel cleanup
