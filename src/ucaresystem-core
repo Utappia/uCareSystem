@@ -351,9 +351,10 @@ function MAINTENANCE {
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
 	# Only reload if systemd is actually running (not in containers without systemd)
 	if command -v systemctl &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-		if systemctl is-system-running &>/dev/null || [ -d /run/systemd/system ]; then
+		# Check if systemd is active (running, degraded, etc.) to avoid false positives in containers
+		if systemctl is-system-running 2>/dev/null | grep -qE "running|degraded|maintenance|starting"; then
 			echo -e "${GREEN}▸ Reloading systemd manager configuration${ENDCOLOR}"
-			sudo systemctl daemon-reload 2>/dev/null
+			sudo systemctl daemon-reload >/dev/null 2>&1
 			sleep 1
 			echo 
 		fi
