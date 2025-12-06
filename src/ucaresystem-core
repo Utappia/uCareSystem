@@ -12,7 +12,7 @@ set -e
 # WebSite: http://utappia.org
 # Email  : salih-emin(at)ubuntu.com
 # Date   : 22-07-2025 (first release 19-02-2009)
-# Version: 25.07.22
+# Version: 25.12.04
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -21,24 +21,31 @@ set -e
 SECONDS=0
 ## Script starts here
 
-# Variables
+# Color Variables
 GREEN="\e[32m"
 CYAN="\e[36m"
 MAGENTA="\e[35m"
 YELLOW="\e[33m"
+RED="\e[31m"
 ENDCOLOR="\e[0m"
-DIST_CODENAME=$(lsb_release --codename | cut -f2)
 DATE=$(date +%F_%T)
-UCARE_VERSION="25.07.22"
+UCARE_VERSION="25.12.04"
 # See HONORED_RELEASES.md for historical record of honored releases
-VER_CODENAME="W. Schreinemachers"
-PREV_VER="25.06"
-USERNAME=$(logname 2>/dev/null || echo "$USER")
+VER_CODENAME="D. Luchini"
+PREV_VER="25.07"
+USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
 	"W. Schreinemachers"
-	"K. A. Gkountras (Jemadux)"
+	"P. Laoughman"
+	"D. Luchini"
+	"M. Van Hoof"
+	"P. Frankie "
+	"M. Ryser"
+	"Th. Ploumis"
+	"M. Stade"
+	"K. J. Rasmussen"
 )
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
@@ -46,28 +53,57 @@ if [[ $EUID -ne 0 ]] ; then
     exec sudo "$0" "$@" 
     exit 1
 fi
-
+# Detect distro codename with robust fallbacks
+if DIST_CODENAME=$(lsb_release --codename 2>/dev/null | cut -f2); then
+	: # got via lsb_release
+else
+	if [ -f /etc/os-release ]; then
+		# shellcheck disable=SC1091
+		. /etc/os-release
+		# Prefer Ubuntu codename when present (Ubuntu/Mint derivatives)
+		if [ -n "${UBUNTU_CODENAME:-}" ]; then
+			DIST_CODENAME="$UBUNTU_CODENAME"
+		elif [ -n "${VERSION_CODENAME:-}" ]; then
+			DIST_CODENAME="$VERSION_CODENAME"
+		else
+			DIST_CODENAME="unknown"
+		fi
+	else
+		DIST_CODENAME="unknown"
+	fi
+fi
 # Function to check internet connectivity
 function CHECK_INTERNET {
-	if curl -4 -s --max-time 10 --connect-timeout 5 --head https://ubuntu.com | grep -q "HTTP/2 200"; then
-		return 0  # Internet connection is available
-	else
-		return 1  # No internet connection
-	fi
-}
+    local SITES=("https://ubuntu.com" "https://google.com" "https://github.com" "https://cloudflare.com")
 
+    # Try several websites
+    for site in "${SITES[@]}"; do
+        if curl -4 -s --max-time 5 --connect-timeout 3 --head --fail "$site" >/dev/null; then
+            return 0  # Internet seems to work
+        fi
+    done
+
+    # If all HTTP checks failed, try a simple ping to a DNS server
+    if ping -c 1 -W 2 1.1.1.1 &>/dev/null || ping -c 1 -W 2 8.8.8.8 &>/dev/null; then
+        return 0  # Internet available (raw connectivity)
+    fi
+
+    # If everything failed, assume no internet
+    return 1
+}
 # Check internet connectivity
 if ! CHECK_INTERNET; then
-   echo -e "${YELLOW}No internet connection detected... ${ENDCOLOR}"
+   echo -e "${RED}✗ No internet connection detected... ${ENDCOLOR}"
    sleep 1
-   echo "Please ensure that your system is connected to the internet,"
-   echo "and then try again..." 
-   echo "Now I will just exit..." 1>&2
+   echo ""
+   echo "  Please ensure that your system is connected to the internet,"
+   echo "  and then try again..." 
+   echo ""
+   echo -e "${GREEN}▸ Now I will just exit...${ENDCOLOR}" 1>&2
    echo ""
    sleep 2
    exit 1
 fi
-
 # Simple countdown function
 function COUNTDOWN {
     local secs=$1
@@ -80,13 +116,14 @@ function COUNTDOWN {
             echo -ne "$MESSAGE in ${YELLOW}$secs ${ENDCOLOR}seconds... (to exit now, press Ctrl+C) \r"
         fi
         sleep 1
-        : $((secs--))
+        # Use || true to prevent arithmetic operation from causing script exit in set -e mode
+        ((secs--)) || true
     done
 }
 duration=5 # countdown duration in seconds
 
 function WELCOME_SCREEN {
-	echo "________________________________________________________"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	echo -e "           ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~"
@@ -94,21 +131,151 @@ function WELCOME_SCREEN {
 	echo ""
 	echo " 		Dear $USERNAME"
 	echo ""
-	echo " If you've found it helpful and it has saved you time"
-	echo " please consider supporting its development with a"
-	echo " donation via PayPal. Your support not only fuels"
-	echo " continuous improvement but also inspires and"
-	echo " motivates me to keep pushing forward while also shows" 
-	echo " your appreciation for the time and effort that I have"
-	echo "               put into the project:"
+	echo " If uCareSystem has saved you time, please consider"
+	echo " supporting its development. Your donation fuels"
+	echo " continuous improvement and shows your appreciation"
+	echo " for the effort put into this project."
 	echo ""
-	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
-	echo "________________________________________________________"
-	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo -e "	${CYAN}$DONATE ${ENDCOLOR}"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo ""
 	# start the countdown
 	MESSAGE="uCareSystem will start"
 	COUNTDOWN "$duration"
+}
+# Function to get disk usage information
+function GET_DISK_USAGE {
+	local df_output
+	df_output=$(df -h / 2>/dev/null | awk 'NR==2 {print "  Percentage of disk space used:", $5, "\n  Free space available:", $4}') || df_output="Unable to determine disk usage"
+	echo "$df_output"
+}
+
+# Pre-update health check
+function PREUPDATE_PREFLIGHT {
+	echo
+	echo
+	echo -e "${MAGENTA} Started ${ENDCOLOR} "
+	sleep 1
+	echo -e "${GREEN}▸ Running pre-update health checks${ENDCOLOR}"
+	sleep 1
+
+	local issues=0
+
+	echo -e "${YELLOW}  • Checking for interrupted package installations...${ENDCOLOR}"
+	# 0) Check for dpkg interruption and auto-recover if safe
+	if [ -f /var/lib/dpkg/lock ] || [ -f /var/lib/dpkg/lock-frontend ]; then
+		if sudo lsof /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend 2>/dev/null | grep -q .; then
+			echo -e "${RED}✗ dpkg lock file is held by another process.${ENDCOLOR}"
+			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
+			sleep 2
+			return 1
+		fi
+	fi
+	if [ -f /var/lib/dpkg/status ]; then
+		if grep -q "^Status: half-installed" /var/lib/dpkg/status; then
+			echo -e "${YELLOW}⚠ dpkg was interrupted. Attempting automatic recovery with 'sudo dpkg --configure -a'...${ENDCOLOR}"
+			if sudo dpkg --configure -a; then
+				echo -e "${CYAN}✓ dpkg configuration completed automatically.${ENDCOLOR}"
+			else
+				echo -e "${RED}✗ Automatic dpkg recovery failed. Please run 'sudo dpkg --configure -a' manually.${ENDCOLOR}"
+				echo -e "${RED}✗ Aborting maintenance to avoid breaking the system.${ENDCOLOR}"
+				sleep 2
+				return 1
+			fi
+		fi
+	fi
+
+	echo -e "${YELLOW}  • Checking for broken or unconfigured packages...${ENDCOLOR}"
+	# 1) dpkg audit: half-installed/broken packages
+	# shellcheck disable=SC2024
+	if ! sudo dpkg --audit >/tmp/ucare_dpkg_audit 2>&1; then
+		: # dpkg --audit returns 0 even with findings; we read file
+	fi
+	if [ -s /tmp/ucare_dpkg_audit ]; then
+		echo -e "${YELLOW}▸ Detected dpkg issues${ENDCOLOR}"
+		cat /tmp/ucare_dpkg_audit
+		echo -e "${CYAN}▸ Auto-fix${ENDCOLOR}: running 'sudo dpkg --configure -a'"
+		if sudo dpkg --configure -a; then
+			echo -e "${CYAN}✓ dpkg configuration completed${ENDCOLOR}"
+		else
+			echo -e "${RED}✗ dpkg configuration encountered errors. Please review output.${ENDCOLOR}"
+			issues=$((issues+1))
+		fi
+		echo
+	fi
+
+	# 2) complete pending configurations
+	if sudo dpkg -l | awk '$1=="iU" {print $2}' | grep -q .; then
+		echo -e "${YELLOW}▸ Unconfigured packages detected (iU)${ENDCOLOR}"
+		echo -e "${CYAN}▸ Auto-fix${ENDCOLOR}: running 'sudo dpkg --configure -a'"
+		if sudo dpkg --configure -a; then
+			echo -e "${CYAN}✓ Unconfigured packages processed${ENDCOLOR}"
+		else
+			echo -e "${RED}✗ dpkg configure failed. Manual intervention may be required.${ENDCOLOR}"
+			issues=$((issues+1))
+		fi
+		echo
+	fi
+
+	echo -e "${YELLOW}  • Verifying package dependencies...${ENDCOLOR}"
+	# 3) apt dependency check (non-invasive)
+	# shellcheck disable=SC2024
+	if ! sudo apt-get -y -o Debug::pkgProblemResolver=no -s dist-upgrade >/tmp/ucare_apt_sim 2>&1; then
+		echo -e "${RED}✗ apt simulation reported errors${ENDCOLOR}"
+		issues=$((issues+1))
+	fi
+	if grep -Ei "unmet|held broken|conflicts|depends" /tmp/ucare_apt_sim >/dev/null 2>&1; then
+		echo -e "${YELLOW}▸ Dependency problems detected during apt simulation${ENDCOLOR}"
+		echo -e "${CYAN}▸ Auto-fix${ENDCOLOR}: running 'sudo apt -f install -y'"
+		if sudo apt -f install -y 2> >(grep -v "apt does not have a stable CLI interface" >&2); then
+			echo -e "${CYAN}✓ Broken dependencies fixed${ENDCOLOR}"
+		else
+			echo -e "${RED}✗ apt -f install failed. Please review and fix manually.${ENDCOLOR}"
+			issues=$((issues+1))
+		fi
+		echo
+	fi
+
+	echo -e "${YELLOW}  • Checking for held packages...${ENDCOLOR}"
+	# 4) held packages
+	local held
+	held=$(apt-mark showhold 2>/dev/null || true)
+	if [ -n "$held" ]; then
+		echo -e "${YELLOW}▸ Held packages may block upgrades${ENDCOLOR}"
+		echo "$held"
+		echo -e "${CYAN}Unhold example:${ENDCOLOR} sudo apt-mark unhold <pkg>"
+		echo
+	fi
+	echo -e "${YELLOW}  • Checking for active package manager locks...${ENDCOLOR}"
+	# 5) lock files
+	# shellcheck disable=SC2024
+	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock 2>/dev/null >/tmp/ucare_locks 2>&1; then
+		if [ -s /tmp/ucare_locks ]; then
+			echo -e "${YELLOW}▸ Package manager locks detected${ENDCOLOR}"
+			cat /tmp/ucare_locks
+			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
+			sleep 2
+			return 1
+		fi
+	fi
+
+	# 6) disk space sanity
+	echo -e "${GREEN}▸ Disk space summary${ENDCOLOR}"
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
+	sleep 1
+	echo
+
+	if [ "$issues" -gt 0 ]; then
+		echo -e "${RED}✗ Pre-update checks encountered ${issues} unresolved issue(s)${ENDCOLOR}"
+		echo -e "${RED}✗ Aborting maintenance to avoid breaking the system${ENDCOLOR}"
+		sleep 2
+		return 1
+	fi
+
+	echo -e "${CYAN}✓ Pre-update health checks passed.${ENDCOLOR}"
+	sleep 1
+	return 0
 }
 
 # Function to handle kernel cleanup
@@ -116,21 +283,20 @@ function CLEANUP_OLD_KERNELS {
     local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
     local current_kernel
     local purge_list=""
-    local final_purge_list=""
     local min_kernels=2  # Minimum required: current + one backup
     
     echo -e "${GREEN}▸ Starting kernel cleanup...${ENDCOLOR}"
     
     # Validate keep_count
-    if ! [[ "$keep_count" =~ ^[0-9]+$ ]]; then
-        echo -e "${YELLOW}Error: Invalid number specified for kernels to keep${ENDCOLOR}"
+	if ! [[ "$keep_count" =~ ^[0-9]+$ ]]; then
+		echo -e "${RED}✗ Invalid number specified for kernels to keep${ENDCOLOR}"
         echo -e "${YELLOW}Usage: Must be a positive number greater than or equal to $min_kernels${ENDCOLOR}"
         return 1
     fi
     
     # Safety check - ensure we keep at least current + one backup
-    if [ "$keep_count" -lt "$min_kernels" ]; then
-        echo -e "${YELLOW}Warning: Cannot keep fewer than $min_kernels kernels for safety${ENDCOLOR}"
+	if [ "$keep_count" -lt "$min_kernels" ]; then
+		echo -e "${YELLOW}⚠ Cannot keep fewer than $min_kernels kernels for safety${ENDCOLOR}"
         echo -e "${YELLOW}Setting keep count to minimum safe value: $min_kernels${ENDCOLOR}"
         keep_count=$min_kernels
     fi
@@ -141,84 +307,107 @@ function CLEANUP_OLD_KERNELS {
     
     # Build list of kernel packages to purge
     # This uses the actual kernel files in /boot to determine which kernels to keep
-    purge_list=$(find /boot -maxdepth 1 -name "vmlinuz-*" -printf "%T@ %p\n" | \
+	if [ ! -d /boot ]; then
+		echo -e "${YELLOW}⚠ /boot directory not found${ENDCOLOR}"
+        return 1
+    fi
+    
+    purge_list=$(find /boot -maxdepth 1 -name "vmlinuz-*" -printf "%T@ %p\n" 2>/dev/null | \
         sort -n | \
         cut -d' ' -f2- | \
         head -n -"${keep_count}" | \
         grep -v "${current_kernel}$" | \
         cut -d- -f2- | \
-        awk '{print "linux-image-" $0 " linux-headers-" $0}')
+        awk '{print "linux-image-" $0 " linux-headers-" $0}') || true
     
     # Verify each package exists before adding to purge list
-    final_purge_list=""
+    local final_purge_array=()
     for pkg in $purge_list; do
         if dpkg-query -s "$pkg" >/dev/null 2>&1; then
-            final_purge_list="${final_purge_list} ${pkg}"
+            final_purge_array+=("$pkg")
         fi
     done
     
-    if [ -z "${final_purge_list}" ]; then
+    if [ ${#final_purge_array[@]} -eq 0 ]; then
         echo -e "${YELLOW}No kernels are eligible for removal${ENDCOLOR}"
         return 0
     fi
     
     echo -e "${YELLOW}The following kernels will be removed:${ENDCOLOR}"
-    echo "${final_purge_list}"
+    printf '%s\n' "${final_purge_array[@]}"
     echo
     
-    # Remove the packages
-    sudo apt autoremove -y --purge "${final_purge_list}"
+    # Remove the packages using array expansion
+    sudo apt autoremove -y --purge "${final_purge_array[@]}" 2> >(grep -v "apt does not have a stable CLI interface" >&2)
     
     echo -e "${YELLOW}Kernel cleanup completed${ENDCOLOR}"
 }
 
 function MAINTENANCE {
 	echo
-	echo
-	echo -e "${MAGENTA} Started ${ENDCOLOR} "
-	sleep 1
-	echo
-	echo -e "${GREEN}▸ Checking Disk usage before System Maintenance ${ENDCOLOR}"
-	sleep 1	
-	echo
-	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
-	echo ""
-	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
-	echo
-	sleep 1
 
 	# The following is for when the unit file, source configuration file or drop-ins 
 	# of apt-news.service changed on disk and systemd wasn't aware of it.
-	if command -v systemctl &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
-		echo -e "${YELLOW}Reloading systemd manager configuration ${ENDCOLOR}"
-		sudo systemctl daemon-reload
-		sleep 1
-		echo 
+	# Only reload if systemd is actually running (not in containers without systemd)
+	if command -v systemctl &> /dev/null; then
+		# Check if systemd is active (running, degraded, etc.) to avoid false positives in containers
+		if systemctl is-system-running 2>/dev/null | grep -qE "running|degraded|maintenance|starting"; then
+			echo -e "${GREEN}▸ Reloading systemd manager configuration${ENDCOLOR}"
+			sudo systemctl daemon-reload >/dev/null 2>&1
+			sleep 1
+			echo 
+		fi
 	fi
 	## Updates package lists
 	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
 	echo
 	# Update package lists and filter out warnings
-	sudo apt update 2> >(sed 's/^WARNING.*//') |
+	sudo apt update 2> >(grep -v "^WARNING" >&2) |
 	# Print each line with padding to fit the terminal width
 	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
 	echo
-	echo -e "${GREEN}▸ Finished updating package lists ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Updates packages and libraries
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
-	sudo apt full-upgrade -V -y;
+	# Use a temporary file to capture output while displaying it to the user
+	upgrade_log_file=$(mktemp)
+	sudo apt full-upgrade -V -y 2>&1 | grep --line-buffered -v "apt does not have a stable CLI interface" | tee "$upgrade_log_file"
+	upgrade_exit=${PIPESTATUS[0]}
+	upgrade_output=$(cat "$upgrade_log_file")
+	rm -f "$upgrade_log_file"
+	
+	if [ "$upgrade_exit" -ne 0 ]; then
+		# Check for dpkg interruption error in the output
+		if echo "$upgrade_output" | grep -q "dpkg was interrupted"; then
+			echo -e "${YELLOW}⚠ Detected dpkg interruption. Attempting automatic recovery with 'sudo dpkg --configure -a'...${ENDCOLOR}"
+			if sudo dpkg --configure -a; then
+				echo -e "${CYAN}✓ dpkg configuration completed automatically.${ENDCOLOR}"
+				# Retry upgrade
+				echo -e "${GREEN}▸ Retrying system package upgrades...${ENDCOLOR}"
+				sudo apt full-upgrade -V -y
+			else
+				echo -e "${RED}✗ Automatic dpkg recovery failed. Please run 'sudo dpkg --configure -a' manually.${ENDCOLOR}"
+				echo -e "${RED}✗ Aborting maintenance to avoid breaking the system.${ENDCOLOR}"
+				sleep 2
+				return 1
+			fi
+		else
+			echo -e "${RED}✗ apt full-upgrade failed with unknown error${ENDCOLOR}"
+			echo "$upgrade_output"
+		fi
+	fi
 	echo
-	echo -e "${GREEN}▸ Finished upgrading system packages and libraries ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished upgrading system packages and libraries ${ENDCOLOR}"
 	sleep 1
 	echo
 
 	## Removes unneeded packages
-	sudo apt autoremove -y --purge;
+	sudo apt autoremove -y --purge 2> >(grep -v "apt does not have a stable CLI interface" >&2);
 	echo					
-	echo -e "${GREEN}▸ Finished removing unneeded packages ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished removing unneeded packages ${ENDCOLOR}"
 	sleep 1
 	echo
 	echo -e "${GREEN}▸ Checking for Snap and Flatpak updates ${ENDCOLOR}"
@@ -229,8 +418,11 @@ function MAINTENANCE {
 		echo -e "${YELLOW}Stopping all running Snap applications... ${ENDCOLOR}"
 		stopped_snaps=()
 		while IFS= read -r snapname; do
-			if sudo snap stop "$snapname" &>/dev/null; then
-				stopped_snaps+=("$snapname")
+			# Check if snap is actually running before trying to stop
+			if sudo snap services "$snapname" 2>/dev/null | grep -q "active"; then
+				if sudo snap stop "$snapname" &>/dev/null; then
+					stopped_snaps+=("$snapname")
+				fi
 			fi
 		done < <(sudo snap list | awk '/^name/ {next} {print $1}')
 
@@ -249,10 +441,17 @@ function MAINTENANCE {
 			echo
 			echo -e "${YELLOW}Removing old revisions of Snap packages ${ENDCOLOR}"
 			echo
-			LANG=C sudo snap list --all | awk '/disabled/{print $1, $3}' | 
-				while read -r snapname revision; do
-					sudo snap remove --purge "$snapname" --revision="$revision"
-				done
+			disabled_snaps=$(LANG=C sudo snap list --all 2>/dev/null | awk '/disabled/{print $1, $3}') || disabled_snaps=""
+			if [ -n "$disabled_snaps" ]; then
+				# Use process substitution to avoid subshell issues
+				while IFS=' ' read -r snapname revision; do
+					if [ -n "$snapname" ] && [ -n "$revision" ]; then
+						sudo snap remove --purge "$snapname" --revision="$revision"
+					fi
+				done < <(echo "$disabled_snaps")
+			else
+				echo -e "${YELLOW}No disabled Snap revisions found${ENDCOLOR}"
+			fi
 
 			echo -e "${YELLOW}Old revisions of Snap packages removed successfully. ${ENDCOLOR}"
 			sleep 1
@@ -288,7 +487,7 @@ function MAINTENANCE {
 		sleep 1
 	fi
 	echo					
-	echo -e "${GREEN}▸ Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished Snap and/or Flatpak package maintenance ${ENDCOLOR}"
 	sleep 1
 	echo
 
@@ -301,17 +500,22 @@ function MAINTENANCE {
 	fi
 
 	## Removes unused config files of uninstalled packages
-	dpkg --get-selections | grep deinstall | cut -f1 | xargs --no-run-if-empty sudo apt autoremove -y --purge;
-	echo
-	echo -e "${GREEN}▸ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+	echo -e "${GREEN}▸ Checking for config files of uninstalled packages...${ENDCOLOR}"
+	if deinstall_pkgs=$(dpkg --get-selections 2>/dev/null | grep deinstall | cut -f1) && [ -n "$deinstall_pkgs" ]; then
+		echo "$deinstall_pkgs" | xargs --no-run-if-empty sudo apt autoremove -y --purge 2> >(grep -v "apt does not have a stable CLI interface" >&2)
+		echo
+		echo -e "${CYAN}✓ Finished removing the config files of uninstalled packages ${ENDCOLOR}"
+	else
+		echo -e "${YELLOW}No config files of uninstalled packages found${ENDCOLOR}"
+	fi
 	sleep 1
 	echo
 
 	## Removes package files that can no longer be downloaded and everything except
 	# the lock file in /var/cache/apt/archives, including directories.
-	sudo apt autoclean -y; sudo apt clean -y;
+	sudo apt autoclean -y 2> >(grep -v "apt does not have a stable CLI interface" >&2); sudo apt clean -y 2> >(grep -v "apt does not have a stable CLI interface" >&2);
 	echo
-	echo -e "${GREEN}▸ Finished cleaning up downloaded packages ${ENDCOLOR}"
+	echo -e "${CYAN}✓ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
 
 	echo
@@ -327,11 +531,12 @@ function MAINTENANCE {
   		echo -e "${MAGENTA}*${ENDCOLOR}  requested by the following"      
 		echo -e "${MAGENTA}*${ENDCOLOR}  packages:"						
   		echo -e "${MAGENTA}*${ENDCOLOR} "
-		if [ -f /var/run/reboot-required.pkgs ]; then
+		if [ -f /var/run/reboot-required.pkgs ] && [ -r /var/run/reboot-required.pkgs ]; then
         	uniq < /var/run/reboot-required.pkgs
 			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	else
-        	echo -e "${YELLOW}Cannot find the list of packages... Skipping ${ENDCOLOR}"
+			echo -e "${YELLOW}⚠ Cannot find or read reboot-required package list... Skipping package display ${ENDCOLOR}"
+			echo -e "${MAGENTA}* * * * * * * * * * * * * * * * * *${ENDCOLOR}"
     	fi
 		sleep 1
 	else 
@@ -347,35 +552,221 @@ function MAINTENANCE {
 	echo
 	echo -e "${GREEN}▸ Checking Disk usage after System Maintenance ${ENDCOLOR}"
 	echo
-	df_output=$(df -h / | awk 'NR==2 {print "Percentage of disk space used:", $5, "\nFree space available:", $4}')
-	echo -e "${YELLOW}${df_output}${ENDCOLOR}"
+	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
 	echo
 	sleep 1
 
 }
 
 function UPGRADE_EOL_TO_NEXT {
-
-	cp "/etc/apt/sources.list" "/etc/apt/sources.eol_${DATE}"
+	# Distribution check - Only works for Ubuntu
+	if [ ! -f /etc/os-release ]; then
+		echo -e "${RED}✗ Cannot detect distribution${ENDCOLOR}"
+		return 1
+	fi
+	
+	# shellcheck disable=SC1091
+	. /etc/os-release
+	
+	if [ "$ID" != "ubuntu" ]; then
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo -e "${RED}  ✗ End-of-Life upgrade is only supported for Ubuntu${ENDCOLOR}"
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo ""
+		echo -e "${CYAN}Your distribution: ${YELLOW}$NAME${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo "This feature uses Ubuntu's old-releases archive which is"
+		echo "specifically designed for Ubuntu releases that have reached"
+		echo "their End of Life (EOL)."
+		echo ""
+		sleep 2
+		echo "For other distributions, please use their official upgrade methods:"
+		echo ""
+		echo -e "${CYAN}• Debian:${ENDCOLOR}      Edit /etc/apt/sources.list and use apt dist-upgrade"
+		echo -e "${CYAN}• Linux Mint:${ENDCOLOR}  Use the Update Manager's 'Edit > Upgrade to...' option"
+		echo -e "${CYAN}• Pop!_OS:${ENDCOLOR}     Use pop-upgrade or the built-in upgrade tool"
+		echo -e "${CYAN}• Other:${ENDCOLOR}       Consult your distribution's documentation"
+		echo ""
+		sleep 2
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		return 1
+	fi
+	
+	# Validate DIST_CODENAME
+	if [ -z "$DIST_CODENAME" ] || [ "$DIST_CODENAME" = "unknown" ]; then
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo -e "${RED}  ✗ Cannot detect Ubuntu version codename${ENDCOLOR}"
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		echo ""
+		echo "Unable to determine your Ubuntu release codename."
+		echo "This is required for the EOL upgrade process."
+		echo ""
+		sleep 1
+		echo "Possible causes:"
+		echo "• lsb_release command not available"
+		echo "• Corrupted /etc/lsb-release file"
+		echo "• Non-standard Ubuntu installation"
+		echo ""
+		sleep 2
+		echo "Please verify your Ubuntu version manually:"
+		echo -e "${CYAN}  cat /etc/lsb-release${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+		return 1
+	fi
+	
+	# Check if sources.list exists before backing up
+	if [ ! -f /etc/apt/sources.list ]; then
+		echo -e "${YELLOW}⚠ /etc/apt/sources.list not found${ENDCOLOR}"
+		echo "Creating minimal sources.list for EOL upgrade..."
+		touch /etc/apt/sources.list
+	fi
+	
+	# Inform user about backup
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "${YELLOW}  Ubuntu End-of-Life (EOL) Upgrade Process${ENDCOLOR}"
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	echo -e "${CYAN}Detected Ubuntu version:${ENDCOLOR} ${YELLOW}$DIST_CODENAME${ENDCOLOR}"
+	echo ""
+	sleep 2
+	echo "This will perform the following actions:"
+	echo ""
+	echo "1. Backup your current repository configuration"
+	echo "2. Configure repositories to use old-releases.ubuntu.com"
+	echo "3. Update package lists from EOL archive"
+	echo "4. Install update-manager-core if needed"
+	echo "5. Perform distribution upgrade to next supported version"
+	echo ""
+	sleep 3
+	
+	BACKUP_FILE="/etc/apt/sources.eol_${DATE}"
+	
+	echo -e "${GREEN}▸ Creating backup of sources.list${ENDCOLOR}"
+	if cp "/etc/apt/sources.list" "$BACKUP_FILE"; then
+		echo -e "${CYAN}✓ Backup created:${ENDCOLOR} ${YELLOW}$BACKUP_FILE${ENDCOLOR}"
+		echo ""
+		sleep 1
+		echo "If anything goes wrong, you can restore your repositories with:"
+		echo -e "${CYAN}  sudo cp $BACKUP_FILE /etc/apt/sources.list${ENDCOLOR}"
+		echo ""
+		sleep 2
+	else
+		echo -e "${YELLOW}⚠ Failed to create backup${ENDCOLOR}"
+		echo "Continuing anyway..."
+		echo ""
+		sleep 2
+	fi
+	
+	sleep 1
+	
+	echo -e "${GREEN}▸ Configuring EOL repositories for $DIST_CODENAME${ENDCOLOR}"
 	cat <<EOT > /etc/apt/sources.list
+# Ubuntu $DIST_CODENAME (End of Life) - Archived Repositories
+# Backup available at: $BACKUP_FILE
+# Configured by uCareSystem on $(date)
+
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-updates main restricted universe multiverse
 deb http://old-releases.ubuntu.com/ubuntu/ $DIST_CODENAME-security main restricted universe multiverse
 
 EOT
-
-sudo apt install update-manager-core
-sudo apt dist-upgrade -y
-sudo do-release-upgrade
+	
+	echo -e "${CYAN}✓ EOL repositories configured${ENDCOLOR}"
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Updating package lists from EOL archive${ENDCOLOR}"
+	if ! sudo apt update 2> >(grep -v "apt does not have a stable CLI interface" >&2); then
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}⚠ Package list update failed${ENDCOLOR}"
+		echo "This might indicate that:"
+		echo "• The EOL archive doesn't have packages for $DIST_CODENAME"
+		echo "• Network connectivity issues"
+		echo "• The release is too old to be in old-releases archive"
+		echo ""
+		sleep 2
+		echo "You can restore your original configuration with:"
+		echo -e "${CYAN}  sudo cp $BACKUP_FILE /etc/apt/sources.list${ENDCOLOR}"
+		echo ""
+		sleep 2
+		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			echo -e "${RED}✗ Aborting EOL upgrade...${ENDCOLOR}"
+			sleep 1
+			return 1
+		fi
+	fi
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Installing update-manager-core${ENDCOLOR}"
+	if ! sudo apt install -y update-manager-core 2> >(grep -v "apt does not have a stable CLI interface" >&2); then
+		echo ""
+		sleep 1
+		echo -e "${YELLOW}⚠ Failed to install update-manager-core${ENDCOLOR}"
+		echo "The upgrade process may not work without it."
+		echo ""
+		sleep 2
+		read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			echo -e "${RED}✗ Aborting EOL upgrade...${ENDCOLOR}"
+			sleep 1
+			return 1
+		fi
+	fi
+	echo ""
+	sleep 1
+	
+	echo -e "${GREEN}▸ Performing distribution upgrade${ENDCOLOR}"
+	sudo apt dist-upgrade -y 2> >(grep -v "apt does not have a stable CLI interface" >&2)
+	echo ""
+	
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "${YELLOW}  Starting Ubuntu Release Upgrade${ENDCOLOR}"
+	echo -e "${YELLOW}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo ""
+	sleep 1
+	echo "The do-release-upgrade tool will now guide you through"
+	echo "upgrading to the next supported Ubuntu version."
+	echo ""
+	sleep 2
+	echo "Important notes:"
+	echo "• Follow all prompts carefully"
+	echo "• The process may take significant time"
+	echo "• Your system will likely need a reboot afterwards"
+	echo "• Keep a backup of important data"
+	echo ""
+	sleep 2
+	echo -e "${CYAN}Repository backup:${ENDCOLOR} ${YELLOW}$BACKUP_FILE${ENDCOLOR}"
+	echo ""
+	sleep 5
+	
+	sudo do-release-upgrade
 }
 
 function UPGRADE_TO_NEXT_RELEASE {
 	sleep 1
-	echo "##########################################"
+	# Only supported on Ubuntu
+	if [ -f /etc/os-release ]; then
+		# shellcheck disable=SC1091
+		. /etc/os-release
+		if [ "$ID" != "ubuntu" ]; then
+			echo -e "${YELLOW}This upgrade option is only available on Ubuntu.${ENDCOLOR}"
+			echo "Please use your distribution's official upgrade method."
+			return 1
+		fi
+	fi
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo "uCareSystem will now check for the"
 	echo "availability of the next version"
 	echo "and it will start the upgrade"
-	echo "##########################################"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	sleep 1
 	do-release-upgrade
@@ -384,11 +775,21 @@ function UPGRADE_TO_NEXT_RELEASE {
 
 function UPGRADE_TO_DEVEL_RELEASE {
 	sleep 1
-	echo "##########################################"
+	# Only supported on Ubuntu
+	if [ -f /etc/os-release ]; then
+		# shellcheck disable=SC1091
+		. /etc/os-release
+		if [ "$ID" != "ubuntu" ]; then
+			echo -e "${YELLOW}Development release upgrade is only available on Ubuntu.${ENDCOLOR}"
+			echo "Please use your distribution's official upgrade method."
+			return 1
+		fi
+	fi
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo "uCareSystem will now check for the"
 	echo "availability of the next development"
 	echo "version and it will start the upgrade"
-	echo "##########################################"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	sleep 1
 	do-release-upgrade -d
@@ -421,7 +822,7 @@ function SHOW_HELP {
 	
 		If no option is specified, it performs the regular maintenance tasks.
 		It updates system, snap, and flatpak packages, removes old kernels, old 
-		Snap and flatpack revisions and unneeded packages, and cleans up 
+		Snap and flatpak revisions and unneeded packages, and cleans up 
 		configurations of uninstalled packages.
 	
 	Options:
@@ -461,7 +862,7 @@ EOF
 
 function GOODBYE {
 	sleep 1
-	echo "___________________________________________________________"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
 	echo -e "            ${CYAN} uCareSystem $UCARE_VERSION ${ENDCOLOR}"
 	echo "            ~~~~~~~~~~~~~~~~~~~~~"
@@ -480,12 +881,12 @@ function GOODBYE {
 		echo " - $supporter"
 	done
 	echo ""
-	echo -e "${CYAN}$DONATE ${ENDCOLOR}"
+	echo -e "${CYAN}	$DONATE ${ENDCOLOR}"
 	echo ""
 	sleep 2
-	echo -e "     	${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
-	echo "___________________________________________________________"
-	echo -e "     ${CYAN} Release honored to: $VER_CODENAME ${ENDCOLOR}"
+	echo -e " ${MAGENTA}All maintenance Complete on $((SECONDS / 60)) minutes and $((SECONDS % 60)) seconds.  GOODBYE${ENDCOLOR}"
+	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
+	echo -e "     ${YELLOW} Release honored to: $VER_CODENAME ${ENDCOLOR}"
 	echo
 	sleep 1
 }
@@ -499,7 +900,7 @@ function SHUT_DOWN {
 	MESSAGE="Shutting down..."
 	COUNTDOWN $duration
 	if command -v systemctl &> /dev/null; then
-		sudo systemctl poweroff
+		sudo systemctl poweroff 2>/dev/null || sudo poweroff
 	else
 		sudo poweroff
 	fi
@@ -514,7 +915,7 @@ function RE_BOOT {
 	MESSAGE="Rebooting..."
 	COUNTDOWN $duration
 	if command -v systemctl &> /dev/null; then
-		sudo systemctl reboot
+		sudo systemctl reboot 2>/dev/null || sudo reboot
 	else
 		sudo reboot
 	fi
@@ -522,31 +923,32 @@ function RE_BOOT {
 
 # The main process starts
 while [ "$1" != "" ]; do
-    case $1 in
-        -u | --upgrade )     WELCOME_SCREEN && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
-                             exit
-                                ;;
-        -d | --development ) WELCOME_SCREEN && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
-                             exit
-                                ;;
-        -h | --help )        SHOW_HELP
-                             exit
-                                ;;
-        -v | --version )     SHOW_VERSION
-                             exit
-                                ;;
-        -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
-                             exit
-                                ;;
-	-s | --shutdown )	 WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
-							 exit
-							    ;;
-	-r | --reboot )		 WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
-							 exit
-							    ;;
-        * )                  SHOW_HELP
-                             exit 1
-    esac
+	 case $1 in
+		  -u | --upgrade )     WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
+									  exit
+									  ;;
+		  -d | --development ) WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
+									  exit
+									  ;;
+		  -h | --help )        SHOW_HELP
+									  exit
+									  ;;
+		  -v | --version )     SHOW_VERSION
+									  exit
+									  ;;
+		  -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
+									  exit
+									  ;;
+		  -s | --shutdown )    WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
+									  exit
+									  ;;
+		  -r | --reboot )      WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
+									  exit
+									  ;;
+		  * )                  SHOW_HELP
+									  exit 1
+									  ;;
+	 esac
 done
 ## If no parameter is given just do the regular maintenance
-WELCOME_SCREEN && MAINTENANCE && GOODBYE
+WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE

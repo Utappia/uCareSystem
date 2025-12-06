@@ -30,7 +30,7 @@ echo "Updating honored releases files..."
 
 # Update the markdown file
 # Find the line with "### Version" and "Current" and replace it
-sed -i "/^### Version.*Current\)$/c\\
+sed -i "/^### Version.*Current)$/c\\
 ### Version $VERSION (Current)\\
 - **Honored To**: $HONORED_NAME\\
 - **Release Date**: $RELEASE_DATE\\
