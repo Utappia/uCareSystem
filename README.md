@@ -15,15 +15,16 @@
 
 uCareSystem is an all-in-one system update and maintenance application for Ubuntu and its derivatives. It provides a simple way to keep your system up-to-date and clean.
 
- Name   : uCareSystem
- License: GPL3 (http://www.gnu.org/licenses/gpl.html)
- Author : Salih Emin
- Email  : salih-emin(a)ubuntu.com
- Date   : 04-12-2025 (first release 19-02-2009)
- Version: 25.12.04
- System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
- WebSite: http://utappia.org
-
+```
+Name   : uCareSystem
+License: GPL3 (http://www.gnu.org/licenses/gpl.html)
+Author : Salih Emin
+Email  : salih-emin(a)ubuntu.com
+Date   : 04-12-2025 (first release 19-02-2009)
+Version: 25.12.04
+System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
+WebSite: http://utappia.org
+```
 ## Sponsors of the previous development cycle (v25.07)
 
 I am deeply grateful to the community members who supported the previous development cycle through donations or code contributions:
