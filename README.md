@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-image-banner.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-banner.png"></p>
 
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/utappia/ucaresystem/total)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/utappia/ucaresystem)
