@@ -955,10 +955,10 @@ while [ "$1" != "" ]; do
 		  -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
 									  exit
 									  ;;
-		  -s | --shutdown )    WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
+		  -s | --shutdown )    WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && SHUT_DOWN
 									  exit
 									  ;;
-		  -r | --reboot )      WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
+		  -r | --reboot )      WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && RE_BOOT
 									  exit
 									  ;;
 		  * )                  SHOW_HELP
