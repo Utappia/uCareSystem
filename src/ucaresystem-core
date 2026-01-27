@@ -31,8 +31,8 @@ ENDCOLOR="\e[0m"
 DATE=$(date +%F_%T)
 UCARE_VERSION="26.01.27"
 # See HONORED_RELEASES.md for historical record of honored releases
-VER_CODENAME="D. Luchini"
-PREV_VER="25.07"
+VER_CODENAME="Frankie P"
+PREV_VER="25.12"
 USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
