@@ -13,7 +13,12 @@ Each entry follows this format:
 
 ## Release History
 
-### Version 25.12.04 (Current)
+### Version 26.01.27 (Current)
+- **Honored To**: Frankie P.
+- **Release Date**: 2026-01-27
+- **Notes**: Fixed infrastructure service disruption during Snap maintenance
+
+### Version 25.12.04
 - **Honored To**: D. Luchini
 - **Release Date**: December 4, 2025
 - **Notes**: Added automated preflight health checks with auto-fix, unified visual symbols (▸✓✗⚠), standardized color scheme, improved container support, and cross-distro safety guards
