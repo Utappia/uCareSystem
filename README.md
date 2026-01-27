@@ -20,24 +20,18 @@ Name   : uCareSystem
 License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 Author : Salih Emin
 Email  : salih-emin(a)ubuntu.com
-Date   : 04-12-2025 (first release 19-02-2009)
-Version: 25.12.04
+Date   : 27-01-2026 (first release 19-02-2009)
+Version: 26.01.27
 System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
 WebSite: http://utappia.org
 ```
-## Sponsors of the previous development cycle (v25.07)
+## Sponsors of the previous development cycle (v25.12)
 
 I am deeply grateful to the community members who supported the previous development cycle through donations or code contributions:
 
-- P. Laoughman (Thanks for your continued support)
 - W. Schreinemachers (Thanks for your continued support)
-- D. Luchini (Thanks for your continued support)
-- M. Van Hoof
 - Frankie P.
-- M. Ryser
 - Th. Ploumis
-- M. Stade
-- K. J. Rasmussen
 
 Every version, has also a code name dedicated as a release honored to one of the contributors. For historical reference, you can check all [previous honored releases](https://github.com/Utappia/uCareSystem/blob/master/HONORED_RELEASES.md).
 

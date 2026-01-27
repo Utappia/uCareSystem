@@ -38,6 +38,7 @@ DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
 	"W. Schreinemachers"
+	"Frankie P."
 	"Th. Ploumis"
 )
 # Check for root/sudo privileges
