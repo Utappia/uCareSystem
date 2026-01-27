@@ -525,6 +525,15 @@ function MAINTENANCE {
 	echo -e "${CYAN}✓ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
 
+	# Clear desktop notification "updates available" flag to sync GUI with terminal updates
+	if [ -f /var/lib/update-notifier/updates-available ]; then
+		rm -f /var/lib/update-notifier/updates-available
+	fi
+	# Refresh PackageKit cache if present (for Software Center/GNOME Software sync)
+	if command -v pkcon &> /dev/null; then
+		pkcon refresh force -c -1 > /dev/null 2>&1 || true
+	fi
+
 	echo
 	echo -e "${GREEN}▸ Checking to see if a reboot is required ${ENDCOLOR}"
 	## Check to see if a reboot is required
