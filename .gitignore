@@ -9,6 +9,7 @@
 *.upload
 *.txt
 *.xz
+*.bak
 
 # Debian packaging artifacts
 debian/.debhelper/
