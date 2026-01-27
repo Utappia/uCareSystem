@@ -13,9 +13,7 @@ Exec=launch-ucaresystemcore
 Terminal=false
 StartupNotify=true
 NoDisplay=false
-Categories=System;
-Version=1.0
-Keywords=system;maintenance;update;cleanup;kernel;package;upgrade;
-MimeType=
+Categories=System;Settings;PackageManager;
+Keywords=system;maintenance;update;cleanup;kernel;package;upgrade;apt;snap;flatpak;
 StartupWMClass=uCareSystem
 
