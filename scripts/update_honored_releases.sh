@@ -39,9 +39,16 @@ sed -i "/^### Version.*Current)$/c\\
 # Remove "(Current)" from the previous version line
 sed -i '0,/^### Version.*Current)$/! s/^### Version \([0-9.]*\) (Current)$/### Version \1/' HONORED_RELEASES.md
 
-# Add new entry to data file
-sed -i "1i\\
+# Add new entry to data file (after comment header)
+# Find the first non-comment line and insert before it
+first_data_line=$(grep -n "^[^#]" scripts/honored_releases.dat | head -1 | cut -d: -f1)
+if [ -n "$first_data_line" ]; then
+    sed -i "${first_data_line}i\\
 $VERSION|$HONORED_NAME|$RELEASE_DATE|$NOTES" scripts/honored_releases.dat
+else
+    # If no data lines exist, append to end
+    echo "$VERSION|$HONORED_NAME|$RELEASE_DATE|$NOTES" >> scripts/honored_releases.dat
+fi
 
 echo "Files updated successfully!"
 echo "Please review the changes and update the ucaresystem-core script variables:"
