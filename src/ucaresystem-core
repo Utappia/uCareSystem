@@ -11,8 +11,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-emin(at)ubuntu.com
-# Date   : 22-07-2025 (first release 19-02-2009)
-# Version: 25.12.04
+# Date   : 27-01-2026 (first release 19-02-2009)
+# Version: 26.01.27
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -29,23 +29,17 @@ YELLOW="\e[33m"
 RED="\e[31m"
 ENDCOLOR="\e[0m"
 DATE=$(date +%F_%T)
-UCARE_VERSION="25.12.04"
+UCARE_VERSION="26.01.27"
 # See HONORED_RELEASES.md for historical record of honored releases
-VER_CODENAME="D. Luchini"
-PREV_VER="25.07"
+VER_CODENAME="Frankie P"
+PREV_VER="25.12"
 USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
 	"W. Schreinemachers"
-	"P. Laoughman"
-	"D. Luchini"
-	"M. Van Hoof"
-	"P. Frankie "
-	"M. Ryser"
+	"Frankie P."
 	"Th. Ploumis"
-	"M. Stade"
-	"K. J. Rasmussen"
 )
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
@@ -416,8 +410,22 @@ function MAINTENANCE {
 	if command -v snap &> /dev/null && [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
 		# Stop all running Snap applications
 		echo -e "${YELLOW}Stopping all running Snap applications... ${ENDCOLOR}"
+
+		# Define snaps that should NOT be manually stopped (infrastructure services)
+		SKIP_STOP=("docker" "lxd" "microk8s" "snapd" "core")
+
 		stopped_snaps=()
 		while IFS= read -r snapname; do
+			# Check if snap is in the skip list
+			should_skip=0
+			for skip in "${SKIP_STOP[@]}"; do
+				if [[ "$snapname" == "$skip" ]]; then should_skip=1; break; fi
+			done
+
+			if [ "$should_skip" -eq 1 ]; then
+				continue
+			fi
+
 			# Check if snap is actually running before trying to stop
 			if sudo snap services "$snapname" 2>/dev/null | grep -q "active"; then
 				if sudo snap stop "$snapname" &>/dev/null; then
@@ -517,6 +525,15 @@ function MAINTENANCE {
 	echo
 	echo -e "${CYAN}✓ Finished cleaning up downloaded packages ${ENDCOLOR}"
 	sleep 1
+
+	# Clear desktop notification "updates available" flag to sync GUI with terminal updates
+	if [ -f /var/lib/update-notifier/updates-available ]; then
+		rm -f /var/lib/update-notifier/updates-available
+	fi
+	# Refresh PackageKit cache if present (for Software Center/GNOME Software sync)
+	if command -v pkcon &> /dev/null; then
+		pkcon refresh force -c -1 > /dev/null 2>&1 || true
+	fi
 
 	echo
 	echo -e "${GREEN}▸ Checking to see if a reboot is required ${ENDCOLOR}"
@@ -939,10 +956,10 @@ while [ "$1" != "" ]; do
 		  -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
 									  exit
 									  ;;
-		  -s | --shutdown )    WELCOME_SCREEN && MAINTENANCE && GOODBYE && SHUT_DOWN
+		  -s | --shutdown )    WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && SHUT_DOWN
 									  exit
 									  ;;
-		  -r | --reboot )      WELCOME_SCREEN && MAINTENANCE && GOODBYE && RE_BOOT
+		  -r | --reboot )      WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && RE_BOOT
 									  exit
 									  ;;
 		  * )                  SHOW_HELP
