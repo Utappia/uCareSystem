@@ -1,3 +1,12 @@
+ucaresystem-core (26.01.27) jammy; urgency=medium
+
+  * Fixed snap based infrastracture apps like Doker, Kubernetes, LXD
+  * Add cleanup for desktop notification and refresh PackageKit cache
+  * Enhance shutdown and reboot processes by adding pre-update health checks
+  * refine categories and keywords in the Desktop files
+
+ -- Salih Emin <salih-emin@ubuntu.com>  Thu, 29 Jan 2026 14:48:11 +0000
+
 ucaresystem-core (25.12.04) jammy; urgency=medium
 
   * Added pre-maintenace checks for broken packages, dependencies and locked apt
