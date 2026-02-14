@@ -175,18 +175,17 @@ function WAIT_FOR_PACKAGE_LOCKS {
 
 	while [ "$attempt" -le "$retries" ]; do
 		: > /tmp/ucare_locks
-		if sudo lsof "${lock_files[@]}" 2>/dev/null >/tmp/ucare_locks; then
-			if [ -s /tmp/ucare_locks ]; then
-				echo -e "${YELLOW}▸ Package manager locks detected (attempt ${attempt}/${retries})${ENDCOLOR}"
-				cat /tmp/ucare_locks
-				if [ "$attempt" -lt "$retries" ]; then
-					echo -e "${YELLOW}▸ Waiting ${delay}s for locks to clear...${ENDCOLOR}"
-					sleep "$delay"
-					attempt=$((attempt+1))
-					continue
-				fi
-				return 1
+		sudo lsof "${lock_files[@]}" 2>/dev/null | sudo tee /tmp/ucare_locks > /dev/null
+		if [ -s /tmp/ucare_locks ]; then
+			echo -e "${YELLOW}▸ Package manager locks detected (attempt ${attempt}/${retries})${ENDCOLOR}"
+			cat /tmp/ucare_locks
+			if [ "$attempt" -lt "$retries" ]; then
+				echo -e "${YELLOW}▸ Waiting ${delay}s for locks to clear...${ENDCOLOR}"
+				sleep "$delay"
+				attempt=$((attempt+1))
+				continue
 			fi
+			return 1
 		fi
 		return 0
 	done
