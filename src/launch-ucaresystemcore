@@ -24,4 +24,14 @@ if [ -z "${TERMINAL_CMD:-}" ] || ! command -v "$TERMINAL_CMD" >/dev/null 2>&1; t
 fi
 
 # Open the default terminal emulator and execute ucaresystem-core
-"$TERMINAL_CMD" -e "bash -c 'ucaresystem-core; read -p \"Press Enter to exit...\"'"
+TERMINAL_BASENAME=$(basename "$TERMINAL_CMD")
+CMD=(bash -c 'ucaresystem-core; read -r -p "Press Enter to exit..."')
+
+case "$TERMINAL_BASENAME" in
+    gnome-terminal*|kgx|gnome-console)
+        "$TERMINAL_CMD" -- "${CMD[@]}"
+        ;;
+    *)
+        "$TERMINAL_CMD" -e "${CMD[@]}"
+        ;;
+esac
