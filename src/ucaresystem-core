@@ -33,6 +33,7 @@ UCARE_VERSION="26.02.14"
 # See HONORED_RELEASES.md for historical record of honored releases
 VER_CODENAME="Frankie P"
 PREV_VER="25.12"
+UCARE_DEBUG=0
 USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
@@ -115,6 +116,27 @@ function COUNTDOWN {
     done
 }
 duration=5 # countdown duration in seconds
+
+function ENABLE_DEBUG {
+	if [ "$UCARE_DEBUG" -eq 1 ]; then
+		DEBUG_LOG="/tmp/ucaresystem-debug-${DATE}.log"
+		exec 3>"$DEBUG_LOG"
+		export BASH_XTRACEFD=3
+		export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+		echo -e "${YELLOW}▸ Debugging enabled. Trace log: ${DEBUG_LOG}${ENDCOLOR}"
+		trap 'DEBUG_SUMMARY' EXIT
+		set -x
+	fi
+}
+
+function DEBUG_SUMMARY {
+	if [ "$UCARE_DEBUG" -eq 1 ] && [ -n "${DEBUG_LOG:-}" ]; then
+		set +x
+		echo ""
+		echo -e "${YELLOW}▸ Debug log generated: ${DEBUG_LOG}${ENDCOLOR}"
+		exec 3>&-
+	fi
+}
 
 function WELCOME_SCREEN {
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
@@ -358,7 +380,10 @@ function MAINTENANCE {
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(grep -v "^WARNING" >&2) |
 	# Print each line with padding to fit the terminal width
-	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
+	while IFS= read -r line; do
+		printf '%-*s\r' "$(tput cols)" "$line"
+	done
+	echo
 	echo
 	echo -e "${CYAN}✓ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
@@ -847,6 +872,8 @@ function SHOW_HELP {
 		 -h --help         Display this help and exit
 		 
 		 -v --version      Display version information and exit
+
+		 -x --debug        Enable debug mode (shell tracing)
 		 
 		 -u --upgrade      Upgrade to the next Ubuntu release. Note: If you use a
 		                   regular release it will upgrade to the next one. If
@@ -941,10 +968,14 @@ function RE_BOOT {
 # The main process starts
 while [ "$1" != "" ]; do
 	 case $1 in
-		  -u | --upgrade )     WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
+		  -x | --debug )     UCARE_DEBUG=1
+								  shift
+								  continue
+								  ;;
+		  -u | --upgrade )     ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
 									  exit
 									  ;;
-		  -d | --development ) WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
+		  -d | --development ) ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
 									  exit
 									  ;;
 		  -h | --help )        SHOW_HELP
@@ -953,13 +984,13 @@ while [ "$1" != "" ]; do
 		  -v | --version )     SHOW_VERSION
 									  exit
 									  ;;
-		  -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
+		  -eol | --end-of-life-upgrade ) ENABLE_DEBUG && UPGRADE_EOL_TO_NEXT
 									  exit
 									  ;;
-		  -s | --shutdown )    WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && SHUT_DOWN
+		  -s | --shutdown )    ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && SHUT_DOWN
 									  exit
 									  ;;
-		  -r | --reboot )      WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && RE_BOOT
+		  -r | --reboot )      ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && RE_BOOT
 									  exit
 									  ;;
 		  * )                  SHOW_HELP
@@ -968,4 +999,5 @@ while [ "$1" != "" ]; do
 	 esac
 done
 ## If no parameter is given just do the regular maintenance
+ENABLE_DEBUG
 WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE
