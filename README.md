@@ -20,8 +20,8 @@ Name   : uCareSystem
 License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 Author : Salih Emin
 Email  : salih-emin(a)ubuntu.com
-Date   : 27-01-2026 (first release 19-02-2009)
-Version: 26.01.27
+Date   : 14-02-2026 (first release 19-02-2009)
+Version: 26.02.14
 System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for WSL2) 
 WebSite: http://utappia.org
 ```

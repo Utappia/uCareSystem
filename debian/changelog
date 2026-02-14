@@ -1,3 +1,9 @@
+ucaresystem-core (26.02.14) jammy; urgency=high
+
+  * fixed not launching on Ubuntu 25.10
+
+ -- Salih Emin <salih-emin@ubuntu.com>  Sat, 14 Feb 2026 15:18:47 +0000
+
 ucaresystem-core (26.01.27) jammy; urgency=medium
 
   * Fixed snap based infrastracture apps like Doker, Kubernetes, LXD
