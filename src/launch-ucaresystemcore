@@ -11,13 +11,35 @@ fi
 
 set -e
 
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+resolve_ucaresystem_core() {
+    if command -v ucaresystem-core >/dev/null 2>&1; then
+        command -v ucaresystem-core
+        return 0
+    fi
+
+    if [ -x "$SCRIPT_DIR/ucaresystem-core" ]; then
+        echo "$SCRIPT_DIR/ucaresystem-core"
+        return 0
+    fi
+
+    return 1
+}
+
+UCARE_CORE_CMD=$(resolve_ucaresystem_core || true)
+if [ -z "$UCARE_CORE_CMD" ]; then
+    echo "Error: ucaresystem-core was not found in PATH or next to this launcher" >&2
+    exit 1
+fi
+
 # This launcher is primarily for desktop icon usage.
 # If no graphical session is available (server/WSL/tty), run directly.
 if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
-    exec ucaresystem-core "$@"
+    exec "$UCARE_CORE_CMD" "$@"
 fi
 
-RUN_CMD='ucaresystem-core; read -r -p "Press Enter to exit..."'
+RUN_CMD="$UCARE_CORE_CMD; read -r -p \"Press Enter to exit...\""
 # Function to launch the terminal with the appropriate command based on the terminal emulator's capabilities and options
 launch_with_terminal() {
     local terminal_cmd="$1"
