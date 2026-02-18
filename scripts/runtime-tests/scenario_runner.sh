@@ -4,11 +4,18 @@ set -Eeuo pipefail
 REPO_ROOT=${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
 UCARE_SCENARIOS=${UCARE_SCENARIOS:-"smoke maintenance"}
 UCARE_RUNTIME_TIMEOUT=${UCARE_RUNTIME_TIMEOUT:-1800}
-UCARE_LOG_DIR=${UCARE_LOG_DIR:-"$REPO_ROOT/.runtime-test-logs"}
 
-mkdir -p "$UCARE_LOG_DIR"
-RUN_LOG="$UCARE_LOG_DIR/runtime-$(date +%Y%m%d-%H%M%S).log"
-: > "$RUN_LOG"
+# If a log file path is provided, use it; otherwise, use the default naming
+if [ -n "${UCARE_LOG_FILE:-}" ]; then
+    RUN_LOG="$UCARE_LOG_FILE"
+    mkdir -p "$(dirname "$RUN_LOG")"
+    : > "$RUN_LOG"
+else
+    UCARE_LOG_DIR=${UCARE_LOG_DIR:-"$REPO_ROOT/.runtime-test-logs"}
+    mkdir -p "$UCARE_LOG_DIR"
+    RUN_LOG="$UCARE_LOG_DIR/runtime-$(date +%Y%m%d-%H%M%S).log"
+    : > "$RUN_LOG"
+fi
 
 log() {
     echo "[$(date +%H:%M:%S)] $*" | tee -a "$RUN_LOG"

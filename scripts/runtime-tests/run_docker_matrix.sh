@@ -80,6 +80,7 @@ done
         -e DEBIAN_FRONTEND=noninteractive \
         -e UCARE_SCENARIOS="$UCARE_SCENARIOS" \
         -e UCARE_RUNTIME_TIMEOUT="$UCARE_RUNTIME_TIMEOUT" \
+        -e UCARE_LOG_FILE="/workspace/.runtime-test-logs/runtime-${timestamp}-${safe_tag}.log" \
         -e REPO_ROOT=/workspace \
         -v "$REPO_ROOT:/workspace" \
         -w /workspace \
@@ -87,7 +88,7 @@ done
         bash -lc '
             set -Eeuo pipefail
             bash scripts/runtime-tests/scenario_runner.sh
-        ' | tee "$report_file"
+        '
 
     echo "--- uCareSystem runtime log for $image saved to $report_file ---"
 
