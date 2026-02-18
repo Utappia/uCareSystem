@@ -14,6 +14,10 @@ set -e
 
 CDPATH=; SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
 
+# If already running inside a terminal, just run the core directly
+if [ -n "$TERM" ] && [ "$TERM" != "dumb" ]; then
+    exec "$UCARE_CORE_CMD" "$@"
+fi
 resolve_ucaresystem_core() {
     if command -v ucaresystem-core >/dev/null 2>&1; then
         command -v ucaresystem-core
