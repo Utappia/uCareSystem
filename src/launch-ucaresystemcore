@@ -4,6 +4,7 @@
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 
+
 # Always hand off to bash before using bash-specific syntax.
 if [ -z "${BASH_VERSION:-}" ]; then
     exec /usr/bin/env bash "$0" "$@"
@@ -11,7 +12,7 @@ fi
 
 set -e
 
-SCRIPT_DIR=$(CDPATH=cd -- "$(dirname -- "$0")" && pwd)
+CDPATH=; SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
 
 resolve_ucaresystem_core() {
     if command -v ucaresystem-core >/dev/null 2>&1; then
@@ -57,6 +58,7 @@ launch_with_terminal() {
 }
 # Build a list of terminal candidates, starting with the system's default if available
 # Only use bash array features if running under bash
+# shellcheck disable=SC3030,SC3024,SC3054
 if [ -n "$BASH_VERSION" ]; then
     TERMINAL_CANDIDATES=()
     ALT_TERMINAL=$(update-alternatives --query x-terminal-emulator 2>/dev/null | awk '/^Value: / {print $2; exit}' || true)
