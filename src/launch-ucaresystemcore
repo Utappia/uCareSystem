@@ -14,10 +14,6 @@ set -e
 
 CDPATH=; SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
 
-# If already running inside a terminal, just run the core directly
-if [ -n "$TERM" ] && [ "$TERM" != "dumb" ]; then
-    exec "$UCARE_CORE_CMD" "$@"
-fi
 resolve_ucaresystem_core() {
     if command -v ucaresystem-core >/dev/null 2>&1; then
         command -v ucaresystem-core
@@ -32,10 +28,16 @@ resolve_ucaresystem_core() {
     return 1
 }
 
+
 UCARE_CORE_CMD=$(resolve_ucaresystem_core || true)
 if [ -z "$UCARE_CORE_CMD" ]; then
     echo "Error: ucaresystem-core was not found in PATH or next to this launcher" >&2
     exit 1
+fi
+
+# If already running inside a terminal, just run the core directly
+if [ -n "$TERM" ] && [ "$TERM" != "dumb" ]; then
+    exec "$UCARE_CORE_CMD" "$@"
 fi
 
 # This launcher is primarily for desktop icon usage.
