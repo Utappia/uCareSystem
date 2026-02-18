@@ -72,7 +72,8 @@ done
 
     # Use a temp file to capture the log from inside the container
     safe_tag=$(sanitize_image_tag "$image")
-    report_file="$REPO_ROOT/.runtime-test-logs/docker-${safe_tag}.log"
+    timestamp=$(date +%Y%m%d-%H%M%S)
+    report_file="$REPO_ROOT/.runtime-test-logs/runtime-${timestamp}-${safe_tag}.log"
     mkdir -p "$REPO_ROOT/.runtime-test-logs"
 
     docker run --rm --privileged \
