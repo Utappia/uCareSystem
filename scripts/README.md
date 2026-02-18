@@ -19,6 +19,7 @@ A helper script to update the honored releases tracking files when creating a ne
 ```
 
 This will:
+
 1. Update `HONORED_RELEASES.md` with the new release information
 2. Update `scripts/honored_releases.dat` with the new entry
 3. Create backup files (.bak)
@@ -27,6 +28,7 @@ This will:
 ### After running the script
 
 Remember to manually update the following variables in `src/ucaresystem-core`:
+
 - `UCARE_VERSION`
 - `VER_CODENAME`
 - `PREV_VER`
@@ -37,3 +39,12 @@ Remember to manually update the following variables in `src/ucaresystem-core`:
 - `HONORED_RELEASES.md` - Human-readable markdown file with detailed release history
 - `scripts/honored_releases.dat` - Machine-readable data file with pipe-separated values
 - `src/ucaresystem-core` - Main script containing current version variables
+
+## Runtime compatibility tests
+
+Runtime checks focused on executing `ucaresystem-core` are available in:
+
+- `scripts/runtime-tests/scenario_runner.sh` - Core scenario executor (`smoke`, `maintenance`)
+- `scripts/runtime-tests/run_docker_matrix.sh` - Primary Docker-based runtime matrix
+- `scripts/runtime-tests/run_lxd_fallback.sh` - LXD fallback runner
+- `scripts/runtime-tests/README.md` - Full usage and policy notes
