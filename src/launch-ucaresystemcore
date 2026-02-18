@@ -11,7 +11,7 @@ fi
 
 set -e
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_DIR=$(CDPATH=cd -- "$(dirname -- "$0")" && pwd)
 
 resolve_ucaresystem_core() {
     if command -v ucaresystem-core >/dev/null 2>&1; then
@@ -42,8 +42,8 @@ fi
 RUN_CMD="$UCARE_CORE_CMD; read -r -p \"Press Enter to exit...\""
 # Function to launch the terminal with the appropriate command based on the terminal emulator's capabilities and options
 launch_with_terminal() {
-    local terminal_cmd="$1"
-    local terminal_basename
+
+    terminal_cmd="$1"
     terminal_basename=$(basename "$terminal_cmd")
 
     case "$terminal_basename" in
@@ -56,41 +56,50 @@ launch_with_terminal() {
     esac
 }
 # Build a list of terminal candidates, starting with the system's default if available
-TERMINAL_CANDIDATES=() 
-# Check for the system's default terminal emulator using update-alternatives
-ALT_TERMINAL=$(update-alternatives --query x-terminal-emulator 2>/dev/null | awk '/^Value: / {print $2; exit}' || true)
-if [ -n "$ALT_TERMINAL" ]; then
-    TERMINAL_CANDIDATES+=("$ALT_TERMINAL")
-fi
-# Add common terminal emulators to the candidates list
-TERMINAL_CANDIDATES+=(
-    x-terminal-emulator
-    gnome-terminal
-    kgx
-    gnome-console
-    konsole
-    xfce4-terminal
-    mate-terminal
-    lxterminal
-    qterminal
-    alacritty
-    ghostty
-    kitty
-    tilix
-    terminator
-    wezterm
-    foot
-    urxvt
-    xterm
-)
-# Iterate through the list of terminal candidates and attempt to launch uCareSystem Core in each until one succeeds
-for terminal_cmd in "${TERMINAL_CANDIDATES[@]}"; do
-    if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
-        if launch_with_terminal "$terminal_cmd"; then
-            exit 0
-        fi
+# Only use bash array features if running under bash
+if [ -n "$BASH_VERSION" ]; then
+    TERMINAL_CANDIDATES=()
+    ALT_TERMINAL=$(update-alternatives --query x-terminal-emulator 2>/dev/null | awk '/^Value: / {print $2; exit}' || true)
+    if [ -n "$ALT_TERMINAL" ]; then
+        TERMINAL_CANDIDATES+=("$ALT_TERMINAL")
     fi
-done
+    TERMINAL_CANDIDATES+=(
+        x-terminal-emulator
+        gnome-terminal
+        kgx
+        gnome-console
+        konsole
+        xfce4-terminal
+        mate-terminal
+        lxterminal
+        qterminal
+        alacritty
+        ghostty
+        kitty
+        tilix
+        terminator
+        wezterm
+        foot
+        urxvt
+        xterm
+    )
+    for terminal_cmd in "${TERMINAL_CANDIDATES[@]}"; do
+        if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
+            if launch_with_terminal "$terminal_cmd"; then
+                exit 0
+            fi
+        fi
+    done
+else
+    # Fallback: try a few common terminals without arrays
+    for terminal_cmd in x-terminal-emulator gnome-terminal kgx gnome-console konsole xfce4-terminal mate-terminal lxterminal qterminal alacritty ghostty kitty tilix terminator wezterm foot urxvt xterm; do
+        if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
+            if launch_with_terminal "$terminal_cmd"; then
+                exit 0
+            fi
+        fi
+    done
+fi
 # If we reach this point, no suitable terminal emulator was found or all attempts failed
 echo "Error: No suitable terminal emulator found" >&2
 exit 1

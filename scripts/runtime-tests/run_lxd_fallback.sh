@@ -55,7 +55,7 @@ lxc exec "$CONTAINER_NAME" -- bash -lc '
 '
 
 # Copy the log file back from the container
-lxc file pull "$CONTAINER_NAME"/workspace/.runtime-test-logs/runtime-${timestamp}-${safe_tag}.log "$report_file"
+lxc file pull "$CONTAINER_NAME"/workspace/.runtime-test-logs/runtime-"${timestamp}"-"${safe_tag}".log "$report_file"
 
 echo "--- uCareSystem runtime log for $UCARE_LXD_IMAGE saved to $report_file ---"
 
