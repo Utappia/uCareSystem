@@ -1,37 +1,74 @@
-#!/bin/bash
+#!/bin/sh
 # uCareSystem Launcher
 # Copyright (c) 2009-2025 Salih Emin. All rights reserved.
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 
-# Enable strict error handling
-set -euo pipefail
-
-# Get the default terminal emulator command
-if ! TERMINAL_CMD=$(update-alternatives --query x-terminal-emulator | grep 'Value:' | cut -d' ' -f2); then
-    echo "Error: Could not determine default terminal emulator" >&2
-    exit 1
+# Always hand off to bash before using bash-specific syntax.
+if [ -z "${BASH_VERSION:-}" ]; then
+    exec /usr/bin/env bash "$0" "$@"
 fi
 
-# Check if TERMINAL_CMD is empty or terminal doesn't exist, if so, set a default value
-if [ -z "${TERMINAL_CMD:-}" ] || ! command -v "$TERMINAL_CMD" >/dev/null 2>&1; then
-    if command -v x-terminal-emulator >/dev/null 2>&1; then
-        TERMINAL_CMD="x-terminal-emulator"
-    else
-        echo "Error: No suitable terminal emulator found" >&2
-        exit 1
+set -e
+
+# This launcher is primarily for desktop icon usage.
+# If no graphical session is available (server/WSL/tty), run directly.
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    exec ucaresystem-core "$@"
+fi
+
+RUN_CMD='ucaresystem-core; read -r -p "Press Enter to exit..."'
+# Function to launch the terminal with the appropriate command based on the terminal emulator's capabilities and options
+launch_with_terminal() {
+    local terminal_cmd="$1"
+    local terminal_basename
+    terminal_basename=$(basename "$terminal_cmd")
+
+    case "$terminal_basename" in
+        gnome-terminal*|kgx|gnome-console)
+            "$terminal_cmd" -- bash -lc "$RUN_CMD" || "$terminal_cmd" -e bash -lc "$RUN_CMD"
+            ;;
+        *)
+            "$terminal_cmd" -e bash -lc "$RUN_CMD" || "$terminal_cmd" -- bash -lc "$RUN_CMD"
+            ;;
+    esac
+}
+# Build a list of terminal candidates, starting with the system's default if available
+TERMINAL_CANDIDATES=() 
+# Check for the system's default terminal emulator using update-alternatives
+ALT_TERMINAL=$(update-alternatives --query x-terminal-emulator 2>/dev/null | awk '/^Value: / {print $2; exit}' || true)
+if [ -n "$ALT_TERMINAL" ]; then
+    TERMINAL_CANDIDATES+=("$ALT_TERMINAL")
+fi
+# Add common terminal emulators to the candidates list
+TERMINAL_CANDIDATES+=(
+    x-terminal-emulator
+    gnome-terminal
+    kgx
+    gnome-console
+    konsole
+    xfce4-terminal
+    mate-terminal
+    lxterminal
+    qterminal
+    alacritty
+    ghostty
+    kitty
+    tilix
+    terminator
+    wezterm
+    foot
+    urxvt
+    xterm
+)
+# Iterate through the list of terminal candidates and attempt to launch uCareSystem Core in each until one succeeds
+for terminal_cmd in "${TERMINAL_CANDIDATES[@]}"; do
+    if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
+        if launch_with_terminal "$terminal_cmd"; then
+            exit 0
+        fi
     fi
-fi
-
-# Open the default terminal emulator and execute ucaresystem-core
-TERMINAL_BASENAME=$(basename "$TERMINAL_CMD")
-CMD=(bash -c 'ucaresystem-core; read -r -p "Press Enter to exit..."')
-
-case "$TERMINAL_BASENAME" in
-    gnome-terminal*|kgx|gnome-console)
-        "$TERMINAL_CMD" -- "${CMD[@]}"
-        ;;
-    *)
-        "$TERMINAL_CMD" -e "${CMD[@]}"
-        ;;
-esac
+done
+# If we reach this point, no suitable terminal emulator was found or all attempts failed
+echo "Error: No suitable terminal emulator found" >&2
+exit 1
