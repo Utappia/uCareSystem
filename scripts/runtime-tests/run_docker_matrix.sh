@@ -64,13 +64,12 @@ if ! command -v docker >/dev/null 2>&1; then
     exit 3
 fi
 
+
 for image in $UCARE_DOCKER_IMAGES; do
     echo "=== Runtime tests in Docker image: ${image} ==="
 
     runtime_base_image=$(ensure_runtime_base_image "$image")
-done
 
-    # Use a temp file to capture the log from inside the container
     safe_tag=$(sanitize_image_tag "$image")
     timestamp=$(date +%Y%m%d-%H%M%S)
     report_file="$REPO_ROOT/.runtime-test-logs/runtime-${timestamp}-${safe_tag}.log"
@@ -91,5 +90,6 @@ done
         '
 
     echo "--- uCareSystem runtime log for $image saved to $report_file ---"
+done
 
 echo "Docker runtime matrix finished successfully"

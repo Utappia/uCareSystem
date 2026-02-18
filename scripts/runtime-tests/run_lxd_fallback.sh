@@ -17,6 +17,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Prepare log file name (use image name and timestamp)
+safe_tag=$(echo "$UCARE_LXD_IMAGE" | tr '/:@' '---')
+timestamp=$(date +%Y%m%d-%H%M%S)
+report_file="$REPO_ROOT/.runtime-test-logs/runtime-${timestamp}-${safe_tag}.log"
+mkdir -p "$REPO_ROOT/.runtime-test-logs"
+
 echo "=== Runtime tests in LXD image: ${UCARE_LXD_IMAGE} ==="
 lxc launch "$UCARE_LXD_IMAGE" "$CONTAINER_NAME"
 
@@ -45,7 +51,12 @@ lxc exec "$CONTAINER_NAME" -- bash -lc '
         ncurses-bin \
         tzdata
     cd /workspace
-    REPO_ROOT=/workspace UCARE_SCENARIOS="'"$UCARE_SCENARIOS"'" UCARE_RUNTIME_TIMEOUT="'"$UCARE_RUNTIME_TIMEOUT"'" bash scripts/runtime-tests/scenario_runner.sh
+    REPO_ROOT=/workspace UCARE_SCENARIOS="'"$UCARE_SCENARIOS"'" UCARE_RUNTIME_TIMEOUT="'"$UCARE_RUNTIME_TIMEOUT"'" UCARE_LOG_FILE="/workspace/.runtime-test-logs/runtime-'"$timestamp"'-'"$safe_tag"'.log" bash scripts/runtime-tests/scenario_runner.sh
 '
+
+# Copy the log file back from the container
+lxc file pull "$CONTAINER_NAME"/workspace/.runtime-test-logs/runtime-${timestamp}-${safe_tag}.log "$report_file"
+
+echo "--- uCareSystem runtime log for $UCARE_LXD_IMAGE saved to $report_file ---"
 
 echo "LXD fallback runtime tests finished successfully"
