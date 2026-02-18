@@ -61,13 +61,12 @@ You can install uCareSystem in two ways:
 
 ### 1. Automatic installation (recommended)
 
-This one-liner will update your package list, install `jq` if needed, download the latest `.deb` to `/tmp`, and install it:
+This one-liner will update your package list, install `jq` and `curl` if needed, download the latest `.deb` to `/tmp`, and install it:
 
 ```bash
-sudo apt update && sudo apt install -y jq && cd /tmp && \
-curl -s https://api.github.com/repos/utappia/ucaresystem/releases/latest \
-  | jq -r '.assets[] | select(.name | test("ucaresystem-core_.*\\.deb")) | .browser_download_url' \
-  | xargs wget -O ucaresystem-core_latest.deb && \
+sudo apt update && sudo apt install -y jq curl && cd /tmp && \
+url="$(curl -fsSL -A 'uCareSystem-installer' https://api.github.com/repos/utappia/ucaresystem/releases/latest | jq -r '.assets[] | select(.name | test("^ucaresystem-core_.*\\.deb$")) | .browser_download_url' | head -n1)" && \
+[ -n "$url" ] && curl -fL -A 'uCareSystem-installer' "$url" -o ucaresystem-core_latest.deb && \
 sudo apt install ./ucaresystem-core_latest.deb
 ```
 
