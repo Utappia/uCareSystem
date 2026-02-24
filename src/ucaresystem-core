@@ -536,8 +536,18 @@ function MAINTENANCE {
 
 	# Call kernel cleanup with default value
 	echo -e "${GREEN}▸ Checking for old kernels...${ENDCOLOR}"
-	if [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+	# Detect Raspberry Pi OS
+	skip_kernel_cleanup=0
+	if [ -f /etc/os-release ]; then
+		. /etc/os-release
+		if [ "${ID}" = "raspbian" ] || [ "${ID}" = "raspberrypi" ]; then
+			skip_kernel_cleanup=1
+		fi
+	fi
+	if [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ] && [ "$skip_kernel_cleanup" -eq 0 ]; then
 		CLEANUP_OLD_KERNELS 2
+	elif [ "$skip_kernel_cleanup" -eq 1 ]; then
+		echo -e "${YELLOW}Skipping kernel cleanup in Raspberry Pi OS environment${ENDCOLOR}"
 	else
 		echo -e "${YELLOW}Skipping kernel cleanup in WSL environment${ENDCOLOR}"
 	fi
