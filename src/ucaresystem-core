@@ -122,7 +122,7 @@ function ENABLE_DEBUG {
 		DEBUG_LOG="/tmp/ucaresystem-debug-${DATE}.log"
 		exec 3>"$DEBUG_LOG"
 		export BASH_XTRACEFD=3
-		export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+		export PS4='+(${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 		echo -e "${YELLOW}▸ Debugging enabled. Trace log: ${DEBUG_LOG}${ENDCOLOR}"
 		trap 'DEBUG_SUMMARY' EXIT
 		set -x
