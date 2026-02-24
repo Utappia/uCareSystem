@@ -2,6 +2,7 @@
 # Format: VERSION|HONORED_TO|RELEASE_DATE|NOTES
 # Lines starting with # are comments
 
+26.02.25|Hewitt R.|2026-02-25|Feature: -x enables Debug mode
 26.01.27|Frankie P.|2026-01-27|Fixed infrastructure service disruption during Snap maintenance
 25.12.04|D. Luchini|2025-12-04|Added automated preflight health checks with auto-fix, unified visual symbols (▸✓✗⚠), standardized color scheme, improved container support, and cross-distro safety guards
 25.07.17|W. Schreinemachers|2025-07-17|Current release
