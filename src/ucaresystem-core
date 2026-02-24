@@ -120,7 +120,21 @@ duration=5 # countdown duration in seconds
 
 function ENABLE_DEBUG {
 	if [ "$UCARE_DEBUG" -eq 1 ]; then
-		DEBUG_LOG="/tmp/ucaresystem-debug-${DATE}.log"
+		USER_HOME=""
+		if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+			USER_HOME=$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6)
+		elif [ -n "$USERNAME" ] && [ "$USERNAME" != "root" ]; then
+			USER_HOME=$(getent passwd "$USERNAME" 2>/dev/null | cut -d: -f6)
+		elif [ -n "$USER" ] && [ "$USER" != "root" ]; then
+			USER_HOME=$(getent passwd "$USER" 2>/dev/null | cut -d: -f6)
+		fi
+		if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+			USER_HOME="$HOME"
+		fi
+		if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+			USER_HOME="/tmp"
+		fi
+		DEBUG_LOG="$USER_HOME/ucaresystem-debug-${DATE}.log"
 		exec 3>"$DEBUG_LOG"
 		export BASH_XTRACEFD=3
 		export PS4='+(${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
