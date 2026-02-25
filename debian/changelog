@@ -1,8 +1,15 @@
+ucaresystem-core (26.02.25) jammy; urgency=high
+
+  * fix fresh install returning empty temrminal
+  * feature -x or --debug to produce debugging info
+
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Tue, 24 Feb 2026 21:45:48 +0000
+
 ucaresystem-core (26.02.14) jammy; urgency=high
 
   * fixed not launching on Ubuntu 25.10
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sat, 14 Feb 2026 15:18:47 +0000
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sat, 14 Feb 2026 15:18:47 +0000
 
 ucaresystem-core (26.01.27) jammy; urgency=medium
 
@@ -11,19 +18,19 @@ ucaresystem-core (26.01.27) jammy; urgency=medium
   * Enhance shutdown and reboot processes by adding pre-update health checks
   * refine categories and keywords in the Desktop files
 
- -- Salih Emin <salih-emin@ubuntu.com>  Thu, 29 Jan 2026 14:48:11 +0000
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Thu, 29 Jan 2026 14:48:11 +0000
 
 ucaresystem-core (25.12.04) jammy; urgency=medium
 
   * Added pre-maintenace checks for broken packages, dependencies and locked apt
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sat, 06 Dec 2025 01:05:38 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sat, 06 Dec 2025 01:05:38 +0200
 
 ucaresystem-core (25.07.22) jammy; urgency=medium
 
   * improve internet connectivity check even if VPN is enabled
 
- -- Salih Emin <salih-emin@ubuntu.com>  Tue, 22 Jul 2025 15:15:31 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Tue, 22 Jul 2025 15:15:31 +0300
 
 ucaresystem-core (25.07.17) jammy; urgency=high
 
@@ -32,7 +39,7 @@ ucaresystem-core (25.07.17) jammy; urgency=high
   * Updated documentation and manpages for clarity and accuracy.
   * Modernized CI/CD pipeline with automated push to package for better Debian policy compliance and future-proofing
 
- -- Salih Emin <salih-emin@ubuntu.com>  Thu, 17 Jul 2025 16:00:29 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Thu, 17 Jul 2025 16:00:29 +0300
 
 ucaresystem-core (25.06.05) jammy; urgency=medium
 
@@ -44,124 +51,124 @@ ucaresystem-core (25.06.05) jammy; urgency=medium
   * added WSL support
   * fixed minor bugs
 
- -- Salih Emin <salih-emin@ubuntu.com>  Fri, 06 Jun 2025 16:54:14 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Fri, 06 Jun 2025 16:54:14 +0300
 
 ucaresystem-core (25.04.09) jammy; urgency=medium
 
   * shellcheck code quality, automate check on git push, fix minor UX bugs 
 
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 09 Apr 2025 00:52:46 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 09 Apr 2025 00:52:46 +0300
 
 ucaresystem-core (24.12.13) xenial; urgency=medium
 
   * Testing Prerelease
 
- -- Salih Emin <salih-emin@ubuntu.com>  Mon, 07 Apr 2025 22:24:21 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Mon, 07 Apr 2025 22:24:21 +0300
 
 ucaresystem-core (24.12.11) xenial; urgency=medium
 
   * added colors... and some more colors and some messages
 
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 11 Dec 2024 00:11:03 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 11 Dec 2024 00:11:03 +0200
 
 ucaresystem-core (24.11.25) xenial; urgency=high
 
   * added missing fix for LMDE and distro detection fix
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 24 Nov 2024 01:29:47 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 24 Nov 2024 01:29:47 +0200
 
 ucaresystem-core (24.11.24) xenial; urgency=high
 
   * fix LMDE detected as Ubuntu based, fix missing execution fix quotetion of nums
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 24 Nov 2024 00:35:20 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 24 Nov 2024 00:35:20 +0200
 
 ucaresystem-core (24.11.17) xenial; urgency=medium
 
   * minimal ui, added long option names, replace last traces of apt-get with apt
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 17 Nov 2024 00:46:37 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 17 Nov 2024 00:46:37 +0200
 
 ucaresystem-core (24.10.07) xenial; urgency=high
 
   * compatibility with Debian, Raspberry OS, Ubuntu Server 24.04. Removed pkexec dependecy - rely on sudo and various fixes
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 06 Oct 2024 17:15:50 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 06 Oct 2024 17:15:50 +0300
 
 ucaresystem-core (24.09.08) xenial; urgency=medium
 
   * good bye olympics, see you in 4 years... also removed deborphan dependency
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 08 Sep 2024 21:21:01 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 08 Sep 2024 21:21:01 +0300
 
 ucaresystem-core (24.09.05) xenial; urgency=high
 
   * fixed 3 issues reported in github and added new features
 
- -- Salih Emin <salih-emin@ubuntu.com>  Thu, 05 Sep 2024 01:52:58 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Thu, 05 Sep 2024 01:52:58 +0300
 
 ucaresystem-core (24.07.31) xenial; urgency=high
 
   * fixed missing dependency for pkexec on ubuntu 20.04
 
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 31 Jul 2024 23:32:26 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 31 Jul 2024 23:32:26 +0300
 
 ucaresystem-core (24.07.28) xenial; urgency=high
 
   * added failsafe to Linux Lite that does not use logname
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 28 Jul 2024 02:18:36 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 28 Jul 2024 02:18:36 +0300
 
 ucaresystem-core (24.07.17) xenial; urgency=high
 
   * fixed missing curl. added err handling missing list. add delay to see the list
 
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 17 Jul 2024 15:55:14 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 17 Jul 2024 15:55:14 +0300
 
 ucaresystem-core (24.07.14) xenial; urgency=high
 
   * fixed typo in line 77
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 14 Jul 2024 18:04:03 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 14 Jul 2024 18:04:03 +0300
 
 ucaresystem-core (24.07.13) xenial; urgency=medium
 
   * Show package that require system restart. fix ipv6 configured systems that crash apt-add-repository
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 14 Jul 2024 02:41:00 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 14 Jul 2024 02:41:00 +0300
 
 ucaresystem-core (24.06.0) xenial; urgency=medium
 
   * Now launches with the default terminal. Added Presds Enter to Exit. Added supporters name.
 
- -- Salih Emin <salih-emin@ubuntu.com>  Sun, 16 Jun 2024 13:20:33 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 16 Jun 2024 13:20:33 +0300
 
 ucaresystem-core (24.05.8) xenial; urgency=medium
 
   * fixed Shutdow and Restart re-painting of countdown, spelling error, out of screen Welcome message 
 
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 08 May 2024 14:03:41 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 08 May 2024 14:03:41 +0300
 
 ucaresystem-core (24.05.0) trusty; urgency=high
 
   * Added Flatpak support for maintenance of flatpak packages
 
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 01 May 2024 00:00:44 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 01 May 2024 00:00:44 +0300
 
 ucaresystem-core (24.04.0) trusty; urgency=high
 
   * Check internet connection, update Snap packages, remove old snap revisions, show disk usage before and after maintenance
 
- -- Salih Emin <salih-emin@ubuntu.com>  Thu, 25 Apr 2024 23:46:34 +0300
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Thu, 25 Apr 2024 23:46:34 +0300
 
 ucaresystem-core (4.4.0) trusty; urgency=high
 
   * Replaced gksu with pkexec. Check if reboot is needed. Fix debian Jessie
 
- -- Salih Emin <salih-emin@ubuntu.com>  Fri, 26 Jan 2018 21:42:36 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Fri, 26 Jan 2018 21:42:36 +0200
 
 ucaresystem-core (4.3.0) trusty; urgency=high
 
   * Added desktop icon and entry. User can launch ucaresystem form application menu
   
- -- Salih Emin <salih-emin@ubuntu.com>  Wed, 15 Nov 2017 14:45:44 +0200
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Wed, 15 Nov 2017 14:45:44 +0200
