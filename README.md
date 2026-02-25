@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-banner.png"></p>
+
 ## See uCareSystem in Action
 
 [![See uCareSystem in Action](https://img.youtube.com/vi/mSyJrkD84Hs/0.jpg)](https://www.youtube.com/watch?v=mSyJrkD84Hs)
