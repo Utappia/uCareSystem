@@ -1,6 +1,3 @@
-<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-banner.png"></p>
-
-
 ## See uCareSystem in Action
 
 [![See uCareSystem in Action](https://img.youtube.com/vi/mSyJrkD84Hs/0.jpg)](https://www.youtube.com/watch?v=mSyJrkD84Hs)
@@ -67,7 +64,20 @@ uCareSystem is an all-in-one, fully automated system update and maintenance tool
 
 ## Installation
 
-You can install uCareSystem in two ways:
+
+
+> **No matter which installation method you choose below, the following steps will be performed automatically:**
+
+Choose whichever installation method suits you best—each will ensure a complete and up-to-date installation of uCareSystem :
+
+- Install the uCareSystem core package
+- Check if the Utappia repository exists in your system
+- If the repository is not found, it will automatically:
+  - Add the Utappia repository for future updates of uCareSystem
+  - Add the repository signing key
+
+
+You can install uCareSystem in three ways:
 
 ### 1. Automatic installation (recommended)
 
@@ -83,7 +93,27 @@ sudo apt install ./ucaresystem-core_latest.deb
 > **Note:**
 > Installing from `/tmp` as shown above avoids the unsandboxed download warning.
 
-### 2. Manual download and installation
+
+### 2. Install via PPA (add-apt-repository)
+
+
+If you prefer, you can add the official Utappia PPA directly and install uCareSystem from there:
+
+```bash
+sudo add-apt-repository ppa:utappia/stable
+sudo apt update
+sudo apt install ucaresystem-core
+```
+
+> **Note:**
+> On some Ubuntu or Linux Mint systems, the `add-apt-repository` command may not be available by default. If you get a "command not found" error, install it first with:
+> ```bash
+> sudo apt install software-properties-common
+> ```
+
+This method will automatically add the repository and signing key for you. You will always get the latest stable version and updates via your package manager.
+
+### 3. Manual download and installation
 
 1. Download the latest `.deb` package from the [releases page](https://github.com/utappia/ucaresystem/releases)
 2. Install the package:
@@ -93,14 +123,6 @@ sudo apt install ./ucaresystem-core_latest.deb
    ```
 
 > If you install the package from your home or Downloads directory, you may see a warning about “Download is performed unsandboxed as root... Permission denied for user '_apt'.” This is normal and does not affect the installation. To avoid the warning, move the `.deb` file to `/tmp` or another directory readable by all users before installing.
-
-Both installation methods will:
-
-- Install the uCareSystem core package
-- Check if the Utappia repository exists in your system
-- If the repository is not found, it will automatically:
-  - Add the Utappia repository for future updates
-  - Add the repository signing key
 
 
 ## Usage
@@ -170,6 +192,33 @@ To completely remove uCareSystem and its repository:
    ```bash
    sudo apt update
    ```
+
+## Troubleshooting: Repository GPG Key Issues
+
+If you encounter errors related to missing or invalid repository GPG keys (e.g., `NO_PUBKEY A726F660EBC8F9FD` or signature verification failures) during installation or `apt update`, follow these steps:
+
+1. **Remove any existing (possibly invalid) keyring file:**
+   ```bash
+   sudo rm /etc/apt/keyrings/utappia-archive-keyring.gpg
+   ```
+
+2. **Download and install the Utappia GPG key:**
+   ```bash
+   curl -fsSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xEBC8F9FD' | sudo gpg --dearmor -o /etc/apt/keyrings/utappia-archive-keyring.gpg
+   ```
+
+   If the above fails, try an alternative keyserver:
+   ```bash
+   curl -fsSL 'https://keys.openpgp.org/vks/v1/by-fingerprint/EBC8F9FD' | sudo gpg --dearmor -o /etc/apt/keyrings/utappia-archive-keyring.gpg
+   ```
+
+3. **Update package lists:**
+   ```bash
+   sudo apt update
+   ```
+
+If you still experience issues, check your network connectivity or try from a different environment (e.g., outside a VM or with different firewall settings).
+<p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-banner.png"></p>
 
 
 ## Code contribution
