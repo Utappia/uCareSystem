@@ -30,11 +30,22 @@ echo "Updating honored releases files..."
 
 # Update the markdown file
 # Find the line with "### Version" and "Current" and replace it
-sed -i "/^### Version.*Current)$/c\\
-### Version $VERSION (Current)\\
-- **Honored To**: $HONORED_NAME\\
-- **Release Date**: $RELEASE_DATE\\
-- **Notes**: $NOTES" HONORED_RELEASES.md
+    # Remove "(Current)" from the previous version line
+    sed -i '0,/^### Version.*Current)$/! s/^### Version \([0-9.]*\) (Current)$/### Version \1/' HONORED_RELEASES.md
+
+    # Insert new entry as Current immediately after '## Release History'
+    awk -v ver="$VERSION" -v name="$HONORED_NAME" -v date="$RELEASE_DATE" -v notes="$NOTES" '
+    {
+        print $0
+        if ($0 ~ /^## Release History/) {
+            print "";
+            print "### Version " ver " (Current)";
+            print "- **Honored To**: " name;
+            print "- **Release Date**: " date;
+            print "- **Notes**: " notes;
+        }
+    }
+    ' HONORED_RELEASES.md > HONORED_RELEASES.md.tmp && mv HONORED_RELEASES.md.tmp HONORED_RELEASES.md
 
 # Remove "(Current)" from the previous version line
 sed -i '0,/^### Version.*Current)$/! s/^### Version \([0-9.]*\) (Current)$/### Version \1/' HONORED_RELEASES.md

@@ -11,8 +11,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-emin(at)ubuntu.com
-# Date   : 14-02-2026 (first release 19-02-2009)
-# Version: 26.02.14
+# Date   : 25-02-2026 (first release 19-02-2009)
+# Version: 26.02.25
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -29,17 +29,19 @@ YELLOW="\e[33m"
 RED="\e[31m"
 ENDCOLOR="\e[0m"
 DATE=$(date +%F_%T)
-UCARE_VERSION="26.02.14"
+UCARE_VERSION="26.02.25"
 # See HONORED_RELEASES.md for historical record of honored releases
-VER_CODENAME="Frankie P"
-PREV_VER="25.12"
+VER_CODENAME="Hewitt R."
+PREV_VER="26.01"
+UCARE_DEBUG=0
 USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
 DONATE="https://donate.utappia.org"
 # List of supporters for the previous version development cycle
 SUPPORTERS=(
 	"W. Schreinemachers"
-	"Frankie P."
-	"Th. Ploumis"
+	"Hewitt R."
+	"Monovel I."
+	"Stade M."
 )
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
@@ -116,6 +118,41 @@ function COUNTDOWN {
 }
 duration=5 # countdown duration in seconds
 
+function ENABLE_DEBUG {
+	if [ "$UCARE_DEBUG" -eq 1 ]; then
+		USER_HOME=""
+		if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+			USER_HOME=$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6)
+		elif [ -n "$USERNAME" ] && [ "$USERNAME" != "root" ]; then
+			USER_HOME=$(getent passwd "$USERNAME" 2>/dev/null | cut -d: -f6)
+		elif [ -n "$USER" ] && [ "$USER" != "root" ]; then
+			USER_HOME=$(getent passwd "$USER" 2>/dev/null | cut -d: -f6)
+		fi
+		if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+			USER_HOME="$HOME"
+		fi
+		if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
+			USER_HOME="/tmp"
+		fi
+		DEBUG_LOG="$USER_HOME/ucaresystem-debug-${DATE}.log"
+		exec 3>"$DEBUG_LOG"
+		export BASH_XTRACEFD=3
+		export PS4='+(${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+		echo -e "${YELLOW}▸ Debugging enabled. Trace log: ${DEBUG_LOG}${ENDCOLOR}"
+		trap 'DEBUG_SUMMARY' EXIT
+		set -x
+	fi
+}
+
+function DEBUG_SUMMARY {
+	if [ "$UCARE_DEBUG" -eq 1 ] && [ -n "${DEBUG_LOG:-}" ]; then
+		set +x
+		echo ""
+		echo -e "${YELLOW}▸ Debug log generated: ${DEBUG_LOG}${ENDCOLOR}"
+		exec 3>&-
+	fi
+}
+
 function WELCOME_SCREEN {
 	echo -e "${CYAN}═══════════════════════════════════════════════════════════${ENDCOLOR}"
 	echo ""
@@ -145,6 +182,31 @@ function GET_DISK_USAGE {
 	echo "$df_output"
 }
 
+function WAIT_FOR_PACKAGE_LOCKS {
+	local retries=${1:-6}
+	local delay=${2:-5}
+	local attempt=1
+	local lock_files=(/var/lib/dpkg/lock /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock)
+
+	while [ "$attempt" -le "$retries" ]; do
+		: > /tmp/ucare_locks
+		sudo lsof "${lock_files[@]}" 2>/dev/null | sudo tee /tmp/ucare_locks > /dev/null
+		if [ -s /tmp/ucare_locks ]; then
+			echo -e "${YELLOW}▸ Package manager locks detected (attempt ${attempt}/${retries})${ENDCOLOR}"
+			cat /tmp/ucare_locks
+			if [ "$attempt" -lt "$retries" ]; then
+				echo -e "${YELLOW}▸ Waiting ${delay}s for locks to clear...${ENDCOLOR}"
+				sleep "$delay"
+				attempt=$((attempt+1))
+				continue
+			fi
+			return 1
+		fi
+		return 0
+	done
+	return 1
+}
+
 # Pre-update health check
 function PREUPDATE_PREFLIGHT {
 	echo
@@ -158,13 +220,11 @@ function PREUPDATE_PREFLIGHT {
 
 	echo -e "${YELLOW}  • Checking for interrupted package installations...${ENDCOLOR}"
 	# 0) Check for dpkg interruption and auto-recover if safe
-	if [ -f /var/lib/dpkg/lock ] || [ -f /var/lib/dpkg/lock-frontend ]; then
-		if sudo lsof /var/lib/dpkg/lock /var/lib/dpkg/lock-frontend 2>/dev/null | grep -q .; then
-			echo -e "${RED}✗ dpkg lock file is held by another process.${ENDCOLOR}"
-			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
-			sleep 2
-			return 1
-		fi
+	echo -e "${YELLOW}  • Checking for active package manager locks...${ENDCOLOR}"
+	if ! WAIT_FOR_PACKAGE_LOCKS 6 5; then
+		echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
+		sleep 2
+		return 1
 	fi
 	if [ -f /var/lib/dpkg/status ]; then
 		if grep -q "^Status: half-installed" /var/lib/dpkg/status; then
@@ -241,19 +301,6 @@ function PREUPDATE_PREFLIGHT {
 		echo -e "${CYAN}Unhold example:${ENDCOLOR} sudo apt-mark unhold <pkg>"
 		echo
 	fi
-	echo -e "${YELLOW}  • Checking for active package manager locks...${ENDCOLOR}"
-	# 5) lock files
-	# shellcheck disable=SC2024
-	if sudo lsof /var/lib/dpkg/lock* /var/lib/apt/lists/lock /var/cache/apt/archives/lock 2>/dev/null >/tmp/ucare_locks 2>&1; then
-		if [ -s /tmp/ucare_locks ]; then
-			echo -e "${YELLOW}▸ Package manager locks detected${ENDCOLOR}"
-			cat /tmp/ucare_locks
-			echo -e "${RED}✗ Aborting maintenance. Please close other package managers and try again.${ENDCOLOR}"
-			sleep 2
-			return 1
-		fi
-	fi
-
 	# 6) disk space sanity
 	echo -e "${GREEN}▸ Disk space summary${ENDCOLOR}"
 	echo -e "${YELLOW}$(GET_DISK_USAGE)${ENDCOLOR}"
@@ -358,7 +405,10 @@ function MAINTENANCE {
 	# Update package lists and filter out warnings
 	sudo apt update 2> >(grep -v "^WARNING" >&2) |
 	# Print each line with padding to fit the terminal width
-	xargs --no-run-if-empty -I{} printf '%-*s\r' "$(tput cols)" "{}" && echo
+	while IFS= read -r line; do
+		printf '%-*s\r' "$(tput cols)" "$line"
+	done
+	echo
 	echo
 	echo -e "${CYAN}✓ Finished updating package lists ${ENDCOLOR}"
 	sleep 1
@@ -501,8 +551,18 @@ function MAINTENANCE {
 
 	# Call kernel cleanup with default value
 	echo -e "${GREEN}▸ Checking for old kernels...${ENDCOLOR}"
-	if [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+	# Detect Raspberry Pi OS
+	skip_kernel_cleanup=0
+	if [ -f /etc/os-release ]; then
+		. /etc/os-release
+		if [ "${ID}" = "raspbian" ] || [ "${ID}" = "raspberrypi" ]; then
+			skip_kernel_cleanup=1
+		fi
+	fi
+	if [ ! -f /proc/sys/fs/binfmt_misc/WSLInterop ] && [ "$skip_kernel_cleanup" -eq 0 ]; then
 		CLEANUP_OLD_KERNELS 2
+	elif [ "$skip_kernel_cleanup" -eq 1 ]; then
+		echo -e "${YELLOW}Skipping kernel cleanup in Raspberry Pi OS environment${ENDCOLOR}"
 	else
 		echo -e "${YELLOW}Skipping kernel cleanup in WSL environment${ENDCOLOR}"
 	fi
@@ -847,6 +907,8 @@ function SHOW_HELP {
 		 -h --help         Display this help and exit
 		 
 		 -v --version      Display version information and exit
+
+		 -x --debug        Enable debug mode (shell tracing)
 		 
 		 -u --upgrade      Upgrade to the next Ubuntu release. Note: If you use a
 		                   regular release it will upgrade to the next one. If
@@ -941,10 +1003,14 @@ function RE_BOOT {
 # The main process starts
 while [ "$1" != "" ]; do
 	 case $1 in
-		  -u | --upgrade )     WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
+		  -x | --debug )     UCARE_DEBUG=1
+								  shift
+								  continue
+								  ;;
+		  -u | --upgrade )     ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_NEXT_RELEASE
 									  exit
 									  ;;
-		  -d | --development ) WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
+		  -d | --development ) ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && UPGRADE_TO_DEVEL_RELEASE
 									  exit
 									  ;;
 		  -h | --help )        SHOW_HELP
@@ -953,13 +1019,13 @@ while [ "$1" != "" ]; do
 		  -v | --version )     SHOW_VERSION
 									  exit
 									  ;;
-		  -eol | --end-of-life-upgrade ) UPGRADE_EOL_TO_NEXT
+		  -eol | --end-of-life-upgrade ) ENABLE_DEBUG && UPGRADE_EOL_TO_NEXT
 									  exit
 									  ;;
-		  -s | --shutdown )    WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && SHUT_DOWN
+		  -s | --shutdown )    ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && SHUT_DOWN
 									  exit
 									  ;;
-		  -r | --reboot )      WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && RE_BOOT
+		  -r | --reboot )      ENABLE_DEBUG && WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE && RE_BOOT
 									  exit
 									  ;;
 		  * )                  SHOW_HELP
@@ -968,4 +1034,5 @@ while [ "$1" != "" ]; do
 	 esac
 done
 ## If no parameter is given just do the regular maintenance
+ENABLE_DEBUG
 WELCOME_SCREEN && PREUPDATE_PREFLIGHT && MAINTENANCE && GOODBYE

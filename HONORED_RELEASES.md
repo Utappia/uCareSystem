@@ -13,7 +13,12 @@ Each entry follows this format:
 
 ## Release History
 
-### Version 26.01.27 (Current)
+### Version 26.02.25 (Current)
+- **Honored To**: Hewitt R.
+- **Release Date**: February 2, 2026
+- **Notes**: Feature: -x enables Debug mode
+
+### Version 26.01.27
 - **Honored To**: Frankie P.
 - **Release Date**: 2026-01-27
 - **Notes**: Fixed infrastructure service disruption during Snap maintenance

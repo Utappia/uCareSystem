@@ -1,0 +1,52 @@
+name: Runtime Compatibility
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ develop, main ]
+    paths:
+      - 'src/**'
+      - 'scripts/runtime-tests/**'
+      - '.github/workflows/runtime-compat.yml'
+  pull_request:
+    branches: [ develop, main ]
+    paths:
+      - 'src/**'
+      - 'scripts/runtime-tests/**'
+      - '.github/workflows/runtime-compat.yml'
+  workflow_dispatch:
+    inputs:
+      docker_images:
+        description: 'Docker image list (space-separated)'
+        required: false
+        default: 'ubuntu:22.04 ubuntu:24.04 ubuntu:25.10'
+      scenarios:
+        description: 'Scenario list (space-separated)'
+        required: false
+        default: 'smoke maintenance'
+      lxd_image:
+        description: 'LXD fallback image'
+        required: false
+        default: 'images:ubuntu/24.04'
+      enable_vm_fallback:
+        description: 'Require manual VM fallback step'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  runtime-docker:
+    name: Runtime on Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run runtime matrix on Docker
+        env:
+          UCARE_DOCKER_IMAGES: ${{ github.event.inputs.docker_images || 'ubuntu:22.04 ubuntu:24.04 ubuntu:25.10' }}
+          UCARE_SCENARIOS: ${{ github.event.inputs.scenarios || 'smoke maintenance' }}
+        run: |
+          bash scripts/runtime-tests/run_docker_matrix.sh

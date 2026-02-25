@@ -1,37 +1,113 @@
-#!/bin/bash
+#!/bin/sh
 # uCareSystem Launcher
-# Copyright (c) 2009-2025 Salih Emin. All rights reserved.
+# Copyright (c) 2009-2026 Salih Emin. All rights reserved.
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 
-# Enable strict error handling
-set -euo pipefail
 
-# Get the default terminal emulator command
-if ! TERMINAL_CMD=$(update-alternatives --query x-terminal-emulator | grep 'Value:' | cut -d' ' -f2); then
-    echo "Error: Could not determine default terminal emulator" >&2
+# Always hand off to bash before using bash-specific syntax.
+if [ -z "${BASH_VERSION:-}" ]; then
+    exec /usr/bin/env bash "$0" "$@"
+fi
+
+set -e
+
+CDPATH=; SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
+
+resolve_ucaresystem_core() {
+    if command -v ucaresystem-core >/dev/null 2>&1; then
+        command -v ucaresystem-core
+        return 0
+    fi
+
+    if [ -x "$SCRIPT_DIR/ucaresystem-core" ]; then
+        echo "$SCRIPT_DIR/ucaresystem-core"
+        return 0
+    fi
+
+    return 1
+}
+
+
+UCARE_CORE_CMD=$(resolve_ucaresystem_core || true)
+if [ -z "$UCARE_CORE_CMD" ]; then
+    echo "Error: ucaresystem-core was not found in PATH or next to this launcher" >&2
     exit 1
 fi
 
-# Check if TERMINAL_CMD is empty or terminal doesn't exist, if so, set a default value
-if [ -z "${TERMINAL_CMD:-}" ] || ! command -v "$TERMINAL_CMD" >/dev/null 2>&1; then
-    if command -v x-terminal-emulator >/dev/null 2>&1; then
-        TERMINAL_CMD="x-terminal-emulator"
-    else
-        echo "Error: No suitable terminal emulator found" >&2
-        exit 1
-    fi
+# If already running inside a terminal, just run the core directly
+if [ -n "$TERM" ] && [ "$TERM" != "dumb" ]; then
+    exec "$UCARE_CORE_CMD" "$@"
 fi
 
-# Open the default terminal emulator and execute ucaresystem-core
-TERMINAL_BASENAME=$(basename "$TERMINAL_CMD")
-CMD=(bash -c 'ucaresystem-core; read -r -p "Press Enter to exit..."')
+# This launcher is primarily for desktop icon usage.
+# If no graphical session is available (server/WSL/tty), run directly.
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    exec "$UCARE_CORE_CMD" "$@"
+fi
 
-case "$TERMINAL_BASENAME" in
-    gnome-terminal*|kgx|gnome-console)
-        "$TERMINAL_CMD" -- "${CMD[@]}"
-        ;;
-    *)
-        "$TERMINAL_CMD" -e "${CMD[@]}"
-        ;;
-esac
+RUN_CMD="$UCARE_CORE_CMD; read -r -p \"Press Enter to exit...\""
+# Function to launch the terminal with the appropriate command based on the terminal emulator's capabilities and options
+launch_with_terminal() {
+
+    terminal_cmd="$1"
+    terminal_basename=$(basename "$terminal_cmd")
+
+    case "$terminal_basename" in
+        gnome-terminal*|kgx|gnome-console)
+            "$terminal_cmd" -- bash -lc "$RUN_CMD" || "$terminal_cmd" -e bash -lc "$RUN_CMD"
+            ;;
+        *)
+            "$terminal_cmd" -e bash -lc "$RUN_CMD" || "$terminal_cmd" -- bash -lc "$RUN_CMD"
+            ;;
+    esac
+}
+# Build a list of terminal candidates, starting with the system's default if available
+# Only use bash array features if running under bash
+# shellcheck disable=SC3030,SC3024,SC3054
+if [ -n "$BASH_VERSION" ]; then
+    TERMINAL_CANDIDATES=()
+    ALT_TERMINAL=$(update-alternatives --query x-terminal-emulator 2>/dev/null | awk '/^Value: / {print $2; exit}' || true)
+    if [ -n "$ALT_TERMINAL" ]; then
+        TERMINAL_CANDIDATES+=("$ALT_TERMINAL")
+    fi
+    TERMINAL_CANDIDATES+=(
+        x-terminal-emulator
+        gnome-terminal
+        kgx
+        gnome-console
+        konsole
+        xfce4-terminal
+        mate-terminal
+        lxterminal
+        qterminal
+        alacritty
+        ghostty
+        kitty
+        tilix
+        terminator
+        wezterm
+        foot
+        urxvt
+        xterm
+    )
+    for terminal_cmd in "${TERMINAL_CANDIDATES[@]}"; do
+        if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
+            if launch_with_terminal "$terminal_cmd"; then
+                exit 0
+            fi
+        fi
+    done
+else
+    # Fallback: try a few common terminals without arrays
+    for terminal_cmd in x-terminal-emulator gnome-terminal kgx gnome-console konsole xfce4-terminal mate-terminal lxterminal qterminal alacritty ghostty kitty tilix terminator wezterm foot urxvt xterm; do
+        if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
+            if launch_with_terminal "$terminal_cmd"; then
+                exit 0
+            fi
+        fi
+    done
+fi
+# If we reach this point, no suitable terminal emulator was found or all attempts failed
+echo "Error: No suitable terminal emulator found" >&2
+exit 1
