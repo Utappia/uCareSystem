@@ -10,7 +10,7 @@
 *.txt
 *.xz
 *.bak
-
+ram.md
 # Debian packaging artifacts
 debian/.debhelper/
 debian/*/
