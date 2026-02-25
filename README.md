@@ -1,5 +1,10 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Utappia/uCareSystem/master/repo-assets/ucaresystem-banner.png"></p>
 
+
+## See uCareSystem in Action
+
+[![See uCareSystem in Action](https://img.youtube.com/vi/mSyJrkD84Hs/0.jpg)](https://www.youtube.com/watch?v=mSyJrkD84Hs)
+
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/utappia/ucaresystem/total)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/utappia/ucaresystem)
 ![GitHub contributors](https://img.shields.io/github/contributors/utappia/ucaresystem)
@@ -57,7 +62,7 @@ uCareSystem is an all-in-one, fully automated system update and maintenance tool
 
 ---
 
-![ucaresystem-color](https://github.com/user-attachments/assets/6f5171c2-5a64-465b-b794-920e225ce7f7)
+
 
 
 ## Installation
