@@ -878,7 +878,7 @@ function SHOW_VERSION {
 	echo -e "${CYAN}uCareSystem${ENDCOLOR} ${YELLOW}$UCARE_VERSION${ENDCOLOR}"
 	echo -e "${MAGENTA}Release honored to: $VER_CODENAME${ENDCOLOR}"
 	echo ""
-	echo -e "${GREEN}Copyright (c) 2025 Salih Emin. All rights reserved.${ENDCOLOR}"
+	echo -e "${GREEN}Copyright (c) 2026 Salih Emin. All rights reserved.${ENDCOLOR}"
 	echo -e "${GREEN}Licensed under GPL3 (http://www.gnu.org/licenses/gpl.html)${ENDCOLOR}"
 	echo -e "${CYAN}WebSite: http://utappia.org${ENDCOLOR}"
 	echo -e "${CYAN}Email: salih-emin@ubuntu.com${ENDCOLOR}"
