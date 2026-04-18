@@ -35,30 +35,82 @@ if [ -z "$UCARE_CORE_CMD" ]; then
     exit 1
 fi
 
+# Launcher-specific option: skip keypress wait after GUI-launched runs.
+UCARE_WAIT_FOR_KEY=1
+CORE_ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --no-wait)
+            UCARE_WAIT_FOR_KEY=0
+            ;;
+        *)
+            CORE_ARGS+=("$arg")
+            ;;
+    esac
+done
+export UCARE_WAIT_FOR_KEY
+
 # If already running inside a terminal, just run the core directly
 if [ -n "$TERM" ] && [ "$TERM" != "dumb" ]; then
-    exec "$UCARE_CORE_CMD" "$@"
+    exec "$UCARE_CORE_CMD" "${CORE_ARGS[@]}"
 fi
 
 # This launcher is primarily for desktop icon usage.
 # If no graphical session is available (server/WSL/tty), run directly.
 if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
-    exec "$UCARE_CORE_CMD" "$@"
+    exec "$UCARE_CORE_CMD" "${CORE_ARGS[@]}"
 fi
 
-RUN_CMD="$UCARE_CORE_CMD; read -r -p \"Press Enter to exit...\""
+RUN_CMD='
+run_and_wait() {
+    local rc
+
+    set +e
+    "$1" "${@:2}"
+    rc=$?
+    set -e
+
+    echo
+    if [ "$rc" -eq 0 ]; then
+        echo "uCareSystem finished."
+    else
+        echo "uCareSystem exited with status $rc."
+    fi
+
+    if [ "${UCARE_WAIT_FOR_KEY:-1}" -eq 1 ]; then
+        echo "Press any key to close this window..."
+        IFS= read -r -n 1 _
+        echo
+    fi
+
+    exit "$rc"
+}
+
+run_and_wait "$@"
+'
 # Function to launch the terminal with the appropriate command based on the terminal emulator's capabilities and options
 launch_with_terminal() {
 
     terminal_cmd="$1"
+    shift
     terminal_basename=$(basename "$terminal_cmd")
+
+    # Terminal emulators differ: some prefer '-- bash ...' while others need '-e bash ...'.
+    # Try both forms to maximize desktop compatibility across environments.
+    launch_preferred() {
+        "$terminal_cmd" -- bash -lc "$RUN_CMD" _ "$UCARE_CORE_CMD" "$@"
+    }
+
+    launch_legacy() {
+        "$terminal_cmd" -e bash -lc "$RUN_CMD" _ "$UCARE_CORE_CMD" "$@"
+    }
 
     case "$terminal_basename" in
         gnome-terminal*|kgx|gnome-console)
-            "$terminal_cmd" -- bash -lc "$RUN_CMD" || "$terminal_cmd" -e bash -lc "$RUN_CMD"
+            launch_preferred "$@" || launch_legacy "$@"
             ;;
         *)
-            "$terminal_cmd" -e bash -lc "$RUN_CMD" || "$terminal_cmd" -- bash -lc "$RUN_CMD"
+            launch_legacy "$@" || launch_preferred "$@"
             ;;
     esac
 }
@@ -93,7 +145,7 @@ if [ -n "$BASH_VERSION" ]; then
     )
     for terminal_cmd in "${TERMINAL_CANDIDATES[@]}"; do
         if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
-            if launch_with_terminal "$terminal_cmd"; then
+            if launch_with_terminal "$terminal_cmd" "${CORE_ARGS[@]}"; then
                 exit 0
             fi
         fi
@@ -102,7 +154,7 @@ else
     # Fallback: try a few common terminals without arrays
     for terminal_cmd in x-terminal-emulator gnome-terminal kgx gnome-console konsole xfce4-terminal mate-terminal lxterminal qterminal alacritty ghostty kitty tilix terminator wezterm foot urxvt xterm; do
         if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
-            if launch_with_terminal "$terminal_cmd"; then
+            if launch_with_terminal "$terminal_cmd" "${CORE_ARGS[@]}"; then
                 exit 0
             fi
         fi
