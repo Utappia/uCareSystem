@@ -50,13 +50,14 @@ for arg in "$@"; do
 done
 export UCARE_WAIT_FOR_KEY
 
-# If already running inside a terminal, just run the core directly
-if [ -n "$TERM" ] && [ "$TERM" != "dumb" ]; then
+# If stdin is connected to a real tty the user is already in a terminal — run directly.
+# Checking stdin with -t 0 is more reliable than $TERM, which can be set in the
+# session environment even when launched from a desktop icon (Terminal=false).
+if [ -t 0 ]; then
     exec "$UCARE_CORE_CMD" "${CORE_ARGS[@]}"
 fi
 
-# This launcher is primarily for desktop icon usage.
-# If no graphical session is available (server/WSL/tty), run directly.
+# No graphical session available (server/WSL/headless) — run directly without GUI terminal.
 if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
     exec "$UCARE_CORE_CMD" "${CORE_ARGS[@]}"
 fi
@@ -97,12 +98,14 @@ launch_with_terminal() {
 
     # Terminal emulators differ: some prefer '-- bash ...' while others need '-e bash ...'.
     # Try both forms to maximize desktop compatibility across environments.
+    # sudo is invoked here directly so the core does not need to exec-replace this
+    # wrapper process via its own privilege-escalation path.
     launch_preferred() {
-        "$terminal_cmd" -- bash -lc "$RUN_CMD" _ "$UCARE_CORE_CMD" "$@"
+        "$terminal_cmd" -- bash -lc "$RUN_CMD" _ sudo "$UCARE_CORE_CMD" "$@"
     }
 
     launch_legacy() {
-        "$terminal_cmd" -e bash -lc "$RUN_CMD" _ "$UCARE_CORE_CMD" "$@"
+        "$terminal_cmd" -e bash -lc "$RUN_CMD" _ sudo "$UCARE_CORE_CMD" "$@"
     }
 
     case "$terminal_basename" in
