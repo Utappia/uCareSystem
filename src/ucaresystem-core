@@ -11,8 +11,8 @@ set -e
 # Author : Salih Emin
 # WebSite: http://utappia.org
 # Email  : salih-emin(at)ubuntu.com
-# Date   : 25-02-2026 (first release 19-02-2009)
-# Version: 26.02.25
+# Date   : 18-04-2026 (first release 19-02-2009)
+# Version: 26.04.18
 # System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2) 
 # Description:
 #This simple script will automatically refresh your package list, download and install
@@ -29,9 +29,9 @@ YELLOW="\e[33m"
 RED="\e[31m"
 ENDCOLOR="\e[0m"
 DATE=$(date +%F_%T)
-UCARE_VERSION="26.02.25"
+UCARE_VERSION="26.04.18"
 # See HONORED_RELEASES.md for historical record of honored releases
-VER_CODENAME="Hewitt R."
+VER_CODENAME="Karasoulis H."
 PREV_VER="26.01"
 UCARE_DEBUG=0
 USERNAME=$(logname 2>/dev/null || echo "${USER:-$(whoami)}")
@@ -40,8 +40,9 @@ DONATE="https://donate.utappia.org"
 SUPPORTERS=(
 	"W. Schreinemachers"
 	"Hewitt R."
-	"Monovel I."
-	"Stade M."
+	"Käufler A."
+	"Sarigiannidis I."
+	"Karasoulis H."
 )
 # Check for root/sudo privileges
 if [[ $EUID -ne 0 ]] ; then
