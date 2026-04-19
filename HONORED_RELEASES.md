@@ -13,7 +13,12 @@ Each entry follows this format:
 
 ## Release History
 
-### Version 26.02.25 (Current)
+### Version 26.04.18 (Current)
+- **Honored To**: Karasoulis H.
+- **Release Date**: 2026-04-18
+- **Notes**: Fix autoclose terminal window
+
+### Version 26.02.25
 - **Honored To**: Hewitt R.
 - **Release Date**: February 2, 2026
 - **Notes**: Feature: -x enables Debug mode

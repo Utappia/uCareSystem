@@ -1,3 +1,9 @@
+ucaresystem-core (26.04.18) jammy; urgency=medium
+
+  * fix the autoclosing terminal
+
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Sun, 19 Apr 2026 14:09:26 +0000
+
 ucaresystem-core (26.02.25) jammy; urgency=high
 
   * fix fresh install returning empty temrminal
