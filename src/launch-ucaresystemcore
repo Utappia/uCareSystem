@@ -31,8 +31,9 @@ for arg in "$@"; do
     fi
 done
 
-# Add pause logic unless --no-wait was passed
-if [ "$SKIP_WAIT" -eq 0 ]; then
+# Add pause logic only for interactive terminals unless --no-wait was passed.
+# In CI/non-interactive shells, read would fail and incorrectly return non-zero.
+if [ "$SKIP_WAIT" -eq 0 ] && [ -t 0 ]; then
     COMMAND="$COMMAND; echo; read -r -p 'Press Enter to exit...'"
 fi
 
