@@ -1,168 +1,40 @@
-#!/bin/sh
+#!/bin/bash
 # uCareSystem Launcher
 # Copyright (c) 2009-2026 Salih Emin. All rights reserved.
 # Use of this source code is governed by GPLv3 license that can be
 # found in the LICENSE file.
 
-
-# Always hand off to bash before using bash-specific syntax.
-if [ -z "${BASH_VERSION:-}" ]; then
-    exec /usr/bin/env bash "$0" "$@"
-fi
-
 set -e
 
-CDPATH=; SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
-
-resolve_ucaresystem_core() {
-    if command -v ucaresystem-core >/dev/null 2>&1; then
-        command -v ucaresystem-core
-        return 0
-    fi
-
-    if [ -x "$SCRIPT_DIR/ucaresystem-core" ]; then
-        echo "$SCRIPT_DIR/ucaresystem-core"
-        return 0
-    fi
-
-    return 1
-}
-
-
-UCARE_CORE_CMD=$(resolve_ucaresystem_core || true)
-if [ -z "$UCARE_CORE_CMD" ]; then
-    echo "Error: ucaresystem-core was not found in PATH or next to this launcher" >&2
+# Resolve ucaresystem-core location
+UCARE_CORE_CMD=""
+if command -v ucaresystem-core >/dev/null 2>&1; then
+    UCARE_CORE_CMD="ucaresystem-core"
+elif [ -x "$(dirname "$0")/ucaresystem-core" ]; then
+    UCARE_CORE_CMD="$(dirname "$0")/ucaresystem-core"
+else
+    echo "Error: ucaresystem-core was not found" >&2
     exit 1
 fi
 
-# Launcher-specific option: skip keypress wait after GUI-launched runs.
-UCARE_WAIT_FOR_KEY=1
-CORE_ARGS=()
+# Build command with pause-for-key at the end
+# This ensures users can read final messages (reboot required, etc.)
+COMMAND="$UCARE_CORE_CMD"
+SKIP_WAIT=0
+
+# Process arguments: collect all except --no-wait
 for arg in "$@"; do
-    case "$arg" in
-        --no-wait)
-            UCARE_WAIT_FOR_KEY=0
-            ;;
-        *)
-            CORE_ARGS+=("$arg")
-            ;;
-    esac
-done
-export UCARE_WAIT_FOR_KEY
-
-# If stdin is connected to a real tty the user is already in a terminal — run directly.
-# Checking stdin with -t 0 is more reliable than $TERM, which can be set in the
-# session environment even when launched from a desktop icon (Terminal=false).
-if [ -t 0 ]; then
-    exec "$UCARE_CORE_CMD" "${CORE_ARGS[@]}"
-fi
-
-# No graphical session available (server/WSL/headless) — run directly without GUI terminal.
-if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
-    exec "$UCARE_CORE_CMD" "${CORE_ARGS[@]}"
-fi
-
-RUN_CMD='
-run_and_wait() {
-    local rc
-
-    set +e
-    "$1" "${@:2}"
-    rc=$?
-    set -e
-
-    echo
-    if [ "$rc" -eq 0 ]; then
-        echo "uCareSystem finished."
+    if [ "$arg" = "--no-wait" ]; then
+        SKIP_WAIT=1
     else
-        echo "uCareSystem exited with status $rc."
+        COMMAND="$COMMAND \"$arg\""
     fi
+done
 
-    if [ "${UCARE_WAIT_FOR_KEY:-1}" -eq 1 ]; then
-        echo "Press any key to close this window..."
-        IFS= read -r -n 1 _
-        echo
-    fi
-
-    exit "$rc"
-}
-
-run_and_wait "$@"
-'
-# Function to launch the terminal with the appropriate command based on the terminal emulator's capabilities and options
-launch_with_terminal() {
-
-    terminal_cmd="$1"
-    shift
-    terminal_basename=$(basename "$terminal_cmd")
-
-    # Terminal emulators differ: some prefer '-- bash ...' while others need '-e bash ...'.
-    # Try both forms to maximize desktop compatibility across environments.
-    # sudo is invoked here directly so the core does not need to exec-replace this
-    # wrapper process via its own privilege-escalation path.
-    launch_preferred() {
-        "$terminal_cmd" -- bash -lc "$RUN_CMD" _ sudo "$UCARE_CORE_CMD" "$@"
-    }
-
-    launch_legacy() {
-        "$terminal_cmd" -e bash -lc "$RUN_CMD" _ sudo "$UCARE_CORE_CMD" "$@"
-    }
-
-    case "$terminal_basename" in
-        gnome-terminal*|kgx|gnome-console)
-            launch_preferred "$@" || launch_legacy "$@"
-            ;;
-        *)
-            launch_legacy "$@" || launch_preferred "$@"
-            ;;
-    esac
-}
-# Build a list of terminal candidates, starting with the system's default if available
-# Only use bash array features if running under bash
-# shellcheck disable=SC3030,SC3024,SC3054
-if [ -n "$BASH_VERSION" ]; then
-    TERMINAL_CANDIDATES=()
-    ALT_TERMINAL=$(update-alternatives --query x-terminal-emulator 2>/dev/null | awk '/^Value: / {print $2; exit}' || true)
-    if [ -n "$ALT_TERMINAL" ]; then
-        TERMINAL_CANDIDATES+=("$ALT_TERMINAL")
-    fi
-    TERMINAL_CANDIDATES+=(
-        x-terminal-emulator
-        gnome-terminal
-        kgx
-        gnome-console
-        konsole
-        xfce4-terminal
-        mate-terminal
-        lxterminal
-        qterminal
-        alacritty
-        ghostty
-        kitty
-        tilix
-        terminator
-        wezterm
-        foot
-        urxvt
-        xterm
-    )
-    for terminal_cmd in "${TERMINAL_CANDIDATES[@]}"; do
-        if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
-            if launch_with_terminal "$terminal_cmd" "${CORE_ARGS[@]}"; then
-                exit 0
-            fi
-        fi
-    done
-else
-    # Fallback: try a few common terminals without arrays
-    for terminal_cmd in x-terminal-emulator gnome-terminal kgx gnome-console konsole xfce4-terminal mate-terminal lxterminal qterminal alacritty ghostty kitty tilix terminator wezterm foot urxvt xterm; do
-        if [ -x "$terminal_cmd" ] || command -v "$terminal_cmd" >/dev/null 2>&1; then
-            if launch_with_terminal "$terminal_cmd" "${CORE_ARGS[@]}"; then
-                exit 0
-            fi
-        fi
-    done
+# Add pause logic unless --no-wait was passed
+if [ "$SKIP_WAIT" -eq 0 ]; then
+    COMMAND="$COMMAND; echo; read -r -p 'Press Enter to exit...'"
 fi
-# If we reach this point, no suitable terminal emulator was found or all attempts failed
-echo "Error: No suitable terminal emulator found" >&2
-exit 1
+
+# Execute with bash
+exec bash -c "$COMMAND"
