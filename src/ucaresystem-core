@@ -333,41 +333,54 @@ function APT_UPDATE_WITH_SKIP {
 		echo -e "${YELLOW}  (Useful when Launchpad is under attack or experiencing issues)${ENDCOLOR}"
 		echo
 		
-		# Create a temporary apt configuration that disables ppa.launchpad sources
-		local temp_apt_conf=$(mktemp)
+		# Run apt update but exclude ppa.launchpad.net by temporarily moving .list files
+		local temp_dir=$(mktemp -d)
 		
-		# Write apt configuration to skip failing PPAs
-		cat > "$temp_apt_conf" << 'EOF'
-# Temporary apt configuration to skip ppa.launchpad.net
-Acquire::http::Timeout "10";
-Acquire::https::Timeout "10";
-Acquire::http::Pipeline-Depth "0";
-Acquire::Retries "3";
-# Disable specific hosts
-Acquire::http::No-Cache "ppa.launchpad.net";
-Acquire::https::No-Cache "ppa.launchpad.net";
-# Skip these hosts entirely
-Acquire::http::No-Store "ppa.launchpad.net";
-Acquire::https::No-Store "ppa.launchpad.net";
-EOF
+		# Find and move PPA files that contain launchpad
+		echo -e "${YELLOW}▸ Temporarily disabling Launchpad PPAs...${ENDCOLOR}"
+		find /etc/apt/sources.list.d/ -name "*launchpad*" -type f 2>/dev/null | while read ppa_file; do
+			if [ -f "$ppa_file" ]; then
+				sudo mv "$ppa_file" "$temp_dir/" 2>/dev/null && echo "  • Disabled: $(basename "$ppa_file")"
+			fi
+		done
 		
-		# Run apt update with the temporary configuration
-		sudo apt -o Dir::Etc::SourceList=/etc/apt/sources.list \
-		         -o Dir::Etc::SourceParts=/etc/apt/sources.list.d \
-		         -c "$temp_apt_conf" update 2>&1 | \
-		    grep -v "ppa.launchpad.net" | \
-		    grep -v "Failed to fetch" | \
-		    grep -v "Unable to connect to" | \
-		    while IFS= read -r line; do
-		        printf '%-*s\r' "$(tput cols)" "$line"
-		    done
-		
-		# Clean up temporary config
-		rm -f "$temp_apt_conf"
+		# Also check sources.list for launchpad entries (less common but possible)
+		if grep -q "launchpad" /etc/apt/sources.list 2>/dev/null; then
+			sudo cp /etc/apt/sources.list "$temp_dir/sources.list.backup"
+			sudo sed -i '/launchpad/d' /etc/apt/sources.list
+			echo "  • Disabled launchpad entries in sources.list"
+		fi
 		
 		echo
-		echo -e "${YELLOW}⚠ Note: ppa.launchpad.net repositories were skipped${ENDCOLOR}"
-		echo -e "${YELLOW}  You can restore them by removing the --skip-ppa-launchpad flag${ENDCOLOR}"
+		echo -e "${YELLOW}▸ Running apt update with Launchpad PPAs disabled...${ENDCOLOR}"
+		
+		# Run apt update
+		sudo apt update 2> >(grep -v "^WARNING" >&2) |
+		while IFS= read -r line; do
+			printf '%-*s\r' "$(tput cols)" "$line"
+		done
+		
+		echo
+		echo -e "${YELLOW}▸ Restoring disabled Launchpad PPAs...${ENDCOLOR}"
+		
+		# Restore moved PPA files
+		if [ -d "$temp_dir" ] && [ -n "$(ls -A "$temp_dir" 2>/dev/null)" ]; then
+			sudo mv "$temp_dir"/* /etc/apt/sources.list.d/ 2>/dev/null
+			echo "  • Restored all Launchpad PPAs"
+		fi
+		
+		# Restore sources.list if modified
+		if [ -f "$temp_dir/sources.list.backup" ]; then
+			sudo mv "$temp_dir/sources.list.backup" /etc/apt/sources.list
+			echo "  • Restored sources.list"
+		fi
+		
+		# Clean up temp directory
+		rm -rf "$temp_dir"
+		
+		echo
+		echo -e "${YELLOW}⚠ Note: ppa.launchpad.net repositories were temporarily skipped${ENDCOLOR}"
+		echo -e "${YELLOW}  They have been restored and will be used in future runs${ENDCOLOR}"
 	else
 		# Normal apt update
 		sudo apt update 2> >(grep -v "^WARNING" >&2) |
@@ -692,8 +705,7 @@ function UPGRADE_EOL_TO_NEXT {
 	if [ ! -f /etc/os-release ]; then
 		echo -e "${RED}✗ Cannot detect distribution${ENDCOLOR}"
 		return 1
-	fi
-	
+	fi	
 	# shellcheck disable=SC1091
 	. /etc/os-release
 	
