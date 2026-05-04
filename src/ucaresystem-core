@@ -21,6 +21,9 @@ set -e
 SECONDS=0
 ## Script starts here
 
+# Global flag for skipping ppa.launchpad
+SKIP_PPA_LAUNCHPAD=0
+
 # Color Variables
 GREEN="\e[32m"
 CYAN="\e[36m"
@@ -320,6 +323,65 @@ function PREUPDATE_PREFLIGHT {
 	return 0
 }
 
+# Function to perform apt update with optional PPA skipping
+function APT_UPDATE_WITH_SKIP {
+	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
+	echo
+	
+	if [ "$SKIP_PPA_LAUNCHPAD" -eq 1 ]; then
+		echo -e "${YELLOW}⚠ Skipping ppa.launchpad.net repositories due to --skip-ppa-launchpad flag${ENDCOLOR}"
+		echo -e "${YELLOW}  (Useful when Launchpad is under attack or experiencing issues)${ENDCOLOR}"
+		echo
+		
+		# Create a temporary apt configuration that disables ppa.launchpad sources
+		local temp_apt_conf=$(mktemp)
+		
+		# Write apt configuration to skip failing PPAs
+		cat > "$temp_apt_conf" << 'EOF'
+# Temporary apt configuration to skip ppa.launchpad.net
+Acquire::http::Timeout "10";
+Acquire::https::Timeout "10";
+Acquire::http::Pipeline-Depth "0";
+Acquire::Retries "3";
+# Disable specific hosts
+Acquire::http::No-Cache "ppa.launchpad.net";
+Acquire::https::No-Cache "ppa.launchpad.net";
+# Skip these hosts entirely
+Acquire::http::No-Store "ppa.launchpad.net";
+Acquire::https::No-Store "ppa.launchpad.net";
+EOF
+		
+		# Run apt update with the temporary configuration
+		sudo apt -o Dir::Etc::SourceList=/etc/apt/sources.list \
+		         -o Dir::Etc::SourceParts=/etc/apt/sources.list.d \
+		         -c "$temp_apt_conf" update 2>&1 | \
+		    grep -v "ppa.launchpad.net" | \
+		    grep -v "Failed to fetch" | \
+		    grep -v "Unable to connect to" | \
+		    while IFS= read -r line; do
+		        printf '%-*s\r' "$(tput cols)" "$line"
+		    done
+		
+		# Clean up temporary config
+		rm -f "$temp_apt_conf"
+		
+		echo
+		echo -e "${YELLOW}⚠ Note: ppa.launchpad.net repositories were skipped${ENDCOLOR}"
+		echo -e "${YELLOW}  You can restore them by removing the --skip-ppa-launchpad flag${ENDCOLOR}"
+	else
+		# Normal apt update
+		sudo apt update 2> >(grep -v "^WARNING" >&2) |
+		while IFS= read -r line; do
+			printf '%-*s\r' "$(tput cols)" "$line"
+		done
+	fi
+	
+	echo
+	echo -e "${CYAN}✓ Finished updating package lists ${ENDCOLOR}"
+	sleep 1
+	echo
+}
+
 # Function to handle kernel cleanup
 function CLEANUP_OLD_KERNELS {
     local keep_count=${1:-2}  # Default to keeping 2 kernels if not specified
@@ -400,20 +462,9 @@ function MAINTENANCE {
 			echo 
 		fi
 	fi
-	## Updates package lists
-	echo -e "${GREEN}▸ Updating package lists ${ENDCOLOR}"
-	echo
-	# Update package lists and filter out warnings
-	sudo apt update 2> >(grep -v "^WARNING" >&2) |
-	# Print each line with padding to fit the terminal width
-	while IFS= read -r line; do
-		printf '%-*s\r' "$(tput cols)" "$line"
-	done
-	echo
-	echo
-	echo -e "${CYAN}✓ Finished updating package lists ${ENDCOLOR}"
-	sleep 1
-	echo
+	
+	## Updates package lists (using enhanced function)
+	APT_UPDATE_WITH_SKIP
 
 	## Updates packages and libraries
 	echo -e "${GREEN}▸ Installing system package upgrades...${ENDCOLOR}"
@@ -911,6 +962,10 @@ function SHOW_HELP {
 
 		 -x --debug        Enable debug mode (shell tracing)
 		 
+		 --skip-ppa-launchpad  
+		                   Skip ppa.launchpad.net repositories during apt update
+		                   (Useful when Launchpad is under attack or experiencing issues)
+		 
 		 -u --upgrade      Upgrade to the next Ubuntu release. Note: If you use a
 		                   regular release it will upgrade to the next one. If
 		                   you are on a LTS version, it will upgrade ONLY to 
@@ -1005,6 +1060,10 @@ function RE_BOOT {
 while [ "$1" != "" ]; do
 	 case $1 in
 		  -x | --debug )     UCARE_DEBUG=1
+								  shift
+								  continue
+								  ;;
+		  --skip-ppa-launchpad ) SKIP_PPA_LAUNCHPAD=1
 								  shift
 								  continue
 								  ;;
