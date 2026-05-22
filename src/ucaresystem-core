@@ -188,17 +188,26 @@ function WAIT_FOR_PACKAGE_LOCKS {
 	local delay=${2:-5}
 	local attempt=1
 	local lock_files=(/var/lib/dpkg/lock /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock)
+	local locked_by=""
 
 	while [ "$attempt" -le "$retries" ]; do
-		: > /tmp/ucare_locks
-		sudo lsof "${lock_files[@]}" 2>/dev/null | sudo tee /tmp/ucare_locks > /dev/null
-		if [ -s /tmp/ucare_locks ]; then
-			echo -e "${YELLOW}▸ Package manager locks detected (attempt ${attempt}/${retries})${ENDCOLOR}"
-			cat /tmp/ucare_locks
+		locked_by=""
+		for lock_file in "${lock_files[@]}"; do
+			if [ -f "$lock_file" ]; then
+				# fuser exits 0 if the file is held, 1 if not; timeout prevents hangs
+				if timeout 5 fuser "$lock_file" >/dev/null 2>&1; then
+					locked_by="$lock_file"
+					break
+				fi
+			fi
+		done
+
+		if [ -n "$locked_by" ]; then
+			echo -e "${YELLOW}▸ Package manager lock detected on $locked_by (attempt ${attempt}/${retries})${ENDCOLOR}"
 			if [ "$attempt" -lt "$retries" ]; then
 				echo -e "${YELLOW}▸ Waiting ${delay}s for locks to clear...${ENDCOLOR}"
 				sleep "$delay"
-				attempt=$((attempt+1))
+				attempt=$((attempt + 1))
 				continue
 			fi
 			return 1
