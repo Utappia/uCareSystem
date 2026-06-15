@@ -42,6 +42,16 @@ I am deeply grateful to the community members who supported the previous develop
 
 Every version has also a code name dedicated as a release honored to one of the contributors. For historical reference, you can check all [previous honored releases](https://github.com/Utappia/uCareSystem/blob/master/HONORED_RELEASES.md).
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=Utappia%2FuCareSystem&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Utappia/uCareSystem&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Utappia/uCareSystem&type=date&legend=top-left" />
+   <img alt="uCareSystem" src="https://api.star-history.com/chart?repos=Utappia/uCareSystem&type=date&legend=top-left" />
+ </picture>
+</a>
+
 ## Description
 
 uCareSystem is an all-in-one, fully automated system update and maintenance tool for Ubuntu, Debian, Mint, Raspberry Pi OS, WSL2, and derivatives. It is designed for maximum reliability, user-friendliness, and cross-distro compatibility.
