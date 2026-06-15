@@ -62,12 +62,7 @@ uCareSystem is an all-in-one, fully automated system update and maintenance tool
 
 ---
 
-
-
-
 ## Installation
-
-
 
 > **No matter which installation method you choose below, the following steps will be performed automatically:**
 
@@ -78,7 +73,6 @@ Choose whichever installation method suits you best—each will ensure a complet
 - If the repository is not found, it will automatically:
   - Add the Utappia repository for future updates of uCareSystem
   - Add the repository signing key
-
 
 You can install uCareSystem in three ways:
 
@@ -96,9 +90,7 @@ sudo apt install ./ucaresystem-core_latest.deb
 > **Note:**
 > Installing from `/tmp` as shown above avoids the unsandboxed download warning.
 
-
 ### 2. Install via PPA (add-apt-repository)
-
 
 If you prefer, you can add the official Utappia PPA directly and install uCareSystem from there:
 
@@ -127,7 +119,6 @@ This method will automatically add the repository and signing key for you. You w
 
 > If you install the package from your home or Downloads directory, you may see a warning about “Download is performed unsandboxed as root... Permission denied for user '_apt'.” This is normal and does not affect the installation. To avoid the warning, move the `.deb` file to `/tmp` or another directory readable by all users before installing.
 
-
 ## Usage
 
 On Desktop environments, *uCareSystem* creates a launcher icon in your Applications menu. Just search for `ucare` and click the icon to start the default maintenance tasks. The launcher is fully POSIX-compliant and supports all major terminal emulators, with robust fallback logic for maximum compatibility across desktop environments.
@@ -152,6 +143,10 @@ ucaresystem-core
    ```
    ucaresystem-core -s
    ```
+- Run without interval delays (fast mode)
+   ```
+   ucaresystem-core -f
+   ```
 - Upgrade to next Ubuntu release:
    ```
    ucaresystem-core -u
@@ -175,7 +170,6 @@ For all available options, run:
 ```
 ucaresystem-core -h
 ```
-
 
 ## Uninstallation
 

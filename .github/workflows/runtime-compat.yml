@@ -21,7 +21,7 @@ on:
       docker_images:
         description: 'Docker image list (space-separated)'
         required: false
-        default: 'ubuntu:22.04 ubuntu:24.04 ubuntu:25.10'
+        default: 'ubuntu:24.04 ubuntu:26.04'
       scenarios:
         description: 'Scenario list (space-separated)'
         required: false
@@ -46,7 +46,17 @@ jobs:
 
       - name: Run runtime matrix on Docker
         env:
-          UCARE_DOCKER_IMAGES: ${{ github.event.inputs.docker_images || 'ubuntu:22.04 ubuntu:24.04 ubuntu:25.10' }}
+          UCARE_DOCKER_IMAGES: ${{ github.event.inputs.docker_images || 'ubuntu:24.04 ubuntu:26.04' }}
           UCARE_SCENARIOS: ${{ github.event.inputs.scenarios || 'smoke maintenance' }}
         run: |
-          bash scripts/runtime-tests/run_docker_matrix.sh
+          mkdir -p artifacts
+          bash scripts/runtime-tests/run_docker_matrix.sh > artifacts/runtime-log.txt 2>&1 
+          echo "Logs saved to runtime-log.txt"
+          ls -la artifacts/
+
+      - name: Upload runtime logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-test-logs
+          path: /home/runner/work/uCareSystem/uCareSystem/.runtime-test-logs/*

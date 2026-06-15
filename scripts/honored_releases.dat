@@ -2,6 +2,7 @@
 # Format: VERSION|HONORED_TO|RELEASE_DATE|NOTES
 # Lines starting with # are comments
 
+26.06.16|J. Herrin|2026-06-16|Add -f for 0 sleep interrvals
 26.04.18|Karasoulis H.|2026-04-18|Fix autoclose terminal window
 26.02.25|Hewitt R.|2026-02-25|Feature: -x enables Debug mode
 26.01.27|Frankie P.|2026-01-27|Fixed infrastructure service disruption during Snap maintenance
