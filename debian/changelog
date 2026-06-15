@@ -1,3 +1,9 @@
+ucaresystem-core (26.06.16) jammy; urgency=medium
+
+  *  Added fast mode for skipping the interval sleep mode - Add more types of network internet availabillity testing - moved Help and version off the preflight check
+
+ -- Salih Emin <salih-emin [at] ubuntu [dot] com>  Mon, 15 Jun 2026 14:05:47 +0000
+
 ucaresystem-core (26.04.18) jammy; urgency=medium
 
   * fix the autoclosing terminal
