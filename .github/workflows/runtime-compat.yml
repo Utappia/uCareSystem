@@ -57,3 +57,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: runtime-test-logs
+          path: artifacts/*
