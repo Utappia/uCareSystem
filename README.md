@@ -8,7 +8,6 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/utappia/ucaresystem)
 ![GitHub contributors](https://img.shields.io/github/contributors/utappia/ucaresystem)
 
-
 <p align="center">
     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg" alt="GNU GPL v3"></a>
     <a href="https://github.com/Utappia/uCareSystem/stargazers" target="_blank"><img src="https://img.shields.io/github/stars/utappia/ucaresystem.svg" alt="stars"></a>
@@ -24,23 +23,24 @@ Name   : uCareSystem
 License: GPL3 (http://www.gnu.org/licenses/gpl.html)
 Author : Salih Emin
 Email  : salih-emin(a)ubuntu.com
-Date   : 18-04-2026 (first release 19-02-2009)
-Version: 26.04.18
+Date   : 16-06-2026 (first release 19-02-2009)
+Version: 26.06.16
 System : Ubuntu Linux and derivatives. With Deb, Snap or Flatpak. (Partial support for Debian and WSL2)
 WebSite: http://utappia.org
 ```
-## Sponsors of the previous development cycle (v26.02)
+## Sponsors of the previous development cycle (v26.04)
 
 I am deeply grateful to the community members who supported the previous development cycle through donations or code contributions:
 
 - W. Schreinemachers (Thanks for your continued support)
-- Hewitt R. (Thanks for your continued support)
-- Käufler A.
-- Sarigiannidis I.
-- Karasoulis H.
+- P. Frankie
+- J. Herrin
+- I. Manovel
+- R. Sauve
+- M. Horvat
+- M. V. Hoof
 
 Every version has also a code name dedicated as a release honored to one of the contributors. For historical reference, you can check all [previous honored releases](https://github.com/Utappia/uCareSystem/blob/master/HONORED_RELEASES.md).
-
 
 ## Description
 
@@ -128,7 +128,11 @@ Alternatively, you can invoke it through the terminal with various options/flags
 ```
 ucaresystem-core
 ```
+For all available options, run:
 
+```
+ucaresystem-core -h
+```
 ### Common options
 
 - Show version:
@@ -164,12 +168,6 @@ ucaresystem-core
    ucaresystem-core -x
    ```
    > After completion, the debug log file will be saved as `~/ucaresystem-debug-<date>.log` (in your home directory). If your home directory cannot be determined, it will be saved in `/tmp`.
-
-For all available options, run:
-
-```
-ucaresystem-core -h
-```
 
 ## Uninstallation
 
