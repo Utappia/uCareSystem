@@ -13,7 +13,12 @@ Each entry follows this format:
 
 ## Release History
 
-### Version 26.04.18 (Current)
+### Version 26.06.16 (Current)
+- **Honored To**: J. Herrin
+- **Release Date**: 2026-06-16
+- **Notes**: Add -f for 0 sleep intervals
+
+### Version 26.04.18
 - **Honored To**: Karasoulis H.
 - **Release Date**: 2026-04-18
 - **Notes**: Fix autoclose terminal window
