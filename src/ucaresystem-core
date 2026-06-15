@@ -70,46 +70,80 @@ else
 		DIST_CODENAME="unknown"
 	fi
 fi
-
 # New: smart sleep that respects fast mode
 _sleep() {
 	[ "${UCARE_FAST:-0}" -eq 1 ] && return
 	sleep "$@"
 }
 
-# Function to check internet connectivity
+# ---------------------------------------------------------------------------
+# CHECK_INTERNET — three-tier probe with retry
+#   Tier 1: HTTP HEAD via curl
+#   Tier 2: DNS resolution via getent
+#   Tier 3: Raw ICMP ping to well-known DNS servers
+# Returns 0 if any tier succeeds, 1 if all fail after MAX_ATTEMPTS attempts.
+# ---------------------------------------------------------------------------
 function CHECK_INTERNET {
     local SITES=("https://ubuntu.com" "https://google.com" "https://github.com" "https://cloudflare.com")
+    local DNS_HOSTS=("ubuntu.com" "google.com" "cloudflare.com")
+    local MAX_ATTEMPTS=2
+    local attempt
 
-    # Try several websites
-    for site in "${SITES[@]}"; do
-        if curl -4 -s --max-time 5 --connect-timeout 3 --head --fail "$site" >/dev/null; then
-            return 0  # Internet seems to work
+    for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
+
+        # Tier 1: HTTP/HTTPS connectivity
+        if command -v curl &>/dev/null; then
+            for site in "${SITES[@]}"; do
+                if curl -4 -s --max-time 5 --connect-timeout 3 --head --fail "$site" >/dev/null 2>&1; then
+                    return 0
+                fi
+            done
+        fi
+
+        # Tier 2: DNS resolution (works even if HTTP ports are blocked)
+        for host in "${DNS_HOSTS[@]}"; do
+            if getent hosts "$host" >/dev/null 2>&1; then
+                return 0
+            fi
+        done
+
+        # Tier 3: Raw ICMP — last resort (no DNS, no HTTP)
+        if ping -c 1 -W 2 1.1.1.1 &>/dev/null || ping -c 1 -W 2 8.8.8.8 &>/dev/null; then
+            return 0
+        fi
+
+        # Brief pause before retry (skipped on the final attempt)
+        if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+            sleep 2
         fi
     done
 
-    # If all HTTP checks failed, try a simple ping to a DNS server
-    if ping -c 1 -W 2 1.1.1.1 &>/dev/null || ping -c 1 -W 2 8.8.8.8 &>/dev/null; then
-        return 0  # Internet available (raw connectivity)
-    fi
-
-    # If everything failed, assume no internet
     return 1
 }
-# Check internet connectivity
-if ! CHECK_INTERNET; then
-   echo -e "${RED}✗ No internet connection detected... ${ENDCOLOR}"
-   _sleep 1
-   echo ""
-   echo "  Please ensure that your system is connected to the internet,"
-   echo "  and then try again..."
-   echo ""
-   echo -e "${GREEN}▸ Now I will just exit...${ENDCOLOR}" 1>&2
-   echo ""
-   _sleep 2
-   exit 1
-fi
-# Simple countdown function (now respects fast mode)
+
+# ---------------------------------------------------------------------------
+# REQUIRE_INTERNET — call this from any function that needs network access.
+# Exits the script with a clear message if connectivity is unavailable.
+# ---------------------------------------------------------------------------
+function REQUIRE_INTERNET {
+    echo -e "${GREEN}▸ Checking internet connectivity...${ENDCOLOR}"
+    if ! CHECK_INTERNET; then
+        echo -e "${RED}✗ No internet connection detected...${ENDCOLOR}"
+        _sleep 1
+        echo ""
+        echo "  Please ensure that your system is connected to the internet,"
+        echo "  and then try again..."
+        echo ""
+        echo -e "${GREEN}▸ Now I will just exit...${ENDCOLOR}" 1>&2
+        echo ""
+        _sleep 2
+        exit 1
+    fi
+    echo -e "${CYAN}✓ Internet connection confirmed${ENDCOLOR}"
+    sleep 1
+}
+
+# Simple countdown function
 function COUNTDOWN {
     local secs=$1
     # In fast mode, skip the countdown entirely
@@ -230,6 +264,9 @@ function WAIT_FOR_PACKAGE_LOCKS {
 
 # Pre-update health check
 function PREUPDATE_PREFLIGHT {
+	# All maintenance paths converge here — enforce connectivity once.
+	REQUIRE_INTERNET
+
 	echo
 	echo
 	echo -e "${MAGENTA} Started ${ENDCOLOR} "
@@ -669,6 +706,9 @@ function MAINTENANCE {
 }
 
 function UPGRADE_EOL_TO_NEXT {
+	# EOL upgrade path does not go through PREUPDATE_PREFLIGHT — check here.
+	REQUIRE_INTERNET
+
 	# Distribution check - Only works for Ubuntu
 	if [ ! -f /etc/os-release ]; then
 		echo -e "${RED}✗ Cannot detect distribution${ENDCOLOR}"
@@ -1035,6 +1075,20 @@ function RE_BOOT {
 		sudo reboot
 	fi
 }
+
+# ---------------------------------------------------------------------------
+# Pre-scan: flags that need no internet and no maintenance exit immediately.
+# This runs before the argument loop so SHOW_HELP / SHOW_VERSION are already
+# defined above and available. -x alone falls through to full maintenance as
+# intended; -x combined with -h/-v is also handled correctly here.
+# ---------------------------------------------------------------------------
+for _arg in "$@"; do
+    case "$_arg" in
+        -h|--help)    SHOW_HELP;    exit 0 ;;
+        -v|--version) SHOW_VERSION; exit 0 ;;
+    esac
+done
+unset _arg
 
 # The main process starts
 while [ "$1" != "" ]; do
