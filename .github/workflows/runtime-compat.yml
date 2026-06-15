@@ -46,7 +46,7 @@ jobs:
 
       - name: Run runtime matrix on Docker
         env:
-          UCARE_DOCKER_IMAGES: ${{ github.event.inputs.docker_images || 'ubuntu:22.04 ubuntu:24.04 ubuntu:25.10' }}
+          UCARE_DOCKER_IMAGES: ${{ github.event.inputs.docker_images || 'ubuntu:24.04 ubuntu:26.04' }}
           UCARE_SCENARIOS: ${{ github.event.inputs.scenarios || 'smoke maintenance' }}
         run: |
           bash scripts/runtime-tests/run_docker_matrix.sh
