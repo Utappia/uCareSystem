@@ -21,7 +21,7 @@ on:
       docker_images:
         description: 'Docker image list (space-separated)'
         required: false
-        default: 'ubuntu:22.04 ubuntu:24.04 ubuntu:25.10'
+        default: 'ubuntu:24.04 ubuntu:26.04'
       scenarios:
         description: 'Scenario list (space-separated)'
         required: false
