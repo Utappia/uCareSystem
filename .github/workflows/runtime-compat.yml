@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: runtime-test-logs
-          path: artifacts/*
+          path: /home/runner/work/uCareSystem/uCareSystem/.runtime-test-logs/*
